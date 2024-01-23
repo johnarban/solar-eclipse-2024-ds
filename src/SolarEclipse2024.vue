@@ -484,7 +484,7 @@
                         <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
                       </li>
                       <li>
-                        <span class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon. (Disabled when zoomed far out.)                   
+                        <span class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
                       </li>
                     </ul>
                           
@@ -970,7 +970,6 @@
             />
             <v-checkbox
                 :color="accentColor"
-                :disabled="wwtZoomDeg > 210"
                 v-model="showEclipsePercentage"
                 @keyup.enter="showEclipsePercentage = !showEclipsePercentage"
                 label="Amount Eclipsed"
