@@ -1,6 +1,8 @@
 const { VuetifyPlugin } = require('webpack-plugin-vuetify');
 const DotenvWebpack = require("dotenv-webpack");
-const { defineConfig } = require("@vue/cli-service")
+const { defineConfig } = require("@vue/cli-service");
+const webpack = require("webpack");
+const path = require("path");
 
 module.exports = defineConfig({
   publicPath: "./",
@@ -14,8 +16,17 @@ module.exports = defineConfig({
 
         // See https://stackoverflow.com/questions/67431401/conflicting-values-for-process-env-with-webpack-encore-and-dotenv
         ignoreStub: true
+      }),
+      new webpack.DefinePlugin({
+        // https://github.com/vuejs/vue-cli/pull/7443
+        __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'false',
       })
     ],
+    resolve: {
+      alias: {
+        vue: path.resolve("./node_modules/vue")
+      }
+    },
     module: {
       rules: [
         {
