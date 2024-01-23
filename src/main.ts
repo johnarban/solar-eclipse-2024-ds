@@ -7,8 +7,6 @@ import SolarEclipse2023 from "./SolarEclipse2024.vue";
 import TransitionExpand from "./TransitionExpand.vue";
 import GifPlayPause from "./GifPlayPause.vue";
 import CreditLogos from "./CreditLogos.vue";
-import MCRadiogroup from "./MCRadiogroup.vue";
-import FlipTransition from "./FlipTransition.vue";
 import ImageLabel from "./ImageLabel.vue";
 import GeolocationButton from "./GeolocationButton.vue";
 import HoverTooltip from "./HoverTooltip.vue";
@@ -129,8 +127,6 @@ createApp(SolarEclipse2023, {
   .component('gif-play-pause', GifPlayPause)
   .component('credit-logos', CreditLogos)
   .component('date-picker', Datepicker)
-  .component('mc-radiogroup', MCRadiogroup)
-  .component('flip-transition', FlipTransition)
   .component('image-label', ImageLabel)
   .component('funding-acknowledgment', FundingAcknowledgment)
   .component('geolocation-button', GeolocationButton)

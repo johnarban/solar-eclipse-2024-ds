@@ -1186,7 +1186,6 @@ import { Classification, SolarSystemObjects } from "@wwtelescope/engine-types";
 import { Folder, Grids, LayerManager, Planets, Poly, Settings, WWTControl, Place, Texture, CAAMoon } from "@wwtelescope/engine";
 import { distance } from "@wwtelescope/astro";
 import { Annotation2, Poly2 } from "./Annotation2";
-import { MCSelectionStatus } from "./MCRadiogroup.vue";
 
 import { getTimezoneOffset, formatInTimeZone } from "date-fns-tz";
 import tzlookup from "tz-lookup";
@@ -1261,7 +1260,6 @@ const UUID_KEY = "eclipse-mini-uuid" as const;
 const OPT_OUT_KEY = "eclipse-mini-optout" as const;
 const USER_SELECTED_LOCATIONS_KEY = "user-selected-locations" as const;
 const PRESET_LOCATIONS_KEY = "preset-locations" as const;
-const MC_RESPONSES_KEY = "mc-responses" as const;
 
 import { dsvFormat } from "d3-dsv";
 import { eclipse } from "./eclipse_path";
@@ -1426,9 +1424,6 @@ export default defineComponent({
     const selectedLocation = queryData ? USER_SELECTED : "Greatest Eclipse";
     presetLocationsVisited.push(selectedLocation);
 
-    const responses = window.localStorage.getItem(MC_RESPONSES_KEY);
-    const mcResponses: string[] = responses ? (this.parseJSONString(responses) ?? []) : [];
-
     const uuid = window.localStorage.getItem(UUID_KEY) ?? v4();
     window.localStorage.setItem(UUID_KEY, uuid);
 
@@ -1437,7 +1432,6 @@ export default defineComponent({
     return {
       uuid,
       responseOptOut: responseOptOut as boolean | null,
-      mcResponses,
 
       showSplashScreen: true,
       backgroundImagesets: [] as BackgroundImageset[],
@@ -2455,20 +2449,11 @@ export default defineComponent({
         },
         body: JSON.stringify({
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          user_uuid: this.uuid, mc_responses: this.mcResponses,
+          user_uuid: this.uuid, 
           // eslint-disable-next-line @typescript-eslint/naming-convention
           preset_locations: toRaw(this.presetLocationsVisited), user_selected_locations: toRaw(this.userSelectedLocationsVisited)
         })
       });
-    },
-
-    onAnswerSelected(event: MCSelectionStatus) {
-      if (event.text === "C") {
-        this.showLinkToPath = true;
-      }
-      this.mcResponses.push(event.text);
-      window.localStorage.setItem(MC_RESPONSES_KEY, JSON.stringify(this.mcResponses));
-      this.sendDataToDatabase();
     },
 
     logLocation() {
@@ -4234,9 +4219,6 @@ video, #info-video {
     align-items: center;
     justify-content: space-evenly;
     
-    #mc-radiogroup-container {
-      padding-block: 0.5em;
-    }
     // v-col
     #top-container-main-text { 
     
