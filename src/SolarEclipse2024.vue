@@ -1389,7 +1389,7 @@ export default defineComponent({
       type: Object as PropType<Omit<GotoRADecZoomParams, 'instant'>>,
       default() {
         return {
-          // RA/Dec of Sun in Albuquerque close to max annularity
+          // RA/Dec of Sun in Nazas, Mexico close to max totality
           raRad: 3.481,
           decRad: -0.145,
           zoomDeg: 1
@@ -1398,7 +1398,7 @@ export default defineComponent({
     },
   },
   data() {
-    const _annularEclipseTimeUTC = new Date("2024-04-08T18:18:00Z");
+    const _totalEclipseTimeUTC = new Date("2024-04-08T18:18:00Z");
 
     const sunPlace = new Place();
     sunPlace.set_names(["Sun"]);
@@ -1460,7 +1460,7 @@ export default defineComponent({
       pointerStartPosition: null as { x: number; y: number } | null,  
 
       // "Greatest Eclipse"
-      selectedTime:  _annularEclipseTimeUTC.getTime(),
+      selectedTime:  _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5,
       selectedTimezone: "America/Mexico_City",
       location: queryData ? {
         latitudeRad: D2R * queryData.latitudeDeg,
@@ -1669,11 +1669,6 @@ export default defineComponent({
       speedIndex: 3,
 
       startPaused: false,
-
-      quizAnswer: null as string | null,
-      longAnswers: ['Eclipse moves North to South from Bismarck, ND through Denver, CO and Albuquerque, NM',
-        'Eclipse moves West to East from Los Angeles, CA to Charlotte, NC',
-        'Eclipse moves Northwest to South from Eugene, OR to San Antonio, TX'],
 
       sunPlace,
       moonPlace,
