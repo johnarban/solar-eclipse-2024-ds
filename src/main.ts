@@ -39,7 +39,6 @@ import {
   faPause,
   faMapLocationDot,
   faSun,
-  faRocket,
   faPuzzlePiece,
   faLocationDot,
   faChevronUp,
@@ -55,6 +54,7 @@ import {
   faRotate,
   faCircleChevronDown,
   faStreetView,
+  faCloudSun
 
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -68,7 +68,6 @@ library.add(faPlay);
 library.add(faPause);
 library.add(faMapLocationDot);
 library.add(faSun);
-library.add(faRocket);
 library.add(faPuzzlePiece);
 library.add(faLocationDot);
 library.add(faChevronUp);
@@ -84,6 +83,7 @@ library.add(faCircleInfo);
 library.add(faRotate);
 library.add(faCircleChevronDown);
 library.add(faStreetView);
+library.add(faCloudSun);
 
 /** v-hide directive taken from https://www.ryansouthgate.com/2020/01/30/vue-js-v-hide-element-whilst-keeping-occupied-space/ */
 // Extract the function out, up here, so I'm not writing it twice

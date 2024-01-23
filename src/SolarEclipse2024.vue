@@ -49,31 +49,26 @@
         <div id="title-row" class="non-map-row">
 
             <div id="title">
-              <span v-if="learnerPath=='Explore'"
-                >Watch and Compare
-              </span>
-              <span v-if="learnerPath=='Choose'"
+              <span v-if="learnerPath=='Location'"
                 >Choose Any Location
+              </span>
+              <span v-if="learnerPath=='Clouds'"
+                >Explore Historical Cloud Data
               </span>
             </div>
 
         </div>
         <div id="instructions-row" class="non-map-row">
-          <div id="top-container-main-text">
-            <!-- Learn Path -->
-            <div class="instructions-text" v-if="learnerPath=='Explore'">
+          <div id="top-container-main-text">                    
+            <!-- Choose Path -->
+            <div class="instructions-text" v-if="learnerPath=='Location'">
+
+              <!-- ACTION NEEDED: update this text -->
               <span class="description">
                 <p v-if="!queryData"><strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse at the location marked by the red dot.</p>
 
                 <p><strong>{{ touchscreen ? "Tap" : "Click" }}</strong> on the map to switch locations and view the eclipse from there.</p>
                 <p>The <strong><span class="highlighted bg-red">red</span></strong> line shows the path of the total eclipse, and the <span class="highlighted bg-grey text-black">Grey</span> band shows where the total eclipse will be visible (the umbra)</p>
-              </span>
-            </div>
-            
-            
-            <!-- Choose Path -->
-            <div class="instructions-text" v-if="learnerPath=='Choose'">
-              <span class="description">
                 <p v-if="queryData">
                   <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" size="l" class="bullet-icon"/> to "watch" the eclipse from the location shared in your link.
                 </p>
@@ -88,6 +83,16 @@
                 </p>
               </span>
             </div>
+
+            <!-- Clouds Path -->
+            <div class="instructions-text" v-if="learnerPath=='Clouds'">
+              <span class="description">
+                <p>Explainer text for cloud coverage map data goes here</p>
+                <p>Explainer text for cloud coverage map data goes here</p>
+                <p>Explainer text for cloud coverage map data goes here</p>
+                <p>Explainer text for cloud coverage map data goes here</p>
+              </span>
+            </div>
           </div>
         </div>
       <!-- </toggle-content> -->
@@ -95,19 +100,7 @@
           <!-- <v-col> -->
             <div id="top-container-buttons">
               <icon-button
-                :model-value="learnerPath == 'Explore'"
-                fa-icon="rocket"
-                fa-size="xl"
-                :color="accentColor"
-                :focus-color="accentColor"
-                :tooltip-text="'View eclipse from multiple locations'"
-                :tooltip-location="'bottom'"
-                :show-tooltip="!mobile"
-                :box-shadow="false"
-                @activate="() => { learnerPath = 'Explore'}"
-              ></icon-button>
-              <icon-button
-                :model-value="learnerPath == 'Choose'" 
+                :model-value="learnerPath == 'Location'" 
                 fa-icon="location-dot"
                 fa-size="xl"
                 :color="accentColor"
@@ -116,7 +109,19 @@
                 :tooltip-location="'bottom'"
                 :show-tooltip="!mobile"
                 :box-shadow="false"
-                @activate="() => { learnerPath = 'Choose'}"
+                @activate="() => { learnerPath = 'Location'}"
+              ></icon-button>
+              <icon-button
+                :model-value="learnerPath == 'Clouds'"
+                fa-icon="cloud-sun"
+                fa-size="xl"
+                :color="accentColor"
+                :focus-color="accentColor"
+                :tooltip-text="'Explore historical cloud coverage'"
+                :tooltip-location="'bottom'"
+                :show-tooltip="!mobile"
+                :box-shadow="false"
+                @activate="() => { learnerPath = 'Clouds'}"
               ></icon-button>
               <icon-button
                 v-model="showInfoSheet"
@@ -573,7 +578,7 @@
             if(value) {
               ($refs.geolocation as any).getLocation();
               showMyLocationDialog = true;
-              learnerPath = 'Choose';
+              learnerPath = 'Location';
             }
             else {
               console.log('geolocation button pressed = false');
@@ -682,8 +687,8 @@
           <v-row>
             <v-col cols="12">
               <font-awesome-icon
-                icon="rocket"
-              /> Explore the view 
+                icon="cloud-sun"
+              /> Explore historical cloud coverage
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
@@ -776,9 +781,9 @@
               <ul>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
-                    <font-awesome-icon icon="rocket" size="xl" class="bullet-icon"></font-awesome-icon>
+                    <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                    <strong>Explore</strong> what the eclipse will look like from different parts of the U.S.
+                    <strong>View historical cloud data</strong> for April 8th.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -848,7 +853,7 @@
           :text="selectedLocationText"
           @click="() => {
             showGuidedContent = true; 
-            learnerPath = 'Choose'
+            learnerPath = 'Location'
             }"
         > </v-chip>
         <v-chip 
@@ -1194,7 +1199,7 @@ import { v4 } from "uuid";
 import { drawSkyOverlays, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 
 type SheetType = "text" | "video" | null;
-type LearnerPath = "Explore" | "Choose" | "Learn";
+type LearnerPath = "Location" | "Clouds" | "Learn";
 type ViewerMode = "Horizon" | "SunScope";
 type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | "moon-sky-blue-overlay.png";
 
@@ -1433,7 +1438,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true,
+      showSplashScreen: false, // ACTION NEEDED: set this to true before deployment
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -1612,7 +1617,7 @@ export default defineComponent({
         radius: 5
       },
 
-      learnerPath: (queryData ? "Choose" : "Explore") as LearnerPath,
+      learnerPath: (queryData ? "Location" : "Clouds") as LearnerPath,
       
       playing: false,
       playingIntervalId: null as ReturnType<typeof setInterval> | null,
