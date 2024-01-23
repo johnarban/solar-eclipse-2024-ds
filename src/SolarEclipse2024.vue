@@ -1637,7 +1637,7 @@ export default defineComponent({
       maxTime: maxTime,
       millisecondsPerInterval: MILLISECONDS_PER_INTERVAL,
       
-      accentColor: "#f3de21",
+      accentColor: "#eac402",
       moonColor: "#CFD8DC",
       guidedContentHeight: "300px",
       showGuidedContent: true,
