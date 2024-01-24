@@ -478,9 +478,6 @@ export function drawPlanets(renderContext: RenderContext, opacity: number, fract
     for (const key in Planets._planetDrawOrder) {
       // 0: Sun, 9: Moon, 19: Earth
       var planetId = Planets._planetDrawOrder[key];
-      if (fraction > 0 && planetId === 9) {
-        continue;
-      }
       Planets._drawPlanet(renderContext, planetId, 1);
     }
     return true;
