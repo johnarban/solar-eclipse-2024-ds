@@ -45,9 +45,33 @@ declare module "@wwtelescope/engine" {
     // Technically this is a list of AstroRaDec objects, but this is a good enough definition
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static _planetLocations: { RA: number; dec: number }[];
+    static _planetDiameters: number[];
   }
 
   export class CAAMoon {
     static radiusVector(JD: number): number;
+  }
+  
+  export class CAAEarth {
+    static radiusVector(JD: number): number;
+  }
+  
+  export class Coordinates {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    get_lat(): number;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    get_lng(): number;
+  }
+  
+  export class SpaceTimeController {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    static get_location(): Coordinates;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    static get_altitude(): number;
+  }
+  
+  export class AstroCalc {  
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    static getPlanet(jd: number, planet: number, lat: number, lon: number, alt: number, threeDee: boolean): { RA: number; dec: number, distance: number };
   }
 }

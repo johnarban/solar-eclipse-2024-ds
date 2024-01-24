@@ -10,6 +10,7 @@ import CreditLogos from "./CreditLogos.vue";
 import ImageLabel from "./ImageLabel.vue";
 import GeolocationButton from "./GeolocationButton.vue";
 import HoverTooltip from "./HoverTooltip.vue";
+import LineChart from "./Chart.vue";
 
 import "./polyfills";
 
@@ -131,6 +132,7 @@ createApp(SolarEclipse2023, {
   .component('funding-acknowledgment', FundingAcknowledgment)
   .component('geolocation-button', GeolocationButton)
   .component('hover-tooltip', HoverTooltip)
+  .component('line-chart', LineChart)
 
   // Mount
   .mount("#app");

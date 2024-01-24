@@ -70,6 +70,25 @@
               </span>
             </div>
             
+            <!-- Graphh Path -->
+            <div class="instructions-text" v-if="learnerPath=='Graph'">
+              <span class="description">
+                <line-chart
+                  :data="eclipseGraph"
+                  :height="100"
+                  :borderColor="accentColor"
+                  :yrange="[0, 1.]"
+                  :xtickformatter="(x: number) => {
+                    const date = new Date(x + selectedTimezoneOffset);
+                    const m = date.getUTCMinutes();
+                    const zm = m < 10 ? `0${m}` : m;
+                    return `${date.getUTCHours()}:${zm}`
+                  }"
+
+                  />
+              </span>
+            </div>
+            
             
             <!-- Choose Path -->
             <div class="instructions-text" v-if="learnerPath=='Choose'">
@@ -117,6 +136,18 @@
                 :show-tooltip="!mobile"
                 :box-shadow="false"
                 @activate="() => { learnerPath = 'Choose'}"
+              ></icon-button>
+              <icon-button
+                :model-value="learnerPath == 'Graph'" 
+                md-icon="chart-bell-curve"
+                md-size="xl"
+                :color="accentColor"
+                :focus-color="accentColor"
+                :tooltip-text="'See eclipse graph'"
+                :tooltip-location="'bottom'"
+                :show-tooltip="!mobile"
+                :box-shadow="false"
+                @activate="() => { learnerPath = 'Graph'}"
               ></icon-button>
               <icon-button
                 v-model="showInfoSheet"
@@ -1183,7 +1214,7 @@ import { defineComponent, toRaw, PropType } from "vue";
 import { MiniDSBase, BackgroundImageset, skyBackgroundImagesets, MINIDS_BASE_URL } from "@cosmicds/vue-toolkit";
 import { GotoRADecZoomParams } from "@wwtelescope/engine-pinia";
 import { Classification, SolarSystemObjects } from "@wwtelescope/engine-types";
-import { Folder, Grids, LayerManager, Planets, Poly, Settings, WWTControl, Place, Texture, CAAMoon } from "@wwtelescope/engine";
+import { Folder, Grids, LayerManager, Planets, Poly, Settings, WWTControl, Place, Texture, CAAMoon, AstroCalc, SpaceTimeController } from "@wwtelescope/engine";
 import { distance } from "@wwtelescope/astro";
 import { Annotation2, Poly2 } from "./Annotation2";
 
@@ -1194,7 +1225,7 @@ import { v4 } from "uuid";
 import { drawSkyOverlays, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 
 type SheetType = "text" | "video" | null;
-type LearnerPath = "Explore" | "Choose" | "Learn";
+type LearnerPath = "Explore" | "Choose" | "Learn" | "Graph";
 type ViewerMode = "Horizon" | "SunScope";
 type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | "moon-sky-blue-overlay.png";
 
@@ -1693,7 +1724,8 @@ export default defineComponent({
       
 
       presetLocationsVisited,
-      userSelectedLocationsVisited
+      userSelectedLocationsVisited,
+      eclipseGraph: [] as { x: number; y: number }[],
     };
   },
 
@@ -1804,6 +1836,8 @@ export default defineComponent({
           this.showVideoSheet = false;
         }
       });
+      
+
 
     });
 
@@ -2112,12 +2146,108 @@ export default defineComponent({
       return distance(ra1, dec1, ra2, dec2);
     },
     
-    updateIntersection() {
+    getPlanet2DPosition(planetid: number, jd: number, latDeg: number, lonDeg:number, alt: number) {
+      // get planetid from planets_3d.js in WWT
+      const threeDee = false; // solar system mode is not 3D
+      return AstroCalc.getPlanet(jd, planetid, latDeg , lonDeg , alt, threeDee);
+    },
+    
+    getMoon3DPosition(jd: number, latDeg: number, lonDeg: number) {
+      const alt = SpaceTimeController.get_altitude();
+      const pos2D = this.getPlanet2DPosition(SolarSystemObjects.moon, jd, latDeg , lonDeg , alt);
+      
+      const radius = Planets['_planetDiameters'][SolarSystemObjects.moon] / 2; // radius in AU
+      
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      return {'name': 'Moon', 'RA': pos2D.RA, 'dec': pos2D.dec, 'dist': pos2D.distance, angularRadius: Math.atan2(radius, pos2D.distance)};
+    },
 
+    
+    getSun3DPosition(jd: number, latDeg: number, lonDeg: number) {
+      const alt = SpaceTimeController.get_altitude();
+      const pos2D = this.getPlanet2DPosition(SolarSystemObjects.sun, jd, latDeg , lonDeg , alt);
+      
+      const radius = Planets['_planetDiameters'][SolarSystemObjects.sun] / 2; // radius in AU
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      return {'name': 'Sun', 'RA': pos2D.RA, 'dec': pos2D.dec, 'dist': pos2D.distance, angularRadius: Math.atan2(radius, pos2D.distance)};
+    },
+    
+    getSunMoon(date: Date) {
+      const jd = this.getJulian(date);
+      const lat = this.locationDeg.latitudeDeg;
+      const lon = this.locationDeg.longitudeDeg;
+      const sun = this.getSun3DPosition(jd, lat, lon);
+      const moon = this.getMoon3DPosition(jd, lat, lon);
+      return {'sun': sun, 'moon': moon};
+    },
+    
+    getEclipseFraction(date: Date) {
+      const sunMoon = this.getSunMoon(date);
+      return this.circleCircleIntersection(sunMoon.sun, sunMoon.moon);
+    },
+    
+    
+    getEclipseGraph() {
+      const start = new Date(times[0]);
+      const end = new Date(times[times.length - 1]);
+      const step = 20 * 60 * 1000; // 2 minutes
+      
+      this.eclipseGraph = [];
+
+      for (let date = start; date <= end; date = new Date(date.getTime() + step)) {
+        this.eclipseGraph.push({'x':date.getTime(), 'y':this.getEclipseFraction(date)});
+      }
+      // console log to a csv string
+
+      
+    },
+    
+    // circleCircleIntersection(R: number, r: number, sunRa: number, moonRa: number, sunDec: number, moonDec: number) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    circleCircleIntersection(sun: {angularRadius: number, RA: number, dec: number}, moon: {angularRadius: number, RA: number, dec: number}) {
+
+      const bigR = sun.angularRadius;
+      const r = moon.angularRadius;
+      const d = this.greatCircleDistance(sun, moon);
+
+
+      // If there's no sun/moon intersection, no need to continue
+      if (d > (r + bigR)) {
+        return 0;
+      }
+
+      const moonInsideSun = d < (bigR - r);
+      const sunInsideMoon = d < (r - bigR);
+
+      const dSq = d * d;
+      const rSq = r * r;
+      const bigRSq = bigR * bigR;
+
+      const moonArea = Math.PI * rSq;
+      const sunArea = Math.PI * bigRSq;
+      
+      if (moonInsideSun || sunInsideMoon) {
+        return moonArea / sunArea;
+      } else {
+        // See https://mathworld.wolfram.com/Circle-CircleIntersection.html
+        const intersectionArea =
+          rSq * Math.acos((dSq + rSq - bigRSq) / (2 * d * r)) +
+          bigRSq * Math.acos((dSq + bigRSq - rSq) / (2 * d * bigR)) -
+          0.5 * Math.sqrt(
+            (bigR + r - d) * (d + r - bigR) * (d - r + bigR) * (d + bigR + r)
+          );
+        const percentEclipsed = intersectionArea / sunArea;
+        return isNaN(percentEclipsed) ? 1 : percentEclipsed;
+      }
+      
+      
+    },
+
+    
+    updateIntersection() {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const canvasHeight: number = this.wwtControl.canvas.height;
-
       const sunPosition = Planets['_planetLocations'][0];
       const moonPosition = Planets['_planetLocations'][9];
       const sunPoint = this.findScreenPointForRADec({ ra: sunPosition.RA * 15, dec: sunPosition.dec });
@@ -2171,7 +2301,7 @@ export default defineComponent({
         const percentEclipsed = intersectionArea / sunArea;
         this.currentPercentEclipsed = isNaN(percentEclipsed) ? 1 : percentEclipsed;
       }
-
+      console.log('current percent',this.currentPercentEclipsed);
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
       if (this.useRegularMoon || this.viewerMode === "SunScope") {
         return;
@@ -2398,6 +2528,7 @@ export default defineComponent({
         latitudeRad: this.eclipsePathLocations[location].latitudeRad,
         longitudeRad: this.eclipsePathLocations[location].longitudeRad
       };
+      this.getEclipseGraph();
 
     },
 
