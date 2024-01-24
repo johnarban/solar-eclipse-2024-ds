@@ -48,5 +48,5 @@
     "typescript": "latest",
     "webpack": "^5.89.0"
   },
-  "name": "@cosmicds/solar-eclipse-2024",
+  "name": "@cosmicds/solar-eclipse-2024"
 }
