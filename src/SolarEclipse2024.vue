@@ -2189,6 +2189,29 @@ export default defineComponent({
       return this.circleCircleIntersection(sunMoon.sun, sunMoon.moon);
     },
     
+
+    gradientDescent(f: (x: number) => number, x0: number, maxIter: number, learningRate: number, h: number, tol: number) {
+      function gradient(f: (x: number) => number, x: number, h: number) {
+        return (f(x + h) - f(x - h)) / (2 * h);
+      }
+      function converged(x: number, newX: number, tol: number) {
+        return Math.abs(newX - x) < tol;
+      }
+      
+      let x = x0;
+      let gradfx = gradient(f, x, h);
+      let newX = x - gradfx * learningRate;
+      while (!converged(x, newX, tol) && maxIter > 0) {
+        x = newX;
+        gradfx = gradient(f, x, h);
+        newX = x - gradfx * learningRate;
+        maxIter--;
+      }
+      return x;
+      
+    },
+
+    
     
     getEclipseGraph() {
       const start = new Date(times[0]);
