@@ -2062,7 +2062,7 @@ export default defineComponent({
     },
 
     percentEclipsedText(): string {
-      const percentEclipsed = Math.abs(this.currentPercentEclipsed * 100).toFixed(0);
+      const percentEclipsed = Math.abs(this.currentPercentEclipsed * 100).toFixed(2);
       return `Eclipsed: ${percentEclipsed}%`;
     },
 
