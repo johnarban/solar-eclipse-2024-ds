@@ -73,22 +73,32 @@
             <!-- Graphh Path -->
             <div class="instructions-text" v-if="learnerPath=='Graph'">
               <span class="description">
-                <line-chart
-                  line
-                  scatter
-                  :data="eclipseGraph"
-                  :height="100"
-                  borderColor="#fff"
-                  :color="accentColor"
-                  :yrange="[0, 1.]"
-                  :xtickformatter="(x: number) => {
-                    const date = new Date(x + selectedTimezoneOffset);
-                    const m = date.getUTCMinutes();
-                    const zm = m < 10 ? `0${m}` : m;
-                    return `${date.getUTCHours()}:${zm}`
-                  }"
-
-                  />
+                <v-row>
+                  <v-col>
+                  <line-chart
+                    line
+                    :data="eclipseGraph"
+                    :height="100"
+                    borderColor="#fff"
+                    :color="accentColor"
+                    :yrange="[0, 1.]"
+                    :xrange="[startEclipseTime, endEclipseTime]"
+                    :xtickformatter="(x: number) => {
+                      const date = new Date(x + selectedTimezoneOffset);
+                      const m = date.getUTCMinutes();
+                      const zm = m < 10 ? `0${m}` : m;
+                      return `${date.getUTCHours()}:${zm}`
+                    }"
+                    />
+                  </v-col>
+                  <v-col style="font-size: 7px">
+                    {{ new Date(maxEclipseTime) }} <br />
+                    {{ maxEclipseFraction }}<br />
+                    {{ new Date(startEclipseTime) }}<br />
+                    {{ new Date(endEclipseTime) }} [[Incorrect]]<br />
+                  </v-col>
+                  </v-row>
+                  
               </span>
             </div>
             
@@ -1629,6 +1639,10 @@ export default defineComponent({
       } as Record<string, EclipseLocation>,
 
       currentPercentEclipsed: 0,
+      maxEclipseTime: 0,
+      startEclipseTime: 0,
+      endEclipseTime: 0,
+      maxEclipseFraction: 0,
 
       places: [] as (LocationRad & { name: string })[],
         
@@ -1821,7 +1835,7 @@ export default defineComponent({
         this.startHorizonMode();
       }
       this.trackSun().then(() => this.positionSet = true);
-
+      this.getEclipseGraph();
       // this.setTimeforSunAlt(10); // 10 degrees above horizon
       
       // console.log("selected time", this.selectedTime);
@@ -2214,17 +2228,53 @@ export default defineComponent({
     
     
     getEclipseGraph() {
+      const perfStart = performance.now();
+      console.log("getEclipseGraph");
       const start = new Date(times[0]);
       const end = new Date(times[times.length - 1]);
-      const step = 20 * 60 * 1000; // 2 minutes
+      const step = 60 * 60 * 1000; // 2 minutes
       
       this.eclipseGraph = [];
+      const eclipseFractions = [];
 
       for (let date = start; date <= end; date = new Date(date.getTime() + step)) {
+        eclipseFractions.push({'x':date.getTime(), 'y':this.getEclipseFraction(date)});
+      }
+      // get the maximum of eclipsegraph
+      const max = eclipseFractions.reduce((prev, current) => (prev.y > current.y) ? prev : current);
+      const learningRate = Math.pow(10,Math.floor(Math.log10(max.x))) / 10;
+      const h = 100; // .1 second steps
+      const tol = 1000; // 1 second tolerance
+      const maxDate = this.gradientDescent((x: number) => -this.getEclipseFraction(new Date(x)), max.x, 100, learningRate, h, tol);
+      const maxFrac = this.getEclipseFraction(new Date(maxDate));
+
+      // now get the innermost zeros of the eclipseFractions
+      // split eclipseFractions into two arrays at the max
+      const eclipseFractions1 = eclipseFractions.filter((x) => x.x <= maxDate);
+      const eclipseFractions2 = eclipseFractions.filter((x) => x.x >= maxDate);
+      // find the last zero of 1 and first zero of 2
+      const before = eclipseFractions1.reduce((prev, current) => (prev.y < current.y) ? prev : current);
+      const after = eclipseFractions2.reduce((prev, current) => (prev.y < current.y) ? prev : current);
+      function getStep(date: Date) {
+        // 60 minutes when before before and after afert, else 1 minute
+        if (date.getTime() < before.x || date.getTime() > after.x) {
+          return 60 * 60 * 1000;
+        } else {
+          return 60 * 1000;
+        }
+      }
+      for (let date = start; date <= end; date = new Date(date.getTime() + getStep(date))) {
         this.eclipseGraph.push({'x':date.getTime(), 'y':this.getEclipseFraction(date)});
       }
-      // console log to a csv string
-
+      
+      
+      this.maxEclipseTime = maxDate;
+      this.maxEclipseFraction = maxFrac;
+      this.startEclipseTime = this.eclipseGraph.filter(x => x.x < maxDate).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
+      this.endEclipseTime = this.eclipseGraph.filter(x => x.x > maxDate).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
+      console.log('getEclipseGraph', performance.now() - perfStart);
+      
+      
       
     },
     
@@ -2327,7 +2377,7 @@ export default defineComponent({
         const percentEclipsed = intersectionArea / sunArea;
         this.currentPercentEclipsed = isNaN(percentEclipsed) ? 1 : percentEclipsed;
       }
-      console.log('current percent',this.currentPercentEclipsed);
+
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
       if (this.useRegularMoon || this.viewerMode === "SunScope") {
         return;
@@ -2554,7 +2604,6 @@ export default defineComponent({
         latitudeRad: this.eclipsePathLocations[location].latitudeRad,
         longitudeRad: this.eclipsePathLocations[location].longitudeRad
       };
-      this.getEclipseGraph();
 
     },
 
@@ -3171,6 +3220,7 @@ export default defineComponent({
       this.updateFrontAnnotations();
 
       this.centerSun();
+      this.getEclipseGraph();
     },
 
     locationDeg(loc: LocationDeg) {
