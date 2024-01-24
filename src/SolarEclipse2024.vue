@@ -1191,7 +1191,7 @@ import { getTimezoneOffset, formatInTimeZone } from "date-fns-tz";
 import tzlookup from "tz-lookup";
 import { v4 } from "uuid";
 
-import { drawSkyOverlays, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
+import { drawPlanets, drawSkyOverlays, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Explore" | "Choose" | "Learn";
@@ -1594,7 +1594,7 @@ export default defineComponent({
         }
       } as Record<string, EclipseLocation>,
 
-      currentPercentEclipsed: 0,
+      currentFractionEclipsed: 0,
 
       places: [] as (LocationRad & { name: string })[],
         
@@ -1763,6 +1763,12 @@ export default defineComponent({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.wwtControl.renderFrameCallback = this.onWWTRenderFrame;
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      Planets.drawPlanets = (renderContext: RenderContext, opacity: number) => {
+        drawPlanets(renderContext, opacity, this.currentFractionEclipsed);
+      };
 
       /* eslint-disable @typescript-eslint/no-var-requires */
       Planets['_planetTextures'][0] = Texture.fromUrl(require("./assets/2023-09-19-SDO-Sun.png"));
@@ -2011,7 +2017,10 @@ export default defineComponent({
     },
 
     percentEclipsedText(): string {
-      const percentEclipsed = Math.abs(this.currentPercentEclipsed * 100).toFixed(0);
+      let percentEclipsed = Math.abs(this.currentFractionEclipsed * 100).toFixed(0);
+      if (this.currentFractionEclipsed < 1 && percentEclipsed === "100") {
+        percentEclipsed = "99";
+      }
       return `Eclipsed: ${percentEclipsed}%`;
     },
 
@@ -2146,7 +2155,7 @@ export default defineComponent({
 
       // If there's no sun/moon intersection, no need to continue
       if (sunMoonDistance > rMoonPx + rSunPx) {
-        this.currentPercentEclipsed = 0;
+        this.currentFractionEclipsed = 0;
         return;
       }
 
@@ -2172,7 +2181,7 @@ export default defineComponent({
           );
         fractionEclipsed = intersectionArea / sunArea;
       }
-      this.currentPercentEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+      this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
 
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
       if (this.useRegularMoon || this.viewerMode === "SunScope") {
@@ -2205,7 +2214,7 @@ export default defineComponent({
           x1 = Math.sqrt(rMoonPx * rMoonPx - ysh * ysh);
           if (isNaN(x1)) {
             console.error("x1 is NaN");
-            this.currentPercentEclipsed = 0;
+            this.currentFractionEclipsed = 0;
             return;
           }
           y1 = ysh;
@@ -2228,7 +2237,7 @@ export default defineComponent({
           const sqrDisc = Math.sqrt(b * b - 4 * a * c);
           if (isNaN(sqrDisc)) {
             console.error("sqrDisc is NaN");
-            this.currentPercentEclipsed = 0;
+            this.currentFractionEclipsed = 0;
             return;
           }
           x1 = (-b + sqrDisc) / (2 * a);
@@ -2869,7 +2878,7 @@ export default defineComponent({
       
       const sunAlt = altRad;
       this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentPercentEclipsed -1),2)/(0.09)));
+      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.09)));
       this.updateMoonTexture();
 
       const dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
@@ -3116,7 +3125,7 @@ export default defineComponent({
       return;
     },
     
-    currentPercentEclipsed(_frac: number) {
+    currentFractionEclipsed(_frac: number) {
       // this.skyOpacity = 1 - frac;
       this.updateFrontAnnotations();
     },
