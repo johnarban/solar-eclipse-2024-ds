@@ -49,8 +49,15 @@ jobs:
           #     sleep 10
           #     yarn test-bslocal -e default,firefox,edge,safari -o reports
 
+      - name: Check for draft flag
+        uses: sergeysova/jq-action@v2
+        id: draft
+        with:
+          cmd: cat package.json | jq -r '.draft // false'
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
+        if: ${{ steps.draft.outputs.value }} == 'true'
         with:
           branch: gh-pages
           folder: dist
