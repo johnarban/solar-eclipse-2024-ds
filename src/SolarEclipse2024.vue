@@ -111,6 +111,9 @@
                     {{ maxEclipseFraction }}<br />
                     {{ new Date(startEclipseTime) }}<br />
                     {{ new Date(endEclipseTime) }} [[Incorrect]]<br />
+                    <v-btn
+                      @click="selectedTime=maxEclipseTime"
+                    >Go to max</v-btn>
                   </v-col>
                   </v-row>
                   
