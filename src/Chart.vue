@@ -28,22 +28,9 @@ export default defineComponent({
   props: {
     data: {
       type: Array as PropType<{ x: Date | number; y: number }[]>,
-      required: true,
+      required: false,
       // fill in some default data
-      default: () =>
-        [
-          { x: (new Date("2020-01-01")).getTime(), y: 1 },
-          { x: (new Date("2020-01-02")).getTime(), y: 2 },
-          { x: (new Date("2020-01-03")).getTime(), y: 3 },
-          { x: (new Date("2020-01-04")).getTime(), y: 4 },
-          { x: (new Date("2020-01-05")).getTime(), y: 5 },
-          { x: (new Date("2020-01-06")).getTime(), y: 6 },
-          { x: (new Date("2020-01-07")).getTime(), y: 7 },
-          { x: (new Date("2020-01-08")).getTime(), y: 8 },
-          { x: (new Date("2020-01-09")).getTime(), y: 9 },
-          { x: (new Date("2020-01-10")).getTime(), y: 10 }
-        ]
-
+      default: () =>[]
     },
 
     lineData: {
@@ -292,7 +279,10 @@ export default defineComponent({
     
     computedXrange() {
       if (this.xrange == null) {
-        const x = this.computedData.map(d => d.x as number);
+        const xData = this.computedData.map(d => d.x as number);
+        const xLine = this.computedLineData.map(d => d.x as number);
+        // filter null values
+        const x = [...xData, ...xLine].filter(x => x != null);
         return [Math.min(...x), Math.max(...x)];
       } else {
         return this.xrange;
@@ -303,7 +293,7 @@ export default defineComponent({
     computedData() {
 
       if (this.data.length == 0) {
-        return [{ x: null, y: null }];
+        return [{ x: undefined, y: undefined }];
       }
       
       const data = this.data.map(d => (
@@ -321,8 +311,8 @@ export default defineComponent({
     },
 
     computedLineData() {
-      if (this.line) {
-        if (this.lineData == null) {
+      if (this.line && this.lineData) {
+        if (this.lineData.length == 0) {
           return this.computedData;
         }
         

@@ -74,9 +74,12 @@
             <div class="instructions-text" v-if="learnerPath=='Graph'">
               <span class="description">
                 <line-chart
+                  line
+                  scatter
                   :data="eclipseGraph"
                   :height="100"
-                  :borderColor="accentColor"
+                  borderColor="#fff"
+                  :color="accentColor"
                   :yrange="[0, 1.]"
                   :xtickformatter="(x: number) => {
                     const date = new Date(x + selectedTimezoneOffset);
