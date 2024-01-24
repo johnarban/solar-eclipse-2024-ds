@@ -620,7 +620,10 @@
           />
       </div>
       
-      <div id="mobile-zoom-control">
+      <div
+        id="mobile-zoom-control"
+        v-if="mobile"
+      >
         <!-- {{ Math.round(Math.pow(10, userZoom)*100)/100 }} -->
           <div class="slider-padding">
             <v-icon>mdi-magnify-plus</v-icon>
@@ -1616,7 +1619,7 @@ export default defineComponent({
         radius: 5
       },
 
-      learnerPath: (queryData ? "Location" : "Clouds") as LearnerPath,
+      learnerPath: (queryData ? "Clouds" : "Location") as LearnerPath,
       
       playing: false,
       playingIntervalId: null as ReturnType<typeof setInterval> | null,
@@ -1724,8 +1727,6 @@ export default defineComponent({
     this.waitForReady().then(async () => {
 
       this.backgroundImagesets = [...skyBackgroundImagesets];
-
-
 
       // console.log(this);
       this.setTime(this.dateTime);
@@ -1842,7 +1843,6 @@ export default defineComponent({
       } else {
         return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd/yyyy HH:mm:ss (zzz)');
       }
-
 
     },
     
