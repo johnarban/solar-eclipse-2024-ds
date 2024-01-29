@@ -24,7 +24,7 @@ export default defineComponent({
     cloudCoverFracToLabel() {
       console.log(this.cloudCover);
       if (this.cloudCover !== null) {
-        return `Historical Cloud Cover: ${(this.cloudCover * 100).toFixed(0)}%`;
+        return `${(this.cloudCover * 100).toFixed(0)}%`;
       }
       return 'No data';
     },
@@ -57,25 +57,25 @@ export default defineComponent({
 
 
 <template>
-  <!-- <v-chip 
-    :prepend-icon="cloudIcon"
-    variant="outlined"
-    size="small"
-    elevation="2"
-    :text="cloudCoverFracToLabel"
-  > </v-chip> -->
   <div class="cloud-cover-container my-2 p">
     <div> 
-      </div>
-    <v-icon
-      size="35"
-    >{{ cloudIcon }}</v-icon>
-    <span class="cloud-cover-label pl-2">{{ cloudCoverFracToLabel }}</span>
+      <v-icon size="35">{{ cloudIcon }}</v-icon>
+    </div>
+    
+    <div class="cloud-cover-label">
+      <div class="cloud-cover-label-text"> Historical median cloud cover: </div>
+      <div class="cloud-cover-label-value">{{ cloudCoverFracToLabel }}</div>
+    </div>
+  
   </div>
+    
+
 </template>
 
 
 <style>
+
+
 
 .cloud-cover-container {
   display: flex;
@@ -87,9 +87,22 @@ export default defineComponent({
 }
 
 .cloud-cover-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-left: 10px;
+}
+
+.cloud-cover-label-text {
+  font-size: calc(1.1 * var(--default-font-size));
+  font-weight: normal;
+}
+
+.cloud-cover-label-value {
   font-size: calc(1.5 * var(--default-font-size));
   /* no text wrapping */
   white-space: nowrap;
+  font-weight: bold;
 }
 
 </style>
