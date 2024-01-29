@@ -87,10 +87,17 @@
             <!-- Clouds Path -->
             <div class="instructions-text" v-if="learnerPath=='Clouds'">
               <span class="description">
-                <p>Explainer text for cloud coverage map data goes here</p>
-                <p>Explainer text for cloud coverage map data goes here</p>
-                <p>Explainer text for cloud coverage map data goes here</p>
-                <p>Explainer text for cloud coverage map data goes here</p>
+                <div class=".d-flex">
+                  <div>
+                The map shows an overlay of the expected cloud coverage on April 8 based on historical cloud cover data for April 8 from 2001 - 2023 from the <a href="https://modis.gsfc.nasa.gov/">NASA MODIS</a> Aqua satellite.
+                It shows the median cloud coverage for each position. In other words, 50% of days had more, and 50% of days had less clouds. 
+                  </div>
+                  <div>
+                    <cloud-cover
+                      :cloud-cover="selectedLocationCloudCover"
+                    />
+                  </div>
+                </div>
               </span>
             </div>
           </div>
@@ -861,7 +868,7 @@
           variant="outlined"
           size="small"
           elevation="2"
-          :text="selectedLocationCloudCover"
+          :text="selectedLocationCloudCoverString"
         > </v-chip>
         <v-chip 
         :prepend-icon="smallSize ? `` : `mdi-clock`"
@@ -1846,14 +1853,19 @@ export default defineComponent({
 
     },
     
-    selectedLocationCloudCover():string {
+    selectedLocationCloudCover(): number | null {
       if (this.locationDeg) {
         const lat = this.locationDeg.latitudeDeg;
         const lon = this.locationDeg.longitudeDeg;
-        const cc = this.getCloudCover(lat, lon);
-        if (cc) {
-          return `Cloud Cover: ${(cc * 100).toFixed(0)}%`;
-        }
+        return this.getCloudCover(lat, lon);
+      } else {
+        return null;
+      }
+    },
+    
+    selectedLocationCloudCoverString():string {
+      if (this.selectedLocationCloudCover) {
+        return `Cloud Cover: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
       }
       return "Outside Range";
 
