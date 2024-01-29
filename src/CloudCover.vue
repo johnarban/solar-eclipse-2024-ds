@@ -23,7 +23,7 @@ export default defineComponent({
   computed: {
     cloudCoverFracToLabel() {
       console.log(this.cloudCover);
-      if (this.cloudCover) {
+      if (this.cloudCover !== null) {
         return `Cloud Cover: ${(this.cloudCover * 100).toFixed(0)}%`;
       }
       return 'Lat/Lon out of bounds';
