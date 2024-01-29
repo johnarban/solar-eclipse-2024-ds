@@ -2339,7 +2339,7 @@ export default defineComponent({
           filename = "moon-dark-gray-overlay.png";
         } else {
           const skyOpacity = Math.max(Math.min(this.skyOpacity, 1), 0);
-          const opacityToUse = Math.round(skyOpacity * 20) * 5;  // On an opacity scale of 0-100, our assets have resolution 5
+          const opacityToUse = Math.round(skyOpacity * 2) * 50;
           filename = `moon-sky-blue-overlay-${opacityToUse}.png`;
         }
       }
