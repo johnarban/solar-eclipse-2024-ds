@@ -107,10 +107,10 @@
                     />
                   </v-col>
                   <v-col style="font-size: 7px">
-                    {{ new Date(maxEclipseTime) }} <br />
-                    {{ maxEclipseFraction }}<br />
-                    {{ new Date(startEclipseTime) }}<br />
-                    {{ new Date(endEclipseTime) }} [[Incorrect]]<br />
+                    Max eclipse: {{ new Date(maxEclipseTime) }} <br />
+                    Max %: {{ maxEclipseFraction }}<br />
+                    Ecl start: {{ new Date(startEclipseTime) }}<br />
+                    Ecl end: {{ new Date(endEclipseTime) }} [[Incorrect]]<br />
                     <v-btn
                       @click="selectedTime=maxEclipseTime"
                     >Go to max</v-btn>
