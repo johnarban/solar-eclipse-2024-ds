@@ -1,7 +1,7 @@
 import Vue, { createApp } from "vue";
 
 import { IconButton } from "@cosmicds/vue-toolkit";
-import { LocationSelector } from "@cosmicds/vue-toolkit";
+// import { LocationSelector } from "@cosmicds/vue-toolkit";
 import { FundingAcknowledgment } from "@cosmicds/vue-toolkit";
 import SolarEclipse2023 from "./SolarEclipse2024.vue";
 import TransitionExpand from "./TransitionExpand.vue";
@@ -10,6 +10,8 @@ import CreditLogos from "./CreditLogos.vue";
 import ImageLabel from "./ImageLabel.vue";
 import GeolocationButton from "./GeolocationButton.vue";
 import HoverTooltip from "./HoverTooltip.vue";
+import LocationSelector from "./LocationSelector.vue";
+
 
 import "./polyfills";
 
