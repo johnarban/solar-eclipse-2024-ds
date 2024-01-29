@@ -11,6 +11,7 @@ import ImageLabel from "./ImageLabel.vue";
 import GeolocationButton from "./GeolocationButton.vue";
 import HoverTooltip from "./HoverTooltip.vue";
 import CloudCover from "./CloudCover.vue";
+import DefineTerm from "./DefineTerm.vue";
 
 import "./polyfills";
 
@@ -133,6 +134,7 @@ createApp(SolarEclipse2023, {
   .component('geolocation-button', GeolocationButton)
   .component('hover-tooltip', HoverTooltip)
   .component('cloud-cover', CloudCover)
+  .component('define-term', DefineTerm)
 
   // Mount
   .mount("#app");
