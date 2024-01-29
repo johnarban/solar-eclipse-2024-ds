@@ -24,21 +24,28 @@ export default defineComponent({
     cloudCoverFracToLabel() {
       console.log(this.cloudCover);
       if (this.cloudCover !== null) {
-        return `Cloud Cover: ${(this.cloudCover * 100).toFixed(0)}%`;
+        return `Historical Cloud Cover: ${(this.cloudCover * 100).toFixed(0)}%`;
       }
-      return 'Lat/Lon out of bounds';
+      return 'No data';
     },
     
     cloudIcon() {
-      if (this.cloudCover < 0.3) {
+    
+      if (this.cloudCover == null) {
+        return 'mdi-cloud-cancel';
+      } 
+      else if (this.cloudCover < .25) {
         return 'mdi-weather-sunny';
-      } else if (this.cloudCover < .3) {
-        return 'mdi-weather-partly-cloudy';
-      } else if (this.cloudCover < .6) {
-        return 'mdi-weather-cloudy';
-      } else {
-        return 'mdi-weather-cloudy-alert';
       }
+      else if (this.cloudCover < .5) {
+        return 'mdi-weather-partly-cloudy';
+      } 
+      else if (this.cloudCover < 0.9) {
+        return 'mdi-weather-cloudy';
+      } 
+      else {
+        return 'mdi-clouds';
+      } 
     }
   },
 
@@ -57,13 +64,13 @@ export default defineComponent({
     elevation="2"
     :text="cloudCoverFracToLabel"
   > </v-chip> -->
-  <div class="cloud-cover-container">
+  <div class="cloud-cover-container my-2 p">
     <div> 
       </div>
     <v-icon
-      size="48"
+      size="35"
     >{{ cloudIcon }}</v-icon>
-    <span class="cloud-cover-label">{{ cloudCoverFracToLabel }}</span>
+    <span class="cloud-cover-label pl-2">{{ cloudCoverFracToLabel }}</span>
   </div>
 </template>
 
@@ -76,11 +83,11 @@ export default defineComponent({
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  outline: 1px solid yellow;
+  outline: 1px solid var(--accent-color);
 }
 
 .cloud-cover-label {
-  font-size: 24px;
+  font-size: calc(1.5 * var(--default-font-size));
   /* no text wrapping */
   white-space: nowrap;
 }
