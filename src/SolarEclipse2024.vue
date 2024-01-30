@@ -1259,7 +1259,7 @@ import { getTimezoneOffset, formatInTimeZone } from "date-fns-tz";
 import tzlookup from "tz-lookup";
 import { v4 } from "uuid";
 
-import { drawPlanets, drawSkyOverlays, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
+import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 
 import { GeoJSON } from "leaflet";
 
@@ -1833,6 +1833,7 @@ export default defineComponent({
         drawPlanets(renderContext, opacity, this.currentFractionEclipsed);
       };
 
+
       /* eslint-disable @typescript-eslint/no-var-requires */
       Planets['_planetTextures'][0] = Texture.fromUrl(require("./assets/2023-09-19-SDO-Sun.png"));
       this.setForegroundImageByName("Digitized Sky Survey (Color)");
@@ -2398,8 +2399,8 @@ export default defineComponent({
       const canvasHeight: number = this.wwtControl.canvas.height;
       const sunPosition = Planets['_planetLocations'][0];
       const moonPosition = Planets['_planetLocations'][9];
-      const sunPoint = this.findScreenPointForRADec({ ra: sunPosition.RA * 15, dec: sunPosition.dec });
-      const moonPoint = this.findScreenPointForRADec({ ra: moonPosition.RA * 15, dec: moonPosition.dec });
+      const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunPosition.RA, sunPosition.dec);
+      const moonPoint = getScreenPosForCoordinates(this.wwtControl, moonPosition.RA, moonPosition.dec);
       moonPoint.y = canvasHeight - moonPoint.y;
       sunPoint.x -= moonPoint.x;
       sunPoint.y = canvasHeight - sunPoint.y - moonPoint.y;
@@ -2408,7 +2409,7 @@ export default defineComponent({
       const distanceToMoon = CAAMoon.radiusVector(jd);
       const distanceToSun = 149_597_871;
 
-      const rMoon = 1740;  // radius of the moon in km
+      const rMoon = 1737.4;  // radius of the moon in km
       const rSun = 696_340;
       const thetaMoon = Math.atan2(rMoon, distanceToMoon);
       const thetaSun = Math.atan2(rSun, distanceToSun);
@@ -2418,8 +2419,7 @@ export default defineComponent({
       const rSunPx = 6 * thetaSun * canvasHeight / (this.wwtZoomDeg * D2R);
 
       const points: { x: number; y: number }[] = [];
-      const sunMoonAngle = this.greatCircleDistance(sunPosition, moonPosition);
-      const sunMoonDistance = 6 * sunMoonAngle * canvasHeight / (this.wwtZoomDeg * D2R);
+      const sunMoonDistance = Math.sqrt(sunPoint.x * sunPoint.x + sunPoint.y * sunPoint.y);
 
       // If there's no sun/moon intersection, no need to continue
       if (sunMoonDistance > rMoonPx + rSunPx) {
@@ -2494,8 +2494,9 @@ export default defineComponent({
           // m is the slope of the line joining the moon and the sun
           // mPerp is the slope of a line perpendicular to the line joining the moon and the sun
           // yInt is the y-intercept of a line passing through the two points of intersection
-          const mPerp = -sunPoint.x / (sunPoint.y + 1e-5);
-          const yInt = (sunPoint.x * sunPoint.x + sunPoint.y * sunPoint.y - (rSunPx * rSunPx - rMoonPx * rMoonPx)) / (2 * (sunPoint.y + 1e-5));
+          const epsilon = 1e-5;
+          const mPerp = -sunPoint.x / (sunPoint.y + epsilon);
+          const yInt = (sunPoint.x * sunPoint.x + sunPoint.y * sunPoint.y - (rSunPx * rSunPx - rMoonPx * rMoonPx)) / (2 * (sunPoint.y + epsilon));
 
           // Find the x-coordinates of the edge points of the moon-sun intersection
           const a = (1 + mPerp * mPerp);
