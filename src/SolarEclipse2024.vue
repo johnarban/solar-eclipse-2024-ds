@@ -1419,10 +1419,10 @@ export default defineComponent({
     moonPlace.set_target(SolarSystemObjects.moon);
     const initialView = {
       initialLocation: {
-        latitudeDeg: 38,
-        longitudeDeg: -97
+        latitudeDeg: 35,
+        longitudeDeg: -110
       },
-      initialZoom: 3
+      initialZoom: 3.3
     };
 
     const selections = window.localStorage.getItem(USER_SELECTED_LOCATIONS_KEY);
@@ -1492,7 +1492,9 @@ export default defineComponent({
       },
 
       userSelectedMapOptions: {
-        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+        // templateUrl: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png",
+        templateUrl: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}",
+        attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
         ...(queryData ? { ...queryData, initialZoom: 5 } : initialView)
       },
       
