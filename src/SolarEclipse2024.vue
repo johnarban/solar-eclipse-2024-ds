@@ -89,8 +89,8 @@
               <span class="description">
                 <div class=".d-flex">
                   <div>
-                Clicking on the map gives the expected cloud coverage on April 8 based on historical cloud cover data for April 8 from 2001 - 2023 from the <a href="https://modis.gsfc.nasa.gov/">NASA MODIS</a> Aqua satellite.
-                It shows the <define-term term="median" definition="half of the days have more clouds than the median, and 50% of clouds have less clouds than the median"/> cloud coverage for each position (within 100 km)
+                    This map shows historical cloud cover data on April 8 for the years 2001&#8211;2023 from the <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA MODIS</a> Aqua satellite.
+                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2001&#8211;2003 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
                   </div>
                   <div>
                     <cloud-cover

@@ -15,9 +15,7 @@ import { tooltip } from 'leaflet';
       </div>
     </template>
     
-    
-    <div class="define-term-tooltip defintion">
-        {{ definition }}
+    <div class="define-term-tooltip definition" v-html="definition">
     </div>
 
     </v-tooltip>
@@ -48,22 +46,26 @@ export default defineComponent({
     }
   }
 });
+
+
 </script>
 
 <style>
 
-.define-term-tooltip {
-  
+.v-tooltip > .v-overlay__content {
+  background: #F5F5F5 !important;
 }
 
 .define-term-tooltip.inline {
   display: inline;
   pointer-events: auto;
-  text-decoration: underline;
+  font-weight: bold;
 }
 
-.define-term-tooltip.defintion {
-  font-size: 0.8em;
+.define-term-tooltip.definition {
+  font-size: var(--default-font-size);
+  color: black;
+  padding-block: 0.5em;
 }
 
 
