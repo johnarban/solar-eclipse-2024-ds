@@ -7,9 +7,9 @@ import { Annotation2 } from "./Annotation2";
 
 import {
   Annotation, Color, Colors, Constellations, Coordinates, Grids,
-  LayerManager, Planets, PushPin, RenderContext, RenderTriangle, Settings, SpaceTimeController,
+  LayerManager, Matrix3d, Planets, PushPin, RenderContext, RenderTriangle, Settings, SpaceTimeController,
   SpreadSheetLayer, Text3d, Text3dBatch, Tile, TileCache, TourPlayer, URLHelpers,
-  Vector3d, WWTControl
+  Vector2d, Vector3d, WWTControl
 } from "@wwtelescope/engine";
 
 export function drawSkyOverlays() {
@@ -481,4 +481,22 @@ export function drawPlanets(renderContext: RenderContext, opacity: number, fract
       Planets._drawPlanet(renderContext, planetId, 1);
     }
     return true;
+}
+
+function transformWorldPointToPickSpace(wwtControl, worldPoint, backBufferWidth, backBufferHeight) {
+  var m = Matrix3d.multiplyMatrix(wwtControl.renderContext.get_world(), wwtControl.renderContext.get_view());
+  var p = new Vector2d();
+  var vz = worldPoint.x * m.get_m13() + worldPoint.y * m.get_m23() + worldPoint.z * m.get_m33();
+  var vx = (worldPoint.x * m.get_m11() + worldPoint.y * m.get_m21() + worldPoint.z * m.get_m31()) / vz;
+  var vy = -(worldPoint.x * m.get_m12() + worldPoint.y * m.get_m22() + worldPoint.z * m.get_m32()) / vz;
+  p.x = (1 + wwtControl.renderContext.get_projection().get_m11() * vx) * (backBufferWidth / 2);
+  p.y = (1 + wwtControl.renderContext.get_projection().get_m22() * vy) * (backBufferHeight / 2);
+  return p;
+}
+
+export function getScreenPosForCoordinates(wwtControl, ra, dec) {
+  var pt = Vector2d.create(ra, dec);
+  var cartesian = Coordinates.sphericalSkyToCartesian(pt);
+  var result = transformWorldPointToPickSpace(wwtControl, cartesian, wwtControl.renderContext.width, wwtControl.renderContext.height);
+  return result;
 }
