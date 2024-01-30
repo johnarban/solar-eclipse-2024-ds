@@ -151,7 +151,7 @@ export default defineComponent({
   methods: {
 
     loadCloudCover() {
-      fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/blob/main/src/assets/one_deg_mean_cc.csv')
+      fetch('https://raw.githubusercontent.com/Jack-Hayes/static_cloud_cover/master/public/cloud_cover_df.csv')
         .then(response => response.text())
         .then(csvData => {
           this.parseData(csvData);
@@ -168,6 +168,7 @@ export default defineComponent({
         complete: (result) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           result.data.forEach((row: any) => {
+            console.log(row);
             const lat = parseFloat(row.lat);
             const lon = parseFloat(row.lon);
             const cloudCover = parseFloat(row.cloud_cover);
