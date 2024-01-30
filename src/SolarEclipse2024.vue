@@ -1243,12 +1243,12 @@ import { getTimezoneOffset, formatInTimeZone } from "date-fns-tz";
 import tzlookup from "tz-lookup";
 import { v4 } from "uuid";
 
-import { drawSkyOverlays, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
+import { drawPlanets, drawSkyOverlays, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn" | "Graph";
 type ViewerMode = "Horizon" | "SunScope";
-type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | "moon-sky-blue-overlay.png";
+type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | `moon-sky-blue-overlay-${number}.png` | "empty.png";
 
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
@@ -1646,7 +1646,7 @@ export default defineComponent({
         }
       } as Record<string, EclipseLocation>,
 
-      currentPercentEclipsed: 0,
+      currentFractionEclipsed: 0,
       maxEclipseTime: 0,
       startEclipseTime: 0,
       endEclipseTime: 0,
@@ -1815,6 +1815,12 @@ export default defineComponent({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.wwtControl.renderFrameCallback = this.onWWTRenderFrame;
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      Planets.drawPlanets = (renderContext: RenderContext, opacity: number) => {
+        drawPlanets(renderContext, opacity, this.currentFractionEclipsed);
+      };
 
       /* eslint-disable @typescript-eslint/no-var-requires */
       Planets['_planetTextures'][0] = Texture.fromUrl(require("./assets/2023-09-19-SDO-Sun.png"));
@@ -2065,7 +2071,10 @@ export default defineComponent({
     },
 
     percentEclipsedText(): string {
-      const percentEclipsed = Math.abs(this.currentPercentEclipsed * 100).toFixed(2);
+      let percentEclipsed = Math.abs(this.currentFractionEclipsed * 100).toFixed(0);
+      if (this.currentFractionEclipsed < 1 && percentEclipsed === "100") {
+        percentEclipsed = "99";
+      }
       return `Eclipsed: ${percentEclipsed}%`;
     },
 
@@ -2354,7 +2363,7 @@ export default defineComponent({
 
       // If there's no sun/moon intersection, no need to continue
       if (sunMoonDistance > rMoonPx + rSunPx) {
-        this.currentPercentEclipsed = 0;
+        this.currentFractionEclipsed = 0;
         return;
       }
 
@@ -2367,8 +2376,9 @@ export default defineComponent({
 
       const moonArea = Math.PI * rMoonSq;
       const sunArea = Math.PI * rSunSq;
+      let fractionEclipsed = 0;
       if (moonInsideSun || sunInsideMoon) {
-        this.currentPercentEclipsed = moonArea / sunArea;
+        fractionEclipsed = moonArea / sunArea;
       } else {
         // See https://mathworld.wolfram.com/Circle-CircleIntersection.html
         const intersectionArea =
@@ -2377,9 +2387,9 @@ export default defineComponent({
           0.5 * Math.sqrt(
             (rSunPx + rMoonPx - sunMoonDistance) * (sunMoonDistance + rMoonPx - rSunPx) * (sunMoonDistance - rMoonPx + rSunPx) * (sunMoonDistance + rSunPx + rMoonPx)
           );
-        const percentEclipsed = intersectionArea / sunArea;
-        this.currentPercentEclipsed = isNaN(percentEclipsed) ? 1 : percentEclipsed;
+        fractionEclipsed = intersectionArea / sunArea;
       }
+      this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
 
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
       if (this.useRegularMoon || this.viewerMode === "SunScope") {
@@ -2403,14 +2413,16 @@ export default defineComponent({
 
         if (sunPoint.x === 0) {
 
-          const ysh = 0.5 * sunPoint.y;
+          let ysh = 0.5 * sunPoint.y;
           if (ysh >= rMoonPx) {
             return;
+          } else if (ysh === 0) {
+            ysh = Math.min(rMoonPx, rSunPx);
           }
           x1 = Math.sqrt(rMoonPx * rMoonPx - ysh * ysh);
           if (isNaN(x1)) {
             console.error("x1 is NaN");
-            this.currentPercentEclipsed = 0;
+            this.currentFractionEclipsed = 0;
             return;
           }
           y1 = ysh;
@@ -2433,7 +2445,7 @@ export default defineComponent({
           const sqrDisc = Math.sqrt(b * b - 4 * a * c);
           if (isNaN(sqrDisc)) {
             console.error("sqrDisc is NaN");
-            this.currentPercentEclipsed = 0;
+            this.currentFractionEclipsed = 0;
             return;
           }
           x1 = (-b + sqrDisc) / (2 * a);
@@ -2465,7 +2477,6 @@ export default defineComponent({
           points.push({ x: rMoonPx * Math.cos(angle), y: rMoonPx * Math.sin(angle) });
         }
 
-
         // We now need to somewhat repeat this analysis in the Sun frame
 
         let thetaS1 = Math.atan2((y1 - sunPoint.y) / rSunPx, (x1 - sunPoint.x) / rSunPx);
@@ -2487,6 +2498,7 @@ export default defineComponent({
           const angle = thetaS1 + (i / n) * rangeSizeS;
           points.push({ x: rSunPx * Math.cos(angle) + sunPoint.x, y: rSunPx * Math.sin(angle) + sunPoint.y });
         }
+
       }
 
       // We made a translation into the moon's frame, so undo that
@@ -2494,6 +2506,8 @@ export default defineComponent({
         points[i].x += moonPoint.x;
         points[i].y += moonPoint.y;
       }
+
+      this.updateMoonTexture();
 
       const centroidX = points.reduce((s, p) => s + p.x, 0) / points.length;
       const centroidY = points.reduce((s, p) => s + p.y, 0) / points.length;
@@ -2530,7 +2544,13 @@ export default defineComponent({
         const blueMoon = (this.showHorizon && this.showSky) &&
                           this.moonPosition.altRad > 0 &&
                           this.viewerMode !== 'SunScope';
-        filename = blueMoon ? 'moon-sky-blue-overlay.png' : 'moon-dark-gray-overlay.png';
+        if (!blueMoon) {
+          filename = "moon-dark-gray-overlay.png";
+        } else {
+          const skyOpacity = Math.max(Math.min(this.skyOpacity, 1), 0);
+          const opacityToUse = Math.round(skyOpacity * 2) * 50;
+          filename = `moon-sky-blue-overlay-${opacityToUse}.png`;
+        }
       }
       if (force || (filename !== this.moonTexture && Planets._planetTextures)) {
         Planets._planetTextures[9] = this.textureFromAssetImage(filename);
@@ -3045,7 +3065,7 @@ export default defineComponent({
       
       const sunAlt = altRad;
       this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentPercentEclipsed -1),2)/(0.09)));
+      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.09)));
       this.updateMoonTexture();
 
       const dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
@@ -3178,6 +3198,10 @@ export default defineComponent({
       }
     },
 
+    wwtZoomDeg(_zoom: number) {
+      this.updateIntersection();
+    },
+
     useRegularMoon(_show: boolean) {
       this.updateMoonTexture();
       this.updateFrontAnnotations(this.dateTime);
@@ -3289,7 +3313,7 @@ export default defineComponent({
       return;
     },
     
-    currentPercentEclipsed(_frac: number) {
+    currentFractionEclipsed(_frac: number) {
       // this.skyOpacity = 1 - frac;
       this.updateFrontAnnotations();
     },

@@ -46,6 +46,8 @@ declare module "@wwtelescope/engine" {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static _planetLocations: { RA: number; dec: number }[];
     static _planetDiameters: number[];
+
+    static drawPlanets(renderContext: RenderContext, opacity: number): void;
   }
 
   export class CAAMoon {
