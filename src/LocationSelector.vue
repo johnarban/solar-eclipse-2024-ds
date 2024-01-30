@@ -194,17 +194,20 @@ export default defineComponent({
         [lat + 0.5, lon - 0.5],
         [lat - 0.5, lon + 0.5],
       ], {
-        color: 'none', // No border
+        stroke: true,
+        color: color,
+        weight: .01,
+        opacity: cloudCover,
         fillColor: color,
-        fillOpacity: 0.55,
+        fillOpacity: cloudCover * cloudCover / .81,
       });
     },
 
-    getColor(cloudCover: number) {
+    getColor(_cloudCover:number) {
       // Calculate HSL color based on a gradient
-      const hue = 30 + (cloudCover * 120); // 30° to 150°
-      const saturation = '100%';
-      const lightness = 50 + (cloudCover * 50) + '%'; // 50% to 100%
+      const hue = 0;
+      const saturation = '0%';
+      const lightness = '100%'; // 50% to 100%
 
       return `hsl(${hue}, ${saturation}, ${lightness})`;
     },    
