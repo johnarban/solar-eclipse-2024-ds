@@ -57,13 +57,13 @@ export default defineComponent({
 
 
 <template>
-  <div class="cloud-cover-container my-2 p">
+  <div class="cloud-cover-container my-2 py-1">
     <div> 
       <v-icon size="35">{{ cloudIcon }}</v-icon>
     </div>
     
     <div class="cloud-cover-label">
-      <div class="cloud-cover-label-text"> Historical median cloud cover: </div>
+      <div class="cloud-cover-label-text"> Median historical<br>cloud cover: </div>
       <div class="cloud-cover-label-value">{{ cloudCoverFracToLabel }}</div>
     </div>
   
@@ -88,7 +88,6 @@ export default defineComponent({
 
 .cloud-cover-label {
   display: flex;
-  flex-direction: column;
   align-items: center;
   padding-left: 10px;
 }
@@ -96,13 +95,17 @@ export default defineComponent({
 .cloud-cover-label-text {
   font-size: calc(1.1 * var(--default-font-size));
   font-weight: normal;
+  width: 70%;
+  text-align: center;
 }
 
 .cloud-cover-label-value {
   font-size: calc(1.5 * var(--default-font-size));
+  margin-left: 1rem;
   /* no text wrapping */
   white-space: nowrap;
   font-weight: bold;
+  width: 30%;
 }
 
 </style>
