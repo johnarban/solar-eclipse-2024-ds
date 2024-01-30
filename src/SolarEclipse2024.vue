@@ -2283,7 +2283,7 @@ export default defineComponent({
       this.maxEclipseTime = maxDate;
       this.maxEclipseFraction = maxFrac;
       this.startEclipseTime = this.eclipseGraph.filter(x => x.x < maxDate).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
-      this.endEclipseTime = this.eclipseGraph.filter(x => x.x > maxDate).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
+      this.endEclipseTime = this.eclipseGraph.filter(x => x.x > maxDate).filter(x => x.y > 0).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
       console.log('getEclipseGraph', performance.now() - perfStart);
       
       
