@@ -1195,7 +1195,7 @@ import { getTimezoneOffset, formatInTimeZone } from "date-fns-tz";
 import tzlookup from "tz-lookup";
 import { v4 } from "uuid";
 
-import { drawPlanets, drawSkyOverlays, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
+import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn";
@@ -1769,6 +1769,7 @@ export default defineComponent({
         drawPlanets(renderContext, opacity, this.currentFractionEclipsed);
       };
 
+
       /* eslint-disable @typescript-eslint/no-var-requires */
       Planets['_planetTextures'][0] = Texture.fromUrl(require("./assets/2023-09-19-SDO-Sun.png"));
       this.setForegroundImageByName("Digitized Sky Survey (Color)");
@@ -2128,8 +2129,8 @@ export default defineComponent({
 
       const sunPosition = Planets['_planetLocations'][0];
       const moonPosition = Planets['_planetLocations'][9];
-      const sunPoint = this.findScreenPointForRADec({ ra: sunPosition.RA * 15, dec: sunPosition.dec });
-      const moonPoint = this.findScreenPointForRADec({ ra: moonPosition.RA * 15, dec: moonPosition.dec });
+      const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunPosition.RA, sunPosition.dec);
+      const moonPoint = getScreenPosForCoordinates(this.wwtControl, moonPosition.RA, moonPosition.dec);
       moonPoint.y = canvasHeight - moonPoint.y;
       sunPoint.x -= moonPoint.x;
       sunPoint.y = canvasHeight - sunPoint.y - moonPoint.y;
@@ -2991,11 +2992,7 @@ export default defineComponent({
     },
 
     wwtZoomDeg(_zoom: number) {
-      try {
-        this.removeAnnotations();
-      } finally {
-        this.updateIntersection();
-      }
+      this.updateIntersection();
     },
 
     useRegularMoon(_show: boolean) {
