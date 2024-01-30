@@ -148,7 +148,7 @@ export default defineComponent({
       selectedCircle: null as L.CircleMarker | null,
       selectedPlace: null as Place | null,
       selectedPlaceCircle: null as L.CircleMarker | null,
-      cloudCoverRectangles: [] as L.Rectangle[],
+      cloudCoverRectangles: L.layerGroup(),
       map: null as Map | null,
     };
   },
@@ -177,8 +177,12 @@ export default defineComponent({
             const lon = parseFloat(row.lon);
             const cloudCover = parseFloat(row.cloud_cover);
 
-            this.cloudCoverRectangles.push(this.createRectangle(lat, lon, cloudCover));
+            const rect = this.createRectangle(lat, lon, cloudCover);
+            if (rect) {
+              this.cloudCoverRectangles.addLayer(rect);
+            }
           });
+          this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
         },
       });
     },
@@ -382,9 +386,9 @@ export default defineComponent({
 
     updateCloudCover(value: boolean) {
       if (value) {
-        this.cloudCoverRectangles.forEach(rect => rect.addTo(this.map as Map));
+        this.cloudCoverRectangles.addTo(this.map as Map);
       } else {
-        this.cloudCoverRectangles.forEach(rect => rect.remove());
+        this.cloudCoverRectangles.remove();
       }
     }
 
