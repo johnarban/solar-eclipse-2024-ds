@@ -87,10 +87,17 @@
             <!-- Clouds Path -->
             <div class="instructions-text" v-if="learnerPath=='Clouds'">
               <span class="description">
-                <p>Explainer text for cloud coverage map data goes here</p>
-                <p>Explainer text for cloud coverage map data goes here</p>
-                <p>Explainer text for cloud coverage map data goes here</p>
-                <p>Explainer text for cloud coverage map data goes here</p>
+                <div class=".d-flex">
+                  <div>
+                    This map shows historical cloud cover data on April 8 for the years 2001&#8211;2023 from the <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA MODIS</a> Aqua satellite.
+                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2001&#8211;2003 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
+                  </div>
+                  <div>
+                    <cloud-cover
+                      :cloud-cover="selectedLocationCloudCover"
+                    />
+                  </div>
+                </div>
               </span>
             </div>
           </div>
@@ -617,31 +624,31 @@
             getMyLocation = false;
             console.log(error);
             }"
-          />
+        />
       </div>
       
-      <div id="mobile-zoom-control">
+      <!-- <div id="mobile-zoom-control"> -->
         <!-- {{ Math.round(Math.pow(10, userZoom)*100)/100 }} -->
-          <div class="slider-padding">
-            <v-icon>mdi-magnify-plus</v-icon>
-          </div>
-          <vue-slider 
-            v-model="userZoom"
-            direction="ttb"
-            :min="1"
-            :max="Math.round(Math.log10(360)*100)/100"
-            :interval=".01"
-            :color="accentColor"
-            :tooltip="'none'"
-            :duration="0"
-            :height="wwtContentHeight ? `${0.5 * wwtContentHeight}px` : '200px'"
-            :process-style="{ backgroundColor: 'rgb(255 193 203)' }"
-            :dot-style="{ backgroundColor: accentColor, borderColor: 'black'}"
-            ></vue-slider>
-          <div class="slider-padding">
-            <v-icon>mdi-magnify-minus</v-icon>
-          </div>
-      </div>
+        <!-- <div class="slider-padding">
+          <v-icon>mdi-magnify-plus</v-icon>
+        </div>
+        <vue-slider 
+          v-model="userZoom"
+          direction="ttb"
+          :min="1"
+          :max="Math.round(Math.log10(360)*100)/100"
+          :interval=".01"
+          :color="accentColor"
+          :tooltip="'none'"
+          :duration="0"
+          :height="wwtContentHeight ? `${0.5 * wwtContentHeight}px` : '200px'"
+          :process-style="{ backgroundColor: 'rgb(255 193 203)' }"
+          :dot-style="{ backgroundColor: accentColor, borderColor: 'black'}"
+          ></vue-slider>
+        <div class="slider-padding">
+          <v-icon>mdi-magnify-minus</v-icon>
+        </div>
+      </div> -->
         <!-- <v-dialog
           scrim="false"
           v-model="showMyLocationDialog"
@@ -861,7 +868,7 @@
           variant="outlined"
           size="small"
           elevation="2"
-          :text="selectedLocationCloudCover"
+          :text="selectedLocationCloudCoverString"
         > </v-chip>
         <v-chip 
         :prepend-icon="smallSize ? `` : `mdi-clock`"
@@ -1852,14 +1859,19 @@ export default defineComponent({
 
     },
     
-    selectedLocationCloudCover():string {
+    selectedLocationCloudCover(): number | null {
       if (this.locationDeg) {
         const lat = this.locationDeg.latitudeDeg;
         const lon = this.locationDeg.longitudeDeg;
-        const cc = this.getCloudCover(lat, lon);
-        if (cc) {
-          return `Cloud Cover: ${(cc * 100).toFixed(0)}%`;
-        }
+        return this.getCloudCover(lat, lon);
+      } else {
+        return null;
+      }
+    },
+    
+    selectedLocationCloudCoverString():string {
+      if (this.selectedLocationCloudCover !== null) {
+        return `Cloud Cover: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
       }
       return "Outside Range";
 
@@ -2855,7 +2867,7 @@ export default defineComponent({
       
       const sunAlt = altRad;
       this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.09)));
+      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
       this.updateMoonTexture();
 
       const dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
