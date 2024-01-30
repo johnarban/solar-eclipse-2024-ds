@@ -115,6 +115,7 @@
                     Ecl start: {{ toUTCHMS(new Date(startEclipseTime)) }}<br />
                     Tot start: {{ maxEclipseStart ? toUTCHMS(new Date(maxEclipseStart)) : null }}<br />
                     Max eclipse: {{ toUTCHMS(new Date(maxEclipseTime)) }} <br />
+                    Max (local): {{ toTimeString(new Date(maxEclipseTime)) }} <br />
                     Tot end:   {{ maxEclipseEnd  ? toUTCHMS(new Date(maxEclipseEnd)) : null }} <br />
                     Ecl end: {{ toUTCHMS(new Date(endEclipseTime)) }} <br />
                     <v-btn
