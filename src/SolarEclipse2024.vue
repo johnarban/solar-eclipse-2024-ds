@@ -2138,7 +2138,7 @@ export default defineComponent({
       const distanceToMoon = CAAMoon.radiusVector(jd);
       const distanceToSun = 149_597_871;
 
-      const rMoon = 1740;  // radius of the moon in km
+      const rMoon = 1737.4;  // radius of the moon in km
       const rSun = 696_340;
       const thetaMoon = Math.atan2(rMoon, distanceToMoon);
       const thetaSun = Math.atan2(rSun, distanceToSun);
@@ -2157,8 +2157,9 @@ export default defineComponent({
         return;
       }
 
-      const moonInsideSun = sunMoonDistance < rSunPx - rMoonPx;
-      const sunInsideMoon = sunMoonDistance < rMoonPx - rSunPx;
+      const sunMoonPointDist = Math.sqrt(sunPoint.x * sunPoint.x + sunPoint.y * sunPoint.y);
+      const moonInsideSun = sunMoonPointDist < rSunPx - rMoonPx;
+      const sunInsideMoon = sunMoonPointDist < rMoonPx - rSunPx;
 
       const dSq = sunMoonDistance * sunMoonDistance;
       const rMoonSq = rMoonPx * rMoonPx;
@@ -2224,8 +2225,9 @@ export default defineComponent({
           // m is the slope of the line joining the moon and the sun
           // mPerp is the slope of a line perpendicular to the line joining the moon and the sun
           // yInt is the y-intercept of a line passing through the two points of intersection
-          const mPerp = -sunPoint.x / (sunPoint.y + 1e-5);
-          const yInt = (sunPoint.x * sunPoint.x + sunPoint.y * sunPoint.y - (rSunPx * rSunPx - rMoonPx * rMoonPx)) / (2 * (sunPoint.y + 1e-5));
+          const epsilon = 1e-5;
+          const mPerp = -sunPoint.x / (sunPoint.y + epsilon);
+          const yInt = (sunPoint.x * sunPoint.x + sunPoint.y * sunPoint.y - (rSunPx * rSunPx - rMoonPx * rMoonPx)) / (2 * (sunPoint.y + epsilon));
 
           // Find the x-coordinates of the edge points of the moon-sun intersection
           const a = (1 + mPerp * mPerp);
@@ -2989,7 +2991,11 @@ export default defineComponent({
     },
 
     wwtZoomDeg(_zoom: number) {
-      this.updateIntersection();
+      try {
+        this.removeAnnotations();
+      } finally {
+        this.updateIntersection();
+      }
     },
 
     useRegularMoon(_show: boolean) {
