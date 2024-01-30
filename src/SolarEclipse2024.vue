@@ -91,12 +91,14 @@
                 <v-row>
                   <v-col>
                   <line-chart
-                    line
-                    :data="eclipseGraph"
+                    :line="true"
+                    :scatter="true"
+                    :data="[{'x': new Date(maxEclipseTime), 'y': maxEclipseFraction}]"
+                    :line-data="eclipseGraph"
                     :height="100"
                     borderColor="#fff"
                     :color="accentColor"
-                    :yrange="[0, 1.]"
+                    :yrange="[0, 1.1]"
                     :xrange="[startEclipseTime, endEclipseTime]"
                     :xtickformatter="(x: number) => {
                       const date = new Date(x + selectedTimezoneOffset);
@@ -104,13 +106,17 @@
                       const zm = m < 10 ? `0${m}` : m;
                       return `${date.getUTCHours()}:${zm}`
                     }"
+                    :lineOptions="{ borderWidth: 1}"
                     />
                   </v-col>
-                  <v-col style="font-size: 7px">
-                    Max eclipse: {{ new Date(maxEclipseTime) }} <br />
+                  <v-col style="font-size: 0.75em;line-height:1.25;">
+                    <!-- return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm:ss (zzz)'); -->
                     Max %: {{ maxEclipseFraction }}<br />
-                    Ecl start: {{ new Date(startEclipseTime) }}<br />
-                    Ecl end: {{ new Date(endEclipseTime) }} [[Incorrect]]<br />
+                    Ecl start: {{ toUTCHMS(new Date(startEclipseTime)) }}<br />
+                    Tot start: {{ maxEclipseStart ? toUTCHMS(new Date(maxEclipseStart)) : null }}<br />
+                    Max eclipse: {{ toUTCHMS(new Date(maxEclipseTime)) }} <br />
+                    Tot end:   {{ maxEclipseEnd  ? toUTCHMS(new Date(maxEclipseEnd)) : null }} <br />
+                    Ecl end: {{ toUTCHMS(new Date(endEclipseTime)) }} <br />
                     <v-btn
                       @click="selectedTime=maxEclipseTime"
                     >Go to max</v-btn>
@@ -207,6 +213,8 @@
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
+              :places="places"
+              @place="(place: typeof places[number]) => updateLocation(place.name)"
               @update:modelValue="updateLocationFromMap"
               :initial-place="places.find(p => p.name === 'selectedLocation')"
               :place-circle-options="placeCircleOptions"
@@ -1245,6 +1253,8 @@ import { v4 } from "uuid";
 
 import { drawPlanets, drawSkyOverlays, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 
+import { GeoJSON } from "leaflet";
+
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn" | "Graph";
 type ViewerMode = "Horizon" | "SunScope";
@@ -1402,6 +1412,82 @@ const _eclipsePathGeoJson = {
   })
 };
 
+type TimeString = `${number}:${number}:${number}`;
+
+type _SVSCityData = {
+  lon: number,
+  lat: number,
+  eclipse: "P" | "T",
+  // t: An array of UTC times for the [0.01%, 50%, 100% start, 100% end, 50%, 0.01%] points of coverage (normalized with respect to the maximum coverage achieved)
+  t: [TimeString, TimeString, TimeString, TimeString,TimeString,TimeString],
+  name: string
+};
+  
+import cityData from "./assets/2024_city_times";
+
+function getSVSCityData() {
+  console.log("getSVSCityData");
+
+  return {
+    "name": "NASA SVS City Eclipse Data",
+    "type": "FeatureCollection",
+    "features": cityData.map((d) => {
+      const eclipseType = d.eclipse === "P" ? "Partial" : "Total";
+      
+      let popupContent = "";
+      if ((d.t != null) && (d.t.length === 6)) {
+        const coverage = {
+          "start": d.t[0],
+          "100% start": d.t[2],
+          "100% end": d.t[3],
+          "end": d.t[5]};
+          // stringify coverage split with </br> for line breaks
+        // coverageString = JSON.stringify(coverage).replace(/,/g, "<br/>");
+        popupContent = `${d.name} <br/>Start: ${coverage.start} <br/>100% start: ${coverage["100% start"]} <br/>100% end: ${coverage["100% end"]} <br/>End: ${coverage.end}`;
+      }
+      
+      return {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [d.lon, d.lat]
+        },
+        "properties": {
+          "name": d.name,
+          "eclipseStart": d.t[0],
+          "eclipseEnd": d.t[5],
+          "eclipsePeakStart": d.t[2],
+          "eclipsePeakEnd": d.t[3],
+          "eclipsetype": eclipseType,
+          "popupContent": popupContent,
+        }
+      };
+    })
+  };
+}
+
+const svsCityData = getSVSCityData();
+
+function createEclipseLocations(): Record<string, EclipseLocation> {
+  const out = {} as Record<string, EclipseLocation>;
+  
+  svsCityData.features.forEach((d) => {
+    const name = d.properties.popupContent;
+    const lat = d.geometry.coordinates[1];
+    const lon = d.geometry.coordinates[0];
+    const eclipseFraction = d.properties.eclipsetype === "Total" ? 1 : null;
+    // good thing any string is a valid object key in js lol
+    out[name] = {
+      name,
+      latitudeRad: D2R * lat,
+      longitudeRad: D2R * lon,
+      eclipseFraction
+    };
+  });
+  
+  return out;
+}
+
 
 /** PARSE CLOUD COVERAGE DATA **/
 import cloudCover from "./assets/cloud_cover.csv";
@@ -1539,104 +1625,7 @@ export default defineComponent({
       eclipseCenterLine: eclipsePath,
 
       eclipsePathLocations: {
-        // locations taken from https://science.nasa.gov/eclipses/future-eclipses/eclipse-2024/where-when/
-        "Greatest Eclipse": {
-          name: "Greatest Eclipse",
-          latitudeRad: D2R * 25.2866667,
-          longitudeRad: D2R * -104.1383333,
-          eclipseFraction: 1
-        },
-
-        // "Place": {
-        //   name: "Place",
-        //   latitudeRad: D2R * latitude,
-        //   longitudeRad: D2R * longitude,
-        //   eclipseFraction: 1.0
-        // },
-        
-        "Dallas, Texas":{
-          name: "Dallas, Texas",
-          latitudeRad: D2R * 32.7767,
-          longitudeRad: D2R * -96.7970,
-          eclipseFraction: 1.0
-        },
-        
-        "Idabel, OK": {
-          name: "Idabel, OK",
-          latitudeRad: D2R * 33.8959,
-          longitudeRad: D2R * -94.8261,
-          eclipseFraction: 1.0
-        },
-        
-        "Little Rock, AR": {
-          name: "Little Rock, AR",
-          latitudeRad: D2R * 34.7465,
-          longitudeRad: D2R * -92.2896,
-          eclipseFraction: 0.99 // appears to be total but too far south for WWT to do the eclipse doohickey
-        },
-        
-        "Poplar Bluff, MO": {
-          name: "Poplar Bluff, MO",
-          latitudeRad: D2R * 36.7570,
-          longitudeRad: D2R * -90.3929,
-          eclipseFraction: 1.0
-        },
-        
-        "Paducah, KY": {
-          name: "Paducah, KY",
-          latitudeRad: D2R * 37.0834,
-          longitudeRad: D2R * -88.6000,
-          eclipseFraction: .99 // appears to be total but too far south for WWT to do the eclipse doohickey
-        },
-        
-        "Evansville, IN": {
-          name: "Evansville, IN",
-          latitudeRad: D2R * 37.9716,
-          longitudeRad: D2R * -87.5711,
-          eclipseFraction: 1.0
-        },
-        
-        "Cleveland, OH": {
-          name: "Cleveland, OH",
-          latitudeRad: D2R * 41.4993,
-          longitudeRad: D2R * -81.6944,
-          eclipseFraction: 1.0
-        },
-        
-        "Erie, PA": {
-          name: "Erie, PA",
-          latitudeRad: D2R * 42.1292,
-          longitudeRad: D2R * -80.0851,
-          eclipseFraction: 1.0
-        },
-        
-        "Buffalo, NY": {
-          name: "Buffalo, NY",
-          latitudeRad: D2R * 42.8864,
-          longitudeRad: D2R * -78.8784,
-          eclipseFraction: 1.0
-        },
-        
-        "Burlington, VT": {
-          name: "Burlington, VT",
-          latitudeRad: D2R * 44.4759,
-          longitudeRad: D2R * -73.2121,
-          eclipseFraction: 1.0
-        },
-        
-        "Lancaster, NH": {
-          name: "Lancaster, NH",
-          latitudeRad: D2R * 44.4872,
-          longitudeRad: D2R * -71.5692,
-          eclipseFraction: 0.99
-        }, // appears to be total but too far south for WWT to do the eclipse doohickey
-        
-        "Cariibou, ME": {
-          name: "Cariibou, ME",
-          latitudeRad: D2R * 46.8600,
-          longitudeRad: D2R * -68.0111,
-          eclipseFraction: 1.0
-        },
+        ...createEclipseLocations(),
         
         [USER_SELECTED]: { // by default, user selected is Greatest Eclipse
           name: USER_SELECTED,
@@ -1648,11 +1637,13 @@ export default defineComponent({
 
       currentFractionEclipsed: 0,
       maxEclipseTime: 0,
+      maxEclipseStart: 0 as number,
+      maxEclipseEnd: 0 as number,
       startEclipseTime: 0,
       endEclipseTime: 0,
       maxEclipseFraction: 0,
 
-      places: [] as (LocationRad & { name: string })[],
+      places: [] as (LocationDeg & { name: string })[],
         
       placeCircleOptions: {
         color: "#0000FF",
@@ -1736,13 +1727,25 @@ export default defineComponent({
           url: 'https://raw.githubusercontent.com/johnarban/wwt_interactives/main/images/center.json',
           style: {color: '#ff0000', weight: 2, opacity: 1, fillOpacity: 0}
         },
-        // { // individual places
-        //   'geojson': eclipsePathGeoJson as GeoJSON.FeatureCollection,
-        //   'style': {radius:3,fillColor: '#ccc', color:'#222', weight: 2, opacity: 1, fillOpacity: 1}
+        { // individual places
+          'geojson': _eclipsePathGeoJson as GeoJSON.FeatureCollection,
+          'style': {radius:3,fillColor: '#ccc', color:'#222', weight: 2, opacity: 1, fillOpacity: 1}
+        },
+        // {
+        //   'geojson': svsCityData as GeoJSON.FeatureCollection,
+        //   'style': {radius:3,fillColor: '#00f', weight: 2, opacity: 0, fillOpacity: 0, }
         // }
-      ],
+      ] as { url?: string, geojson?: GeoJSON.FeatureCollection, style: Record<string,string|number|null> }[],
       
-
+      svsPlaces: svsCityData.features.map((d) => {
+        return {
+          latitudeDeg: d.geometry.coordinates[1],
+          longitudeDeg: d.geometry.coordinates[0],
+          city: d.properties.name,
+          name: d.properties.popupContent,
+        };
+      }),
+      
       presetLocationsVisited,
       userSelectedLocationsVisited,
       eclipseGraph: [] as { x: number; y: number }[],
@@ -2227,16 +2230,31 @@ export default defineComponent({
       let x = x0;
       let gradfx = gradient(f, x, h);
       let newX = x - gradfx * learningRate;
-      while (!converged(x, newX, tol) && maxIter > 0) {
+      let iter = 0;
+      while (!converged(x, newX, tol) && iter < maxIter) {
         x = newX;
         gradfx = gradient(f, x, h);
         newX = x - gradfx * learningRate;
-        maxIter--;
+        iter++;
       }
+      console.log('iterations', iter);
       return x;
       
     },
-
+    
+    getIngressEgress(arr: {x: number, y: number}[]) {
+      // identify where the array goes from 0 to increasing and decreasing to 0
+      const increasing = arr.filter((x, i, a) => i > 0 && x.y > a[i-1].y);
+      const decreasing = arr.filter((x, i, a) => i > 0 && x.y < a[i-1].y);
+      const firstIngress = increasing.reduce((prev, current) => (prev.y < current.y) ? prev : current);
+      const firstEgress = decreasing.reduce((prev, current) => (prev.y < current.y) ? prev : current);
+      // expand by one index either side
+      const before = arr[arr.indexOf(firstIngress) - 1];
+      const after = arr[arr.indexOf(firstEgress) + 1];
+      // return with check for undefined
+      return [before ?? firstIngress, after ?? firstEgress];
+      
+    },
     
     
     getEclipseGraph() {
@@ -2244,7 +2262,7 @@ export default defineComponent({
       console.log("getEclipseGraph");
       const start = new Date(times[0]);
       const end = new Date(times[times.length - 1]);
-      const step = 60 * 60 * 1000; // 2 minutes
+      const step = 10 * 60 * 1000; // 2 minutes
       
       this.eclipseGraph = [];
       const eclipseFractions = [];
@@ -2253,37 +2271,66 @@ export default defineComponent({
         eclipseFractions.push({'x':date.getTime(), 'y':this.getEclipseFraction(date)});
       }
       // get the maximum of eclipsegraph
-      const max = eclipseFractions.reduce((prev, current) => (prev.y > current.y) ? prev : current);
-      const learningRate = Math.pow(10,Math.floor(Math.log10(max.x))) / 10;
-      const h = 100; // .1 second steps
-      const tol = 1000; // 1 second tolerance
-      const maxDate = this.gradientDescent((x: number) => -this.getEclipseFraction(new Date(x)), max.x, 100, learningRate, h, tol);
-      const maxFrac = this.getEclipseFraction(new Date(maxDate));
+      // const max = eclipseFractions.reduce((prev, current) => (prev.y > current.y) ? prev : current);
+      // const learningRate = Math.pow(10,Math.floor(Math.log10(max.x)));
+      // const h = 10; // .1 second steps
+      // const tol = 1000; // 1 second tolerance
+      // const maxDate = this.gradientDescent((x: number) => -this.getEclipseFraction(new Date(x)), max.x, 1000, learningRate, h, tol);
+      // const maxFrac = this.getEclipseFraction(new Date(maxDate));
 
       // now get the innermost zeros of the eclipseFractions
       // split eclipseFractions into two arrays at the max
-      const eclipseFractions1 = eclipseFractions.filter((x) => x.x <= maxDate);
-      const eclipseFractions2 = eclipseFractions.filter((x) => x.x >= maxDate);
-      // find the last zero of 1 and first zero of 2
-      const before = eclipseFractions1.reduce((prev, current) => (prev.y < current.y) ? prev : current);
-      const after = eclipseFractions2.reduce((prev, current) => (prev.y < current.y) ? prev : current);
-      function getStep(date: Date) {
+      // const eclipseFractions1 = eclipseFractions.filter((x) => x.x <= maxDate);
+      // const eclipseFractions2 = eclipseFractions.filter((x) => x.x >= maxDate);
+      // // find the last zero of 1 and first zero of 2
+      // const before = eclipseFractions1.reduce((prev, current) => (prev.y < current.y) ? prev : current);
+      // const after = eclipseFractions2.reduce((prev, current) => (prev.y < current.y) ? prev : current);
+      const [before, after] = this.getIngressEgress(eclipseFractions);
+      
+      function getStep(date: Date, frac: number) {
         // 60 minutes when before before and after afert, else 1 minute
         if (date.getTime() < before.x || date.getTime() > after.x) {
-          return 60 * 60 * 1000;
+          return 10 * 60 * 1000;
         } else {
-          return 60 * 1000;
+          if (frac > 0.9) { return 500; }
+          else if (frac > 0.5) { return 5000; }
+          else if (frac > 0.1) { return 5000; }
+          else { return 30 * 1000; }
         }
       }
-      for (let date = start; date <= end; date = new Date(date.getTime() + getStep(date))) {
-        this.eclipseGraph.push({'x':date.getTime(), 'y':this.getEclipseFraction(date)});
+      let cc = 0;
+      for (let date = start; date <= end; date = new Date(date.getTime() + getStep(date, cc))) {
+        cc = this.getEclipseFraction(date);
+        this.eclipseGraph.push({'x':date.getTime(), 'y':cc});
+      } 
+
+      // get max eclipse index
+      // const maxIndex = this.eclipseGraph.reduce((prev, current) => (prev && prev.y > current.y) ? prev : current);
+      const isTotalEclipse = this.eclipseGraph.filter(x => x.y >= 1).length > 0;
+      // if is total get the first and last parts of the eclipse
+      if (isTotalEclipse) {
+        console.log('is total eclipse');
+        const totalEclipseFractions = this.eclipseGraph.filter(x => x.y >= 1);
+        if (totalEclipseFractions.length < 2) {
+          this.maxEclipseStart = totalEclipseFractions[0].x;
+          this.maxEclipseEnd = totalEclipseFractions[0].x;
+        } else {
+          this.maxEclipseStart = totalEclipseFractions[0].x;
+          this.maxEclipseEnd = totalEclipseFractions[totalEclipseFractions.length - 1].x;
+        }
+        this.maxEclipseTime = (this.maxEclipseStart + this.maxEclipseEnd) / 2;
+        this.maxEclipseFraction = 1;
+        this.startEclipseTime = this.eclipseGraph.filter(x => x.x < this.maxEclipseStart).reduce((prev, current) => (prev.y < current.y) ? prev : current).x - 60 * 60 * 1000;
+        this.endEclipseTime = this.eclipseGraph.filter(x => x.x > this.maxEclipseEnd).filter(x => x.y > 0).reduce((prev, current) => (prev.y < current.y) ? prev : current).x + 60 * 60 * 1000;
+      } else {
+        const maxIndex = this.eclipseGraph.reduce((prev, current) => (prev.y > current.y) ? prev : current);
+        this.maxEclipseStart = 0;
+        this.maxEclipseEnd = 0;
+        this.maxEclipseTime = maxIndex.x;
+        this.maxEclipseFraction = maxIndex.y;
+        this.startEclipseTime = this.eclipseGraph.filter(x => x.x < maxIndex.x).reduce((prev, current) => (prev.y < current.y) ? prev : current).x - 60 * 60 * 1000;
+        this.endEclipseTime = this.eclipseGraph.filter(x => x.x > maxIndex.x).filter(x => x.y > 0).reduce((prev, current) => (prev.y < current.y) ? prev : current).x + 60 * 60 * 1000;
       }
-      
-      
-      this.maxEclipseTime = maxDate;
-      this.maxEclipseFraction = maxFrac;
-      this.startEclipseTime = this.eclipseGraph.filter(x => x.x < maxDate).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
-      this.endEclipseTime = this.eclipseGraph.filter(x => x.x > maxDate).filter(x => x.y > 0).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
       console.log('getEclipseGraph', performance.now() - perfStart);
       
       
@@ -2606,6 +2653,10 @@ export default defineComponent({
     toTimeString(date: Date) {
       // return this.toLocaleTimeString(date);
       return formatInTimeZone(date, this.selectedTimezone, 'h:mm aaa (zzz)');
+    },
+    
+    toUTCHMS(date: Date) {
+      return formatInTimeZone(date, 'UTC', 'HH:mm:ss (zzz)');
     },
 
     closeSplashScreen() {
