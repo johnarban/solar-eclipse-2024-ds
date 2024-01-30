@@ -172,6 +172,7 @@
               :detect-location="false"
               :map-options="userSelectedMapOptions"
               :selected-circle-options="selectedCircleOptions"
+              :cloud-cover="learnerPath === 'Clouds'"
               class="leaflet-map"
               :geo-json-files="geojson"
             ></location-selector>
@@ -2871,11 +2872,16 @@ export default defineComponent({
       const astronomicalTwilight = 3 * _civilTwilight;
       
       const sunAlt = altRad;
-      this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
+      let dssOpacity = 0;
+      if (this.viewerMode == 'SunScope') {
+        this.skyOpacity = 1;
+      } else {
+        this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
+        this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
+        dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
+      }
       this.updateMoonTexture();
 
-      const dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
       this.setForegroundOpacity(dssOpacity * 100);
     },
 
@@ -3100,6 +3106,7 @@ export default defineComponent({
         this.horizonOpacity = 0.6;
         this.startSolarScopeMode();
       }
+      this.updateSkyOpacityForSunAlt(this.sunPosition.altRad);
       this.updateMoonTexture();
     },
 

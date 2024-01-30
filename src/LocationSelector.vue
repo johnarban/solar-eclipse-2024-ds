@@ -52,6 +52,10 @@ export default defineComponent({
       type: String,
       default: "#ffffff"
     },
+    cloudCover: {
+      type: Boolean,
+      default: false
+    },
     detectLocation: {
       type: Boolean,
       default: true
@@ -144,14 +148,15 @@ export default defineComponent({
       selectedCircle: null as L.CircleMarker | null,
       selectedPlace: null as Place | null,
       selectedPlaceCircle: null as L.CircleMarker | null,
+      cloudCoverRectangles: [] as L.Rectangle[],
       map: null as Map | null,
     };
   },
 
   methods: {
 
-    loadCloudCover() {
-      fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/one_deg_mean_cc.csv')
+    async loadCloudCover(): Promise<void> {
+      return fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/one_deg_mean_cc.csv')
         .then(response => response.text())
         .then(csvData => {
           this.parseData(csvData);
@@ -172,30 +177,26 @@ export default defineComponent({
             const lon = parseFloat(row.lon);
             const cloudCover = parseFloat(row.cloud_cover);
 
-            this.addRectangle(lat, lon, cloudCover);
+            this.cloudCoverRectangles.push(this.createRectangle(lat, lon, cloudCover));
           });
         },
       });
     },
 
-    addRectangle(lat:number, lon:number, cloudCover:number) {
-      if (this.map === null) {
-        return;
-      }
-      
+    createRectangle(lat: number, lon: number, cloudCover: number): L.Rectangle {
       const color = this.getColor(cloudCover);
 
-      L.rectangle([
+      return L.rectangle([
         [lat + 0.5, lon - 0.5],
         [lat - 0.5, lon + 0.5],
       ], {
         color: 'none', // No border
         fillColor: color,
         fillOpacity: 0.55,
-      }).addTo(this.map as Map);
+      });
     },
 
-    getColor(cloudCover:number) {
+    getColor(cloudCover: number) {
       // Calculate HSL color based on a gradient
       const hue = 30 + (cloudCover * 120); // 30° to 150°
       const saturation = '100%';
@@ -288,7 +289,9 @@ export default defineComponent({
       const options = { ...defaultMapOptions, ...this.mapOptions };
       L.tileLayer(options.templateUrl, options).addTo(map);
 
-      this.loadCloudCover();
+      this.loadCloudCover().then(() => {
+        this.updateCloudCover(this.cloudCover);
+      });
 
       this.placeCircles = this.places.map(place => this.circleForPlace(place));
       this.placeCircles.forEach((circle, index) => {
@@ -375,6 +378,14 @@ export default defineComponent({
 
     locationToLatLng(location: LocationDeg): L.LatLngExpression {
       return [location.latitudeDeg, location.longitudeDeg];
+    },
+
+    updateCloudCover(value: boolean) {
+      if (value) {
+        this.cloudCoverRectangles.forEach(rect => rect.addTo(this.map as Map));
+      } else {
+        this.cloudCoverRectangles.forEach(rect => rect.remove());
+      }
     }
 
   },
@@ -394,6 +405,9 @@ export default defineComponent({
       if (this.map && !this.map.getBounds().contains(this.latLng)) {
         this.map.setView(this.latLng);
       }
+    },
+    cloudCover(value: boolean) {
+      this.updateCloudCover(value);
     },
     places() {
       this.map?.remove();
