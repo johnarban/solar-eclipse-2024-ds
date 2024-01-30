@@ -172,6 +172,7 @@
               :detect-location="false"
               :map-options="userSelectedMapOptions"
               :selected-circle-options="selectedCircleOptions"
+              :cloud-cover="learnerPath === 'Clouds'"
               class="leaflet-map"
               :geo-json-files="geojson"
             ></location-selector>
