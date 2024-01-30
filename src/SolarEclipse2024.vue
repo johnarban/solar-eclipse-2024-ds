@@ -2149,8 +2149,7 @@ export default defineComponent({
       const rSunPx = 6 * thetaSun * canvasHeight / (this.wwtZoomDeg * D2R);
 
       const points: { x: number; y: number }[] = [];
-      const sunMoonAngle = this.greatCircleDistance(sunPosition, moonPosition);
-      const sunMoonDistance = 6 * sunMoonAngle * canvasHeight / (this.wwtZoomDeg * D2R);
+      const sunMoonDistance = Math.sqrt(sunPoint.x * sunPoint.x + sunPoint.y * sunPoint.y);
 
       // If there's no sun/moon intersection, no need to continue
       if (sunMoonDistance > rMoonPx + rSunPx) {
@@ -2158,9 +2157,8 @@ export default defineComponent({
         return;
       }
 
-      const sunMoonPointDist = Math.sqrt(sunPoint.x * sunPoint.x + sunPoint.y * sunPoint.y);
-      const moonInsideSun = sunMoonPointDist < rSunPx - rMoonPx;
-      const sunInsideMoon = sunMoonPointDist < rMoonPx - rSunPx;
+      const moonInsideSun = sunMoonDistance < rSunPx - rMoonPx;
+      const sunInsideMoon = sunMoonDistance < rMoonPx - rSunPx;
 
       const dSq = sunMoonDistance * sunMoonDistance;
       const rMoonSq = rMoonPx * rMoonPx;
