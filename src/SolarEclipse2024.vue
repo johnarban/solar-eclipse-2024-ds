@@ -1774,6 +1774,10 @@ export default defineComponent({
       this.setForegroundImageByName("Digitized Sky Survey (Color)");
       // this.setBackgroundImageByName("Black Sky Background");
       this.setForegroundOpacity(100);
+
+      // The initial Moon position is incorrect, and we use it to set the Moon sprite.
+      // Thus, we explicitly call for an update here.
+      this.moonPlace.updatePlanetLocation(this.wwtCurrentTime.getTime());
       this.updateMoonTexture(true);
 
       this.updateWWTLocation();
