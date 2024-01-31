@@ -2141,12 +2141,13 @@ export default defineComponent({
       if (!colorbar) {
         return;
       }
-      const n = 10;
+      const n = 20;
       for (let i=n; i >= 0; i--) {
-        const color = `hsl(0, 0%, 100%, ${Math.pow((i/ n),1.25) * 100}%)`;
+        const cc = i/n > .05 ? .2 + Math.pow(i/n,1.5) * .8 : i/n;
+        const color = `hsl(0, 0%, ${cc*100}%)`;
         const div = document.createElement('div');
         div.style.backgroundColor = color;
-        div.style.height = `${100/n}%`;
+        div.style.height = `${100/(n+1)}%`;
         colorbar.appendChild(div);
       }
       

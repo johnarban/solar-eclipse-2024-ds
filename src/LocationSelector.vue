@@ -194,7 +194,7 @@ export default defineComponent({
 
     createRectangle(lat: number, lon: number, cloudCover: number): L.Rectangle {
       const color = this.getColor(cloudCover);
-
+      
       return L.rectangle([
         [lat + 0.5, lon - 0.5],
         [lat - 0.5, lon + 0.5],
@@ -204,7 +204,7 @@ export default defineComponent({
         weight: .01,
         opacity: cloudCover,
         fillColor: color,
-        fillOpacity: Math.pow(cloudCover, 1.25),
+        fillOpacity: cloudCover > .05 ? .2 + Math.pow(cloudCover,1.5) * .8 : cloudCover
       });
     },
 
