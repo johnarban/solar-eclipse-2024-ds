@@ -63,7 +63,6 @@
             <!-- Choose Path -->
             <div class="instructions-text" v-if="learnerPath=='Location'">
 
-              <!-- ACTION NEEDED: update this text -->
               <span class="description">
                 <div v-if="infoPage==1">
                   <p v-if="!queryData">
@@ -267,9 +266,6 @@
                 <div id="info-text-box">
 
                   <div id="main-info-text">
-                    <h3 class="pb-5" style="color: magenta">
-                      Don't forget to include relevant data sources (currently in Datasources.md) into onscreen text.
-                    </h3>
                     <p>
                     On April 8, 2024, North America will be treated to an awe-inspiring total eclipse. 
                     </p>
@@ -294,6 +290,13 @@
                       <summary> Total? Annular? What is the difference?</summary>
                       <p>
                         During a <strong>total eclipse</strong>, the Moon covers the entire face of the Sun. Because the Moon doesn't orbit the Earth in a perfect circle, sometimes it is farther away from Earth and appears smaller. When this happens, the Moon doesn't cover the entire face of the Sun. During the eclipse we can still see a bright ring of light around the Moon, sometimes called the "Ring of Fire." This is called an <strong>annular Eclipse</strong>.
+                      </p>
+                    </details>
+
+                    <details>
+                      <summary> What is the wispy haze around the Sun during a Total Solar Eclipse?</summary>
+                      <p>
+                        The <strong>corona</strong> is the outermost layer of the Sun's atmosphere, and it is made up of extremely hot, glowing gas. We usually can't see the corona because the Sun's surface shines so much more brightly. During a total solar eclipse, the Moon blocks light from the surface of the Sun, making it possible to see the ethereally beautiful corona.
                       </p>
                     </details>
                     
@@ -350,7 +353,7 @@
           <v-card-text class="info-text no-bottom-border-radius">
             <v-container  id="user-guide">
               <p style="font-size: calc(1.1 * var(--default-font-size))" class="mb-5">
-                This Mini Data Story allows you to display the April 8, 2024 Total Solar Eclipse from any location. 
+                This Cosmic Data Story allows you to display the April 8, 2024 Total Solar Eclipse from any location. 
               </p>
               <v-row align="center">
               <v-col cols="4">
@@ -392,7 +395,7 @@
                               icon="play"
                               size="lg" 
                             ></font-awesome-icon>
-                        to move time forward at 1000x the real speed.
+                        to move time forward at 100x the real speed.
                       </li>
                       <li>
                         If playing, {{ touchscreen ? "tap" : "click" }} <font-awesome-icon
@@ -558,16 +561,17 @@
               <div id="text-credits">
                 <h3>Credits:</h3>
 
-                <p class="mt-2">This Mini Data Story is powered by WorldWide Telescope (WWT).</p>              
+                <p class="mt-2">This Cosmic Data Story is powered by WorldWide Telescope (WWT).</p>              
                 <p class="my-3">Image of Sun is courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.</p>
 
                 <h4><a href="https://www.cosmicds.cfa.harvard.edu/" target="_blank" rel="noopener noreferrer">CosmicDS</a> Mini Stories Team:</h4> 
                 
+                John Lewis<br>
                 Pat Udomprasert<br>
                 Jon Carifio<br>
-                John Lewis<br>
                 Alyssa Goodman<br>
                 Mary Dussault<br>
+                Jack Hayes<br>
                 Harry Houghton<br>
                 Anna Nolin<br>
                 Evaluator: Sue Sunbury<br>
@@ -727,24 +731,19 @@
           <v-row>
             <v-col cols="12">
               <font-awesome-icon
-                icon="cloud-sun"
-              /> Explore historical cloud coverage
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
                 icon="location-dot"
               /> Choose any location 
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
-                icon="puzzle-piece"
-              /> Identify the path 
+                icon="cloud-sun"
+              /> View historical cloud data
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
-                icon="video"
+                icon="book-open"
               />
-            New! Video guide 
+              Learn more 
             </v-col>
           </v-row>
         </div>
@@ -800,14 +799,13 @@
             <div class="intro-text">
               <p class="mb-5">
               On April 8, 2024, North America will experience
-              a total solar eclipse, where the Moon 
-              will appear to travel across the Sun, blocking out it's lightt
+              a solar eclipse, where the Moon will appear to travel across the Sun, blocking out its light.
               </p>
               <p  class="mb-5">
-              A lucky segment of Mexico, the U.S., and Cander will experience an aweinspiring <b>total eclipse</b>, and the rest will get to glimpse a <em>partial</em> eclipse.
+              A lucky segment of Mexico, the U.S., and Canada will witness an awe-inspiring <b>total eclipse</b>. Other parts of North America will still see a <em>partial</em> eclipse, where the Moon blocks out some, but not all of the Sun's light.
               </p>
               <p class="mb-5">
-              See where the eclipse will be visible, and if clouds are likely to interfere with seeing the eclipse.
+              See what the eclipse will look like where you are, and what the historical cloud coverage has been on April 8th from 2001&#8211;2023.
               </p>
             </div>
           </v-window-item>
@@ -821,15 +819,15 @@
               <ul>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
-                    <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
-                  </template>
-                    <strong>View historical cloud data</strong> for April 8th.
-                </v-list-item>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
                     <font-awesome-icon icon="location-dot" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
                     <strong>Select any location</strong> around the world. See and share how the eclipse would look from there.
+                </v-list-item>
+                <v-list-item density="compact">
+                  <template v-slot:prepend>
+                    <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
+                  </template>
+                    <strong>View historical cloud data</strong> for April 8th from 2001&#8211;2023.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -1478,7 +1476,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: false, // ACTION NEEDED: set this to true before deployment
+      showSplashScreen: true,
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -3665,18 +3663,7 @@ body {
   }
     
   p.highlight {
-    color: #444444;
-
-    @media (max-width: 700px) {
-      -webkit-text-stroke: 0.8px var(--accent-color);
-    }
-
-    @media (min-width: 701px) {
-      -webkit-text-stroke: 0.1px var(--accent-color);
-    }
-
-  
-    // make uppercase
+    color: var(--accent-color);
     text-transform: uppercase;
     font-weight: bolder;
   }
@@ -3756,6 +3743,7 @@ body {
 }
 
 #video-icon {
+  display: none;  // ACTION NEEDED - reenable this when we have a video
   position: absolute;
   left: 0.5rem;
   width: 2.2rem;
