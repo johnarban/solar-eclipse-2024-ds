@@ -65,23 +65,56 @@
 
               <!-- ACTION NEEDED: update this text -->
               <span class="description">
-                <p v-if="!queryData"><strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse at the location marked by the red dot.</p>
+                <div v-if="infoPage==1">
+                  <p v-if="!queryData">
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
+                  </p>
+                  <p v-if="queryData">
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" size="l" class="bullet-icon"/> to "watch" the eclipse from the location shared in your link.
+                  </p>
+                  <p>
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData">other</span> location and view the eclipse from there.
+                  </p>
+                </div>
 
-                <p><strong>{{ touchscreen ? "Tap" : "Click" }}</strong> on the map to switch locations and view the eclipse from there.</p>
-                <p>The <strong><span class="highlighted bg-red">red</span></strong> line shows the path of the total eclipse, and the <span class="highlighted bg-grey text-black">Grey</span> band shows where the total eclipse will be visible (the umbra)</p>
-                <p v-if="queryData">
-                  <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" size="l" class="bullet-icon"/> to "watch" the eclipse from the location shared in your link.
-                </p>
-                <p>
-                  <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> on the map to select any <span v-if="queryData">other</span> location and view the eclipse from there.
-                </p>
-                <p>
-                  <strong>Share</strong> the view from a location by {{ touchscreen ? "tapping" : "clicking" }} <font-awesome-icon icon="share-nodes" class="bullet-icon"/> to copy the url.
-                </p>
-                <p>
-                  View the eclipse from <strong>My Location</strong> by {{ touchscreen ? "tapping" : "clicking" }} <font-awesome-icon icon="street-view" class="bullet-icon"/>. (Location services must be enabled on device).
-                </p>
+                <div v-if="infoPage==2">
+                  <p>
+                    <strong><span class="highlighted bg-red">Red line</span></strong> + <span class="highlighted bg-grey text-black">Grey  band</span>: path of total eclipse on map
+                  </p>
+                  <p>
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="share-nodes" class="bullet-icon"/>: copy url for a location
+                  </p>
+                  <p>
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong>
+                    <font-awesome-icon icon="street-view" class="bullet-icon"/>:
+                    view eclipse from <strong>My Location</strong> (Location services must be enabled on device)
+                  </p>
+                </div>
               </span>
+            </div>
+            <div class="d-flex justify-end" id="info-text-button" v-if="learnerPath=='Location'">
+              <v-btn
+                class="mr-2 mb-2"
+                v-if="infoPage==1"
+                density="compact"
+                :color="accentColor"
+                @click="infoPage++"
+                @keyup.enter="infoPage++"
+                elevation="0"
+                >
+                More
+              </v-btn>
+              <v-btn
+                v-if="infoPage==2"
+                class="mr-2 mb-2"
+                density="compact"
+                :color="accentColor"
+                @click="infoPage--"
+                @keyup.enter="infoPage--"
+                elevation="0"
+                >
+                Back
+              </v-btn>
             </div>
 
             <!-- Clouds Path -->
@@ -865,6 +898,7 @@
         > </v-chip>
         <v-chip 
           :prepend-icon="smallSize ? `` : `mdi-clouds`"
+          v-if="mobile"
           variant="outlined"
           size="small"
           elevation="2"
@@ -1656,6 +1690,7 @@ export default defineComponent({
       showMyLocationDialog: false,
 
       tab: 0,
+      infoPage: 1,
       introSlide: 1,
       
       viewerMode: 'Horizon' as ViewerMode,
@@ -1670,8 +1705,8 @@ export default defineComponent({
       moonTexture: 'moon-sky-blue-overlay.png' as MoonImageFile,
 
       playbackRate: 1,
-      horizonRate: 1000, //this.getplaybackRate('2 hours per 15 seconds'),
-      scopeRate: 1000, //this.getplaybackRate('2 hours per 30 seconds'),
+      horizonRate: 100, 
+      scopeRate: 100, 
       speedIndex: 3,
 
       startPaused: false,
@@ -2761,7 +2796,7 @@ export default defineComponent({
       this.showHorizon = true; // automatically calls it's watcher and updates horizon
       this.horizonOpacity = 1;
       // this.setForegroundImageByName("Digitized Sky Survey (Color)");
-      this.sunPlace.set_zoomLevel(60);
+      this.sunPlace.set_zoomLevel(20);
       this.gotoTarget({
         place: this.sunPlace,
         instant: true,
@@ -4184,7 +4219,7 @@ video, #info-video {
     right: 1rem;
     z-index: 1000;
   }
-  
+
   #non-map-container {
     flex-basis: 100%;
   }
@@ -4202,6 +4237,7 @@ video, #info-video {
 
 
   #non-map-container { // Keep content away from the x to close
+    height: 100%;
     --padding-left: 0.5rem;
     // @media (max-width: 600px) {
     //   --padding-left: 0;
@@ -4243,10 +4279,8 @@ video, #info-video {
     
     // .v-row.non-map-row#instructions-row
   #instructions-row { 
-    
-    position: relative;
+    max-height: 70%;
     display: flex;
-    flex-grow: 0.5;
     border: 1.5px solid var(--sky-color);
     border-radius: 5px;
     align-items: center;
@@ -4254,11 +4288,17 @@ video, #info-video {
     
     // v-col
     #top-container-main-text { 
+      max-height: 100%;
+      display: flex;
+      flex-direction:column;
+
     
       // div
       .instructions-text {
-
-        min-width: 40vw;  // so quiz cards don't crash into each other on some screen sizes
+        min-width: 40vw;
+        flex: 1;
+        width: 100%;
+        overflow-y: scroll;
         
         padding-inline: 0.7em;
         padding-block: 0.4em; // this plus the margin on p give .7 em on top and bottom
@@ -4272,6 +4312,16 @@ video, #info-video {
           p {
             margin-block: .3em;
           }
+        }
+
+      }
+
+      #info-text-button {
+          margin-right: 0.1rem;
+          margin-block: 0.1rem;
+
+          .v-btn--size-default{
+          font-size: var(--default-font-size) !important;
         }
       }
     }
