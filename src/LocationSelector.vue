@@ -157,7 +157,7 @@ export default defineComponent({
   methods: {
 
     async loadCloudCover(): Promise<void> {
-      return fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/one_deg_mean_cc.csv')
+      return fetch('https://raw.githubusercontent.com/johnarban/solar-eclipse-2024-ds/use-median-cloud-cover/src/assets/one_deg_mean_cc.csv')
         .then(response => response.text())
         .then(csvData => {
           this.parseData(csvData);
@@ -200,7 +200,7 @@ export default defineComponent({
         weight: .01,
         opacity: cloudCover,
         fillColor: color,
-        fillOpacity: cloudCover * cloudCover / .81,
+        fillOpacity: Math.pow(cloudCover, 1.25),
       });
     },
 
@@ -210,7 +210,7 @@ export default defineComponent({
       const saturation = '0%';
       const lightness = '100%'; // 50% to 100%
 
-      return `hsl(${hue}, ${saturation}, ${lightness})`;
+      return `hsla(${hue}, ${saturation}, ${lightness},.9)`;
     },    
     
     getLocation(startup=false) {

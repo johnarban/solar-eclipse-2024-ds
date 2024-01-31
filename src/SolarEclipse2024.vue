@@ -2143,7 +2143,7 @@ export default defineComponent({
       }
       const n = 10;
       for (let i=n; i >= 0; i--) {
-        const color = `hsl(0, 0%, 100%, ${(i/ n)*(i/n) * 100}%)`;
+        const color = `hsl(0, 0%, 100%, ${Math.pow((i/ n),1.25) * 100}%)`;
         const div = document.createElement('div');
         div.style.backgroundColor = color;
         div.style.height = `${100/n}%`;
