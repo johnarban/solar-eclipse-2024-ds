@@ -2442,21 +2442,18 @@ export default defineComponent({
 
       if (!this.trackingSun && this.sunOffset !== null) {
         const sunLocation = Planets['_planetLocations'][0];
-        // const location = { ra: sunLocation.RA * 15, dec: sunLocation.dec };
-        // const sunPoint = this.findScreenPointForRADec(location);
-
         const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunLocation.RA, sunLocation.dec);
-
         const offsetPoint = { x: sunPoint.x + this.sunOffset.x, y: sunPoint.y + this.sunOffset.y };
         const offsetLocation = this.findRADecForScreenPoint(offsetPoint);
         const place = new Place();
         place.set_RA(offsetLocation.ra / 15);
         place.set_dec(offsetLocation.dec);
+
         this.gotoTarget({
           place,
           noZoom: true,
           instant: true,
-          trackObject: false
+          trackObject: true
         });
       }
     },
