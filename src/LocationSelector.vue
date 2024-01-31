@@ -150,6 +150,7 @@ export default defineComponent({
       selectedPlaceCircle: null as L.CircleMarker | null,
       cloudCoverRectangles: L.layerGroup(),
       map: null as Map | null,
+      basemap: null as L.TileLayer | null
     };
   },
 
@@ -294,7 +295,8 @@ export default defineComponent({
       const map = L.map(mapContainer).setView(location, zoom);
       
       const options = { ...defaultMapOptions, ...this.mapOptions };
-      L.tileLayer(options.templateUrl, options).addTo(map);
+      this.basemap = L.tileLayer(options.templateUrl, options);
+      this.basemap.addTo(map);
 
       this.loadCloudCover().then(() => {
         this.updateCloudCover(this.cloudCover);
@@ -413,6 +415,17 @@ export default defineComponent({
         this.map.setView(this.latLng);
       }
     },
+    
+    mapOptions(newOptions: MapOptions, oldOptions: MapOptions) {
+      if (oldOptions === null || newOptions === null) {
+        return;
+      }
+      if (newOptions.templateUrl !== oldOptions.templateUrl) {
+        this.basemap?.setUrl(newOptions.templateUrl ?? defaultMapOptions.templateUrl);
+      }
+    },
+    
+    
     cloudCover(value: boolean) {
       this.updateCloudCover(value);
     },

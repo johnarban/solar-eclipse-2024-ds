@@ -170,7 +170,7 @@
               :initial-place="places.find(p => p.name === 'selectedLocation')"
               :place-circle-options="placeCircleOptions"
               :detect-location="false"
-              :map-options="userSelectedMapOptions"
+              :map-options="(learnerPath === 'Clouds') ? userSelectedMapOptions : initialMapOptions"
               :selected-circle-options="selectedCircleOptions"
               :cloud-cover="learnerPath === 'Clouds'"
               class="leaflet-map"
@@ -1492,6 +1492,10 @@ export default defineComponent({
         attribution: 'Maptiles by Stamen Design, under <a target="_blank" href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a target="_top" href="https://www.openstreetmap.org/#map=4/38.01/-95.84">OpenStreetMap</a>, under <a target="_top" href="http://creativecommons.org/licenses/by-sa/2.0">CC BY-SA 2.0</a>',
         ext: 'jpg',
         ...initialView
+      },
+      
+      initialMapOptions: {
+        ...(queryData ? { ...queryData, initialZoom: 5 } : initialView)
       },
 
       userSelectedMapOptions: {
