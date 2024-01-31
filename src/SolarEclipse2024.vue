@@ -313,6 +313,13 @@
                         The animated figure shows that the Moon's shadow on Earth has two distinct regions. The darker part of the shadow is directly behind the Moon, where people will experience an annular or total eclipse. The lighter part of the shadow falls where people on Earth will see a partial solar eclipse.
                       </p> 
                     </details>
+
+                    <details> 
+                      <summary>The view of the eclipse looks incorrect near the edge of the eclipse path. Why?</summary>
+                      <p>
+                        For some locations within the eclipse path, near the edge, you might notice that the eclipse percentage does not display above 99%. This is caused by limitations in precision for the calculations used to display the locations and sizes of the Sun and Moon on your screen. (If you want to get super technical, the calculated eclipse percentage for these locations may be something like 99.998%, but for any value close to, but not quite 100%, we choose to round down to 99%. Otherwise locations <strong>outside</strong> the eclipse path, where the maximum eclipse percentage might actually be 99.9%, would incorrectly display as being in totality.)
+                      </p> 
+                    </details>
                     
                     <details>
                       <summary>Where can I learn more?</summary>
@@ -571,11 +578,11 @@
                 <h4><a href="https://www.cosmicds.cfa.harvard.edu/" target="_blank" rel="noopener noreferrer">CosmicDS</a> Team:</h4> 
                 
                 John Lewis<br>
-                Pat Udomprasert<br>
                 Jon Carifio<br>
+                Pat Udomprasert<br>
+                Jack Hayes<br>
                 Alyssa Goodman<br>
                 Mary Dussault<br>
-                Jack Hayes<br>
                 Harry Houghton<br>
                 Anna Nolin<br>
                 Evaluator: Sue Sunbury<br>
