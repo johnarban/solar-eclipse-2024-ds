@@ -317,7 +317,7 @@
                     <details> 
                       <summary>How precise are location and timing predications in this Data Story?</summary>
                       <p>
-                        You may notice some discrepancies in the reported eclipse percentages or with eclipse start and end times compared with other predictions. For example, maximum eclipse percentages may display as < 100% near the inside edge of the eclipse path. This is caused by limitations in precision for the calculations used to display the locations and sizes of the Sun and Moon on your screen. Timing predictions in this Data Story should be accurate to within about a minute.
+                        You may notice some discrepancies in the reported eclipse percentages or with eclipse start and end times compared with other predictions. For example, maximum eclipse percentages may display as &lt;100% near the inside edge of the eclipse path. This is caused by limitations in precision for the calculations used to display the locations and sizes of the Sun and Moon on your screen. Timing predictions in this Data Story should be accurate to within about a minute.
                       </p> 
                     </details>
                     
