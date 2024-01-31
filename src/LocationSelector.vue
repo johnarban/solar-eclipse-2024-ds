@@ -157,7 +157,7 @@ export default defineComponent({
   methods: {
 
     async loadCloudCover(): Promise<void> {
-      return fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/one_deg_mean_cc.csv')
+      return fetch('https://raw.githubusercontent.com/johnarban/solar-eclipse-2024-ds/use-median-cloud-cover/src/assets/one_deg_median_cc.csv')
         .then(response => response.text())
         .then(csvData => {
           this.parseData(csvData);
@@ -177,6 +177,10 @@ export default defineComponent({
             const lat = parseFloat(row.lat);
             const lon = parseFloat(row.lon);
             const cloudCover = parseFloat(row.cloud_cover);
+            // check for nan
+            if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
+              return;
+            }
 
             const rect = this.createRectangle(lat, lon, cloudCover);
             if (rect) {
@@ -190,7 +194,7 @@ export default defineComponent({
 
     createRectangle(lat: number, lon: number, cloudCover: number): L.Rectangle {
       const color = this.getColor(cloudCover);
-
+      
       return L.rectangle([
         [lat + 0.5, lon - 0.5],
         [lat - 0.5, lon + 0.5],
@@ -200,7 +204,7 @@ export default defineComponent({
         weight: .01,
         opacity: cloudCover,
         fillColor: color,
-        fillOpacity: cloudCover * cloudCover / .81,
+        fillOpacity: cloudCover > .05 ? .2 + Math.pow(cloudCover,1.5) * .8 : cloudCover
       });
     },
 
@@ -210,7 +214,7 @@ export default defineComponent({
       const saturation = '0%';
       const lightness = '100%'; // 50% to 100%
 
-      return `hsl(${hue}, ${saturation}, ${lightness})`;
+      return `hsla(${hue}, ${saturation}, ${lightness},.9)`;
     },    
     
     getLocation(startup=false) {

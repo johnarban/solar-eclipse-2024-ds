@@ -2141,12 +2141,13 @@ export default defineComponent({
       if (!colorbar) {
         return;
       }
-      const n = 10;
+      const n = 20;
       for (let i=n; i >= 0; i--) {
-        const color = `hsl(0, 0%, 100%, ${(i/ n)*(i/n) * 100}%)`;
+        const cc = i/n > .05 ? .2 + Math.pow(i/n,1.5) * .8 : i/n;
+        const color = `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
         const div = document.createElement('div');
         div.style.backgroundColor = color;
-        div.style.height = `${100/n}%`;
+        div.style.height = `${100/(n+1)}%`;
         colorbar.appendChild(div);
       }
       
@@ -4408,6 +4409,7 @@ video, #info-video {
       outline: 1px solid white;
       margin-left: 5px;
       margin-right: 1em;
+      background: #5c5229;
       // background: linear-gradient(to top, transparent, white)
     }
     
