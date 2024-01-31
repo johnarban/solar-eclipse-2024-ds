@@ -177,6 +177,10 @@ export default defineComponent({
             const lat = parseFloat(row.lat);
             const lon = parseFloat(row.lon);
             const cloudCover = parseFloat(row.cloud_cover);
+            // check for nan
+            if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
+              return;
+            }
 
             const rect = this.createRectangle(lat, lon, cloudCover);
             if (rect) {
