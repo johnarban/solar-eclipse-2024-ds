@@ -856,6 +856,35 @@
               </p> 
             </div>
           </v-window-item>
+
+          <v-window-item :value="3">
+            <div class="intro-text mb-3">
+              <h4 class="mb-3">
+                Check back soon for:
+              </h4>
+              
+              <ul>
+                <v-list-item density="compact">
+                  <template v-slot:prepend>
+                    <v-icon icon="mdi-view-grid-compact" class="bullet-icon"></v-icon>
+                  </template>
+                  Higher resolution historical cloud data
+                </v-list-item>
+                <v-list-item density="compact">
+                  <template v-slot:prepend>
+                    <v-icon icon="mdi-baby-face-outline" class="bullet-icon"></v-icon>
+                  </template>
+                  Filter cloud data by El Ni&#241;o years
+                </v-list-item>
+                <v-list-item density="compact">
+                  <template v-slot:prepend>
+                    <v-icon icon="mdi-tools" class="bullet-icon"></v-icon>
+                  </template>
+                  More advanced tools for cloud data exploration
+                </v-list-item>
+              </ul> 
+            </div>
+          </v-window-item>
         </v-window>
 
         <div id="intro-bottom-controls">
@@ -879,7 +908,7 @@
             @keyup.enter="introSlide++"
             elevation="0"
             >
-            {{ introSlide === 1 ? 'Next' : 'Get Started' }}
+            {{ introSlide < 3 ? 'Next' : 'Get Started' }}
           </v-btn>
         </div>
       </div>
@@ -1918,7 +1947,7 @@ export default defineComponent({
     
     selectedLocationCloudCoverString():string {
       if (this.selectedLocationCloudCover !== null) {
-        return `Cloud Cover: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
+        return `Hist. Cloud Cover: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
       }
       return "Outside Range";
 
@@ -3154,7 +3183,7 @@ export default defineComponent({
     },
     
     introSlide(val: number) {
-      this.inIntro = val < 3;
+      this.inIntro = val < 4;
       return;
     },
 
