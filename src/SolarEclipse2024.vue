@@ -3138,6 +3138,7 @@ export default defineComponent({
     },
 
     wwtZoomDeg(_zoom: number) {
+      this.sunOffset = null;
       this.updateIntersection();
     },
 
