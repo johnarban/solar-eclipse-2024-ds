@@ -315,9 +315,9 @@
                     </details>
 
                     <details> 
-                      <summary>The view of the eclipse looks incorrect near the edge of the eclipse path. Why?</summary>
+                      <summary>How precise are location and timing predications in this Data Story?</summary>
                       <p>
-                        For some locations within the eclipse path, near the edge, you might notice that the eclipse percentage does not display above 99%. This is caused by limitations in precision for the calculations used to display the locations and sizes of the Sun and Moon on your screen. (If you want to get super technical, the calculated eclipse percentage for these locations may be something like 99.998%, but for any value close to, but not quite 100%, we choose to round down to 99%. Otherwise locations <strong>outside</strong> the eclipse path, where the maximum eclipse percentage might actually be 99.9%, would incorrectly display as being in totality.)
+                        You may notice some discrepancies in the reported eclipse percentages or with eclipse start and end times compared with other predictions. For example, maximum eclipse percentages may display as < 100% near the inside edge of the eclipse path. This is caused by limitations in precision for the calculations used to display the locations and sizes of the Sun and Moon on your screen. Timing predictions in this Data Story should be accurate to within about a minute.
                       </p> 
                     </details>
                     
