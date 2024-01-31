@@ -3358,7 +3358,7 @@ body {
     align-items: center;
     justify-content: center;
     .spinner {
-      background-image: url("https://cosmicds.github.io/cds-website/misc/lunar_loader.gif");
+      background-image: url("https://projects.cosmicds.cfa.harvard.edu/cds-website/misc/lunar_loader.gif");
       background-repeat: no-repeat;
       background-size: contain;
       width: 3rem;
@@ -3383,7 +3383,7 @@ body {
   div {
     margin: 0;
     padding: 0;
-    background-image: url("https://cosmicds.github.io/cds-website/logos/wwt_globe_bg.png");
+    background-image: url("https://projects.cosmicds.cfa.harvard.edu/cds-website/logos/wwt_globe_bg.png");
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center;
