@@ -178,7 +178,7 @@
             ></location-selector>
             <!-- the colorbar is generated using colorbarGradient() to make a serieis of divs -->
               <div v-show="learnerPath === 'Clouds'"  id="colorbar"></div>
-              <div v-if="learnerPath === 'Clouds'"  id="colorbar-labels">Cloud Cover %</div>
+              <div v-if="learnerPath === 'Clouds'"  id="colorbar-labels">Historical Cloud Cover %</div>
           </div>
         </v-slide-y-transition>
       </v-hover>
