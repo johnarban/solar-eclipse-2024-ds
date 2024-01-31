@@ -176,6 +176,9 @@
               class="leaflet-map"
               :geo-json-files="geojson"
             ></location-selector>
+            <!-- the colorbar is generated using colorbarGradient() to make a serieis of divs -->
+              <div v-show="learnerPath === 'Clouds'"  id="colorbar"></div>
+              <div v-if="learnerPath === 'Clouds'"  id="colorbar-labels">Cloud Cover %</div>
           </div>
         </v-slide-y-transition>
       </v-hover>
@@ -1841,6 +1844,8 @@ export default defineComponent({
     if (element) {
       element.addEventListener("scroll", () => this.onScroll());
     }
+    
+    this.colorbarGradient();
   },
 
   computed: {
@@ -2095,6 +2100,23 @@ export default defineComponent({
           element.scrollTo({ top: element.scrollHeight });
         }
       }
+    },
+    
+    colorbarGradient() {
+      const colorbar = document.getElementById('colorbar');
+      if (!colorbar) {
+        return;
+      }
+      const n = 10;
+      for (let i=n; i >= 0; i--) {
+        const color = `hsl(0, 0%, 100%, ${(i/ n)*(i/n) * 100}%)`;
+        const div = document.createElement('div');
+        div.style.backgroundColor = color;
+        div.style.height = `${100/n}%`;
+        colorbar.appendChild(div);
+      }
+      
+      
     },
     
     async trackSun(): Promise<void> {
@@ -4338,6 +4360,47 @@ video, #info-video {
   #map-container {
     height: 100%;
     width: 100%;
+    
+    display: flex;
+    
+    #colorbar {
+      height: 100%;
+      width: 1.25em;
+      outline: 1px solid white;
+      margin-left: 5px;
+      margin-right: 1em;
+      // background: linear-gradient(to top, transparent, white)
+    }
+    
+    #colorbar:before {
+      content:"100%";
+      position: absolute;
+      top: 0;
+      right: 0;
+      transform-origin: center;
+      color: black;
+      transform: rotate(-90deg) translateX(-25%) translateX(-0.25em);
+    }
+    
+    #colorbar:after {
+      content:"0%";
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      color: white;
+      transform-origin: center;
+      transform: rotate(-90deg) translateY(-50%) translateX(0.5em);
+    }
+    
+    #colorbar-labels {
+        position: absolute;
+        top: 50%;
+        right: 0.25em;
+        transform-origin: center center;
+        transform:  translateX(50%) rotate(-90deg);
+        
+      }
+    
     
     .map-container {
       height: 100%;
