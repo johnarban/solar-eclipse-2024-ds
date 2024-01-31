@@ -1423,7 +1423,7 @@ export default defineComponent({
     const initialView = {
       initialLocation: {
         latitudeDeg: 35,
-        longitudeDeg: -110
+        longitudeDeg: -100
       },
       initialZoom: 3.3
     };
