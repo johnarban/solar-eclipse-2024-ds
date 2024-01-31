@@ -607,6 +607,8 @@
   >
     <WorldWideTelescope
       :wwt-namespace="wwtNamespace"
+      @pointerdown="onPointerDown"
+      @pointerup="onPointerUp"
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
@@ -1553,6 +1555,8 @@ export default defineComponent({
       syncDateTimeWithWWTCurrentTime: true,
       syncDateTimewithSelectedTime: true,
 
+      sunOffset: null as { x: number; y: number } | null,
+
       presetMapOptions: {
         templateUrl: "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg",
         minZoom: 1,
@@ -2191,6 +2195,7 @@ export default defineComponent({
     },
     
     async trackSun(): Promise<void> {
+      this.sunOffset = null;
       return this.gotoTarget({
         place: this.sunPlace,
         instant: true,
@@ -2200,6 +2205,7 @@ export default defineComponent({
     },
 
     async centerSun(): Promise<void> {
+      this.sunOffset = null;
       return this.gotoTarget({
         place: this.sunPlace,
         instant: true,
@@ -2433,6 +2439,26 @@ export default defineComponent({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.trackingSun = wwtControl._trackingObject === this.sunPlace;
+
+      if (!this.trackingSun && this.sunOffset !== null) {
+        const sunLocation = Planets['_planetLocations'][0];
+        // const location = { ra: sunLocation.RA * 15, dec: sunLocation.dec };
+        // const sunPoint = this.findScreenPointForRADec(location);
+
+        const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunLocation.RA, sunLocation.dec);
+
+        const offsetPoint = { x: sunPoint.x + this.sunOffset.x, y: sunPoint.y + this.sunOffset.y };
+        const offsetLocation = this.findRADecForScreenPoint(offsetPoint);
+        const place = new Place();
+        place.set_RA(offsetLocation.ra / 15);
+        place.set_dec(offsetLocation.dec);
+        this.gotoTarget({
+          place,
+          noZoom: true,
+          instant: true,
+          trackObject: false
+        });
+      }
     },
 
     textureFromAssetImage(assetFilename: MoonImageFile): Texture {
@@ -2801,13 +2827,21 @@ export default defineComponent({
     },
 
     onPointerDown(event: PointerEvent) {
+      this.sunOffset = null;
       this.isPointerMoving = false;
       this.pointerStartPosition = { x: event.pageX, y: event.pageY };
     },
 
-    onPointerUp() {
+    onPointerUp(_event: PointerEvent) {
       this.pointerStartPosition = null;
       this.isPointerMoving = false;
+      
+      const sunLocation = Planets['_planetLocations'][0];
+      const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunLocation.RA, sunLocation.dec);
+      this.sunOffset = {
+        x: this.wwtControl.renderContext.width / 2 - sunPoint.x,
+        y: this.wwtControl.renderContext.height / 2 - sunPoint.y
+      };
     },
 
 
@@ -3065,7 +3099,7 @@ export default defineComponent({
       
     },
 
-    cssVars(_css) {
+    cssVars(_css: unknown) {
       // console.log(_css);
     },
     
@@ -3107,6 +3141,7 @@ export default defineComponent({
     },
 
     wwtZoomDeg(_zoom: number) {
+      this.sunOffset = null;
       this.updateIntersection();
     },
 
