@@ -176,6 +176,9 @@
               class="leaflet-map"
               :geo-json-files="geojson"
             ></location-selector>
+            <!-- the colorbar is generated using colorbarGradient() to make a serieis of divs -->
+              <div v-show="learnerPath === 'Clouds'"  id="colorbar"></div>
+              <div v-if="learnerPath === 'Clouds'"  id="colorbar-labels">Historical Cloud Cover %</div>
           </div>
         </v-slide-y-transition>
       </v-hover>
@@ -1419,10 +1422,10 @@ export default defineComponent({
     moonPlace.set_target(SolarSystemObjects.moon);
     const initialView = {
       initialLocation: {
-        latitudeDeg: 38,
-        longitudeDeg: -97
+        latitudeDeg: 35,
+        longitudeDeg: -110
       },
-      initialZoom: 3
+      initialZoom: 3.3
     };
 
     const selections = window.localStorage.getItem(USER_SELECTED_LOCATIONS_KEY);
@@ -1492,7 +1495,9 @@ export default defineComponent({
       },
 
       userSelectedMapOptions: {
-        attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+        // templateUrl: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png",
+        templateUrl: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}",
+        attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
         ...(queryData ? { ...queryData, initialZoom: 5 } : initialView)
       },
       
@@ -1839,6 +1844,8 @@ export default defineComponent({
     if (element) {
       element.addEventListener("scroll", () => this.onScroll());
     }
+    
+    this.colorbarGradient();
   },
 
   computed: {
@@ -2093,6 +2100,23 @@ export default defineComponent({
           element.scrollTo({ top: element.scrollHeight });
         }
       }
+    },
+    
+    colorbarGradient() {
+      const colorbar = document.getElementById('colorbar');
+      if (!colorbar) {
+        return;
+      }
+      const n = 10;
+      for (let i=n; i >= 0; i--) {
+        const color = `hsl(0, 0%, 100%, ${(i/ n)*(i/n) * 100}%)`;
+        const div = document.createElement('div');
+        div.style.backgroundColor = color;
+        div.style.height = `${100/n}%`;
+        colorbar.appendChild(div);
+      }
+      
+      
     },
     
     async trackSun(): Promise<void> {
@@ -4336,6 +4360,47 @@ video, #info-video {
   #map-container {
     height: 100%;
     width: 100%;
+    
+    display: flex;
+    
+    #colorbar {
+      height: 100%;
+      width: 1.25em;
+      outline: 1px solid white;
+      margin-left: 5px;
+      margin-right: 1em;
+      // background: linear-gradient(to top, transparent, white)
+    }
+    
+    #colorbar:before {
+      content:"100%";
+      position: absolute;
+      top: 0;
+      right: 0;
+      transform-origin: center;
+      color: black;
+      transform: rotate(-90deg) translateX(-25%) translateX(-0.25em);
+    }
+    
+    #colorbar:after {
+      content:"0%";
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      color: white;
+      transform-origin: center;
+      transform: rotate(-90deg) translateY(-50%) translateX(0.5em);
+    }
+    
+    #colorbar-labels {
+        position: absolute;
+        top: 50%;
+        right: 0.25em;
+        transform-origin: center center;
+        transform:  translateX(50%) rotate(-90deg);
+        
+      }
+    
     
     .map-container {
       height: 100%;
