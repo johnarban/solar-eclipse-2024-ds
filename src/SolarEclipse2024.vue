@@ -1947,7 +1947,7 @@ export default defineComponent({
     
     selectedLocationCloudCoverString():string {
       if (this.selectedLocationCloudCover !== null) {
-        return `Cloud Cover: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
+        return `Hist. Cloud Cover: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
       }
       return "Outside Range";
 
