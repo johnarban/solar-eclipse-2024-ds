@@ -465,20 +465,6 @@
                         border-radius: 20px;
                         font-weight: bold ">date/time</span> are displayed under the map.
                       </li>
-                      <li class="switch-bullets mb-3">
-                        <v-switch
-                          class="display-only-switch"
-                          v-model="displaySwitchOn"
-                          density="compact"
-                          hide-details
-                          disabled
-                          :ripple="false"
-                          :color="accentColor"
-                          true-icon="mdi-image-filter-hdr"
-                        >
-                        </v-switch>
-                        <span class="user-guide-emphasis"> Horizon:</span> Display motion of Sun and Moon as they travel through the sky relative to the ground.
-                      </li>
                       <li class="switch-bullets">
                         <v-switch
                           class="display-only-switch"
