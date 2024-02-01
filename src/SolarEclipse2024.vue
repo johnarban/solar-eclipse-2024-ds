@@ -477,7 +477,7 @@
                           true-icon="mdi-white-balance-sunny"
                         >
                         </v-switch>
-                        <span class="user-guide-emphasis"> Track Sun:</span> Always keep camera centered on Sun.
+                        <span class="user-guide-emphasis"> Track Sun:</span> Camera follows the Sun.
                       </li>
                       <li class="switch-bullets mb-5">
                         <v-switch
@@ -491,7 +491,7 @@
                           false-icon="mdi-image"
                         >
                         </v-switch>
-                        <span class="user-guide-emphasis"> Don't Track Sun:</span> In Horizon View, show motion of Sun (and Moon) against the sky.
+                        <span class="user-guide-emphasis"> Don't Track Sun:</span> Camera stays fixed and shows motion of Sun (and Moon) against the sky.
                       </li>
                     </ul>
 
@@ -942,7 +942,7 @@
                 >
                 </v-switch>
             </template>
-            {{ toggleTrackSun ? "Don't Track Sun" : 'Center on Sun' }}
+            {{ toggleTrackSun ? "Don't Track Sun" : 'Track Sun' }}
           </hover-tooltip>
         </div>
       </div>
