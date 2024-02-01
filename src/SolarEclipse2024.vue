@@ -3202,8 +3202,12 @@ export default defineComponent({
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
       this.wwtControl.renderOneFrame();
       this.updateFrontAnnotations();
-
-      this.centerSun();
+      
+      if (this.trackingSun) {
+        this.centerSun();
+      } else {
+        this.trackSunOffset();
+      }
     },
 
     locationDeg(loc: LocationDeg) {
