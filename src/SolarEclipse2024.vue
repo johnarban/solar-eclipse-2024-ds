@@ -465,20 +465,6 @@
                         border-radius: 20px;
                         font-weight: bold ">date/time</span> are displayed under the map.
                       </li>
-                      <li class="switch-bullets">
-                        <v-switch
-                          class="display-only-switch"
-                          v-model="displaySwitchOff"
-                          density="compact"
-                          hide-details
-                          disabled
-                          :ripple="false"
-                          :color="accentColor"
-                          false-icon="mdi-telescope"
-                        >
-                        </v-switch>
-                        <span class="user-guide-emphasis"> Solar Scope:</span> Display zoomed in Sun and Moon as through a dark solar filter or eclipse glasses.
-                      </li>
                       <li class="switch-bullets mb-3">
                         <v-switch
                           class="display-only-switch"
@@ -951,30 +937,6 @@
       > </v-chip>
       </div>
       <div id="top-switches">
-        <hover-tooltip
-            location="left"
-            :disabled="mobile"
-            id="viewer-mode-switch"
-          >
-            <template v-slot:target>
-              <v-switch
-                inset
-                hide-details
-                :ripple="false"
-                v-model="viewerMode"
-                :color="accentColor"
-                false-value="SunScope"
-                false-icon="mdi-telescope"
-                true-value="Horizon"
-                true-icon="mdi-image-filter-hdr"
-                @keyup.enter="viewerMode = viewerMode === 'SunScope' ? 'Horizon' : 'SunScope'"
-                tabindex="0"
-              >
-              </v-switch>
-            </template>
-            Switch to {{ viewerMode === 'SunScope' ? 'Horizon' : 'Eclipse' }} View
-        </hover-tooltip>
-
         <div id="track-sun-switch"> 
           <hover-tooltip
               location="left"
@@ -1278,7 +1240,7 @@ import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGrid
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn";
-type ViewerMode = "Horizon" | "SunScope";
+type ViewerMode = "Horizon";
 type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | `moon-sky-blue-overlay-${number}.png` | "empty.png";
 
 const D2R = Math.PI / 180;
@@ -1874,11 +1836,8 @@ export default defineComponent({
       // If there are layers to set up, do that here!
       this.layersLoaded = true;
 
-      if (this.viewerMode == 'SunScope') {
-        this.startSolarScopeMode();
-      } else {
-        this.startHorizonMode();
-      }
+      this.startHorizonMode();
+
       this.trackSun().then(() => this.positionSet = true);
 
       // this.setTimeforSunAlt(10); // 10 degrees above horizon
@@ -2294,7 +2253,7 @@ export default defineComponent({
       this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
 
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
-      if (this.useRegularMoon || this.viewerMode === "SunScope") {
+      if (this.useRegularMoon) {
         return;
       }
 
@@ -2445,8 +2404,7 @@ export default defineComponent({
       if (!this.useRegularMoon) {
         // Are we even using showSky?
         const blueMoon = (this.showHorizon && this.showSky) &&
-                          this.moonPosition.altRad > 0 &&
-                          this.viewerMode !== 'SunScope';
+                          this.moonPosition.altRad > 0 ;
         if (!blueMoon) {
           filename = "moon-dark-gray-overlay.png";
         } else {
@@ -2875,27 +2833,6 @@ export default defineComponent({
       // console.log('=== startHorizonMode ===');
       return;
     },
-
-    startSolarScopeMode() {
-      this.wwtSettings.set_localHorizonMode(false);
-      this.showAltAzGrid = false;
-      this.skyColor = this.skyColorNight;
-      this.horizonOpacity = this.sunPosition.altRad > (0 + 0.5 * D2R) ? 1 : 0.6;
-      this.updateFrontAnnotations(); // manually update horizon
-      this.playbackRate = this.scopeRate;
-      // this.setForegroundImageByName("Black Sky Background");
-      // this.setForegroundOpacity(100);
-      this.sunPlace.set_zoomLevel(20); // the original default value
-      // track sun
-      this.gotoTarget({
-        place: this.sunPlace,
-        instant: true,
-        noZoom: false,
-        trackObject: true
-      });
-      // console.log('=== startSolarScopeMode ===');
-      return;
-    },
   
     getSunAltitudeAtTime(time: Date): { altRad: number; azRad: number; } {
       const sunAltAz = this.equatorialToHorizontal(this.sunPosition.raRad, this.sunPosition.decRad, this.location.latitudeRad, this.location.longitudeRad, time);
@@ -2968,13 +2905,10 @@ export default defineComponent({
       
       const sunAlt = altRad;
       let dssOpacity = 0;
-      if (this.viewerMode == 'SunScope') {
-        this.skyOpacity = 1;
-      } else {
-        this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-        this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
-        dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      }
+      this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
+      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
+      dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
+    
       this.updateMoonTexture();
 
       this.setForegroundOpacity(dssOpacity * 100);
@@ -3197,10 +3131,7 @@ export default defineComponent({
     viewerMode(mode: ViewerMode) {
       if (mode === 'Horizon') {
         this.startHorizonMode();
-      } else if (mode === 'SunScope') {
-        this.horizonOpacity = 0.6;
-        this.startSolarScopeMode();
-      }
+      } 
       this.updateSkyOpacityForSunAlt(this.sunPosition.altRad);
       this.updateMoonTexture();
     },
