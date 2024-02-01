@@ -398,7 +398,7 @@
                       style="min-height: 120px;"
                   >                   
                     <h4 class="user-guide-header">Time Controls:</h4>
-                    <p  class="mb-3">(See bottom-left of the screen)</p>
+                    <p  class="mb-3">(Bottom-left of the screen)</p>
                     <ul class="text-list">
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
@@ -441,18 +441,18 @@
                         to reset time, view, and speed. 
                       </li>
                       <li>
-                        You can also control time by dragging <v-icon
+                        Drag <v-icon
                           class="bullet-icon"
                           icon="mdi-circle"
                           size="medium" 
-                        ></v-icon> along the slider.
+                        ></v-icon> along the slider to move to any time.
                       </li>
                     </ul>
 
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
                     
                     <h4 class="user-guide-header">Viewing Mode:</h4>
-                    <p  class="mb-3">(See upper-right of the screen)</p>
+                    <p  class="mb-3">(Upper-right of the screen)</p>
                     <ul class="text-list">
                       <li class="mb-2">
                         The <span 
@@ -512,13 +512,13 @@
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
                     
                     <h4 class="user-guide-header">Display Options:</h4>
-                    <p  class="mb-3">(See bottom-right of the screen)</p>
+                    <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
                       <li>
                         <span class="user-guide-emphasis-white">Sky Grid:</span> Display altitude/azimuth grid with cardinal directions.
                       </li>
                       <li>
-                        <span class="user-guide-emphasis-white">Horizon:</span> Display a virtual "ground" that delineates where the Sun rises and sets.                     
+                        <span class="user-guide-emphasis-white">Horizon/Daytime Sky:</span> Display a virtual "ground" that delineates where the Sun rises and sets. Show a blue sky when the Sun is above the horizon.                     
                       </li>
                       <li>
                         <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
@@ -531,7 +531,7 @@
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
 
                     <h4 class="user-guide-header">Location Options:</h4>
-                    <p  class="mb-3">(See top-left of the screen)</p>
+                    <p  class="mb-3">(Top-left of the screen)</p>
                     <ul class="text-list">
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
@@ -999,7 +999,7 @@
               :color="accentColor"
               v-model="showHorizon"
               @keyup.enter="showHorizon = !showHorizon"
-              label="Horizon"
+              label="Horizon/Daytime Sky"
               hide-details
             />
             <v-checkbox
