@@ -579,6 +579,8 @@
   >
     <WorldWideTelescope
       :wwt-namespace="wwtNamespace"
+      @pointerdown="onPointerDown"
+      @pointerup="onPointerUp"
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
@@ -1501,6 +1503,8 @@ export default defineComponent({
       syncDateTimeWithWWTCurrentTime: true,
       syncDateTimewithSelectedTime: true,
 
+      sunOffset: null as { x: number; y: number } | null,
+
       presetMapOptions: {
         templateUrl: "https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg",
         minZoom: 1,
@@ -2136,6 +2140,7 @@ export default defineComponent({
     },
     
     async trackSun(): Promise<void> {
+      this.sunOffset = null;
       return this.gotoTarget({
         place: this.sunPlace,
         instant: true,
@@ -2151,6 +2156,36 @@ export default defineComponent({
         noZoom: true,
         trackObject: this.trackingSun
       });
+    },
+
+    async trackSunOffset(): Promise<void> {
+      const place = this.getSunOffsetWorldPosition();
+      if (place !== null) {
+        return this.gotoTarget({
+          place,
+          noZoom: true,
+          instant: true,
+          trackObject: true
+        });
+      } else {
+        return Promise.resolve();
+      }
+    },
+
+    getSunOffsetWorldPosition(): Place | null {
+      if (this.sunOffset === null) {
+        return null;
+      }
+
+      const sunLocation = Planets['_planetLocations'][0];
+      const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunLocation.RA, sunLocation.dec);
+      const offsetPoint = { x: sunPoint.x + this.sunOffset.x, y: sunPoint.y + this.sunOffset.y };
+      const offsetLocation = this.findRADecForScreenPoint(offsetPoint);
+      const place = new Place();
+      place.set_RA(offsetLocation.ra / 15);
+      place.set_dec(offsetLocation.dec);
+
+      return place;
     },
 
     angleInZeroToTwoPi(angle: number): number {
@@ -2378,6 +2413,10 @@ export default defineComponent({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.trackingSun = wwtControl._trackingObject === this.sunPlace;
+
+      if (!this.trackingSun && this.sunOffset !== null) {
+        this.trackSunOffset();
+      }
     },
 
     textureFromAssetImage(assetFilename: MoonImageFile): Texture {
@@ -2745,13 +2784,21 @@ export default defineComponent({
     },
 
     onPointerDown(event: PointerEvent) {
+      this.sunOffset = null;
       this.isPointerMoving = false;
       this.pointerStartPosition = { x: event.pageX, y: event.pageY };
     },
 
-    onPointerUp() {
+    onPointerUp(_event: PointerEvent) {
       this.pointerStartPosition = null;
       this.isPointerMoving = false;
+      
+      const sunLocation = Planets['_planetLocations'][0];
+      const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunLocation.RA, sunLocation.dec);
+      this.sunOffset = {
+        x: this.wwtControl.renderContext.width / 2 - sunPoint.x,
+        y: this.wwtControl.renderContext.height / 2 - sunPoint.y
+      };
     },
 
 
@@ -2985,7 +3032,7 @@ export default defineComponent({
       
     },
 
-    cssVars(_css) {
+    cssVars(_css: unknown) {
       // console.log(_css);
     },
     
@@ -3027,6 +3074,7 @@ export default defineComponent({
     },
 
     wwtZoomDeg(_zoom: number) {
+      this.sunOffset = null;
       this.updateIntersection();
     },
 
@@ -3067,14 +3115,19 @@ export default defineComponent({
 
       this.selectedTimezone = tzlookup(...locationDeg);
       this.playing = false;
+      // this.sunOffset = null;
       this.updateWWTLocation();
 
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
       this.wwtControl.renderOneFrame();
       this.updateFrontAnnotations();
-
-      this.centerSun();
+      
+      if (this.trackingSun) {
+        this.centerSun();
+      } else {
+        this.trackSunOffset();
+      }
     },
 
     locationDeg(loc: LocationDeg) {
