@@ -8,15 +8,13 @@
       :variant="geolocation ? (useTextButton ? 'tonal' : 'flat') : 'outlined'"
       :elevation="elevation"
       :loading="loading"
-      :icon="!useTextButton ? icon : false"
-      :prepend-icon="useTextButton ? icon : ''"
+      :icon="useTextButton ? undefined : icon"
+      :prepend-icon="useTextButton ? icon : undefined"
       :color="geolocationError ? 'red' : color"
       @click="getLocation" 
-    >
-        <slot v-if="useTextButton">
-          {{ label }}
-        </slot>
-    </v-btn>
+      :text="useTextButton ? label : undefined"
+    />
+
 
     <span v-if="showTextProgress && loading">
       <v-progress-circular
@@ -24,17 +22,21 @@
         :width="2"
         :color="color"
         indeterminate
-      /> Fetching location
+      ></v-progress-circular> 
+      Fetching locations
     </span>
 
-    <span class="geolocation-text" v-if="!hideText && !useTextButton">
+    <span class="geolocation-text" v-if="showTextLabel && !useTextButton">
       <v-progress-circular
         v-if="loading && showTextProgress"
         :size="progressCircleSize"
         :width="2"
         :color="color"
         indeterminate
-      /> <span v-if="loading && showTextProgress">Fetching location</span>
+      > </v-progress-circular>
+      <span v-if="loading && showTextProgress">
+        Fetching location
+      </span>
       <slot>
       {{ label }}
       </slot>
@@ -105,7 +107,7 @@ export default defineComponent({
       default: false,
     },
 
-    hideText: {
+    showTextLabel: {
       type: Boolean,
       default: false,
     },
@@ -150,17 +152,11 @@ export default defineComponent({
       type: String,
       default: 'mdi-crosshairs',
     },
-
-    hasPermission: {
-      type: Boolean,
-      default: false,
-    },
-
-    requirePermission: {
-      type: Boolean,
-      default: true,
-    },
     
+    backgroundColor: {
+      type: String,
+      default: 'black',
+    },
     
     
   },
@@ -169,15 +165,36 @@ export default defineComponent({
     // declare emits but w/o any verification. -_- 
     geolocation: (_payload: GeolocationCoordinates) => true,
     error: (_payload: GeolocationPositionError) => true,
-    askPermission: () => true,
+    permission: (_payload: boolean | string) => true,
+    permissionDenied: (_payload: boolean) => true,
   },
   
   data() {
     return {
       geolocation: null as GeolocationCoordinates | null,
       geolocationError: null as GeolocationPositionError | null,
+      hasPermission: false,
       loading: false,
+      show: false,
     };
+  },
+  
+  created() {
+  },
+  
+  mounted() {
+    
+    // Check the Permissions API to see if the user has
+    // granted the browser permission to access their location
+    const query = navigator.permissions.query({ name: 'geolocation' });
+    query.then((result) => {
+      this.handlePermission(result);
+      result.addEventListener('change', () => {
+        this.handlePermission(result);
+      });
+    });
+    
+    
   },
 
   computed: {
@@ -187,53 +204,84 @@ export default defineComponent({
   },
 
   methods: {
-    getLocation() {
-      // Get the users location, and emit and event with
-      // the coordinates or the error
-      console.log(this.showTextProgress, this.hideText, this.useTextButton, this.showCoords, this.hideButton);
+    
+    handlePermission(result: PermissionStatus) { 
+      
+      if (result.state === 'granted') {
+        this.show = true;
+      } else if (result.state === 'prompt') {
+        this.show = true;
+      } else if (result.state === 'denied') {
+        this.show = false;
+        this.$emit('permissionDenied', true);
+      }
+      console.log('Permission:', result.state);
+      this.$emit('permission', result.state);
+    },
+    
+    
+    handlePosition(position: GeolocationPosition) {
+      // Handle the position
+      this.geolocation = position.coords;
+      this.geolocationError = null;
+      this.$emit('geolocation', this.geolocation);
+    },
+    
+    handleGeolocationError(error: GeolocationPositionError) {
+      // Handle the error
+      this.geolocationError = error;
+      console.error('Geolocation error:', error);
+      this.$emit('error', this.geolocationError);
+    },
+    
+    geolocate() {
+      
       if (this.geolocation) {
         this.$emit('geolocation', this.geolocation);
-        console.log("require permission =", this.requirePermission);
         return;
       }
-
+      
       const options = {
         enableHighAccuracy: true,
         timeout: 60 * 1000, // 1 minute
         maximumAge: 0,
       };
-
-      if (this.requirePermission && !this.hasPermission) {
-        this.$emit('askPermission');
-        return;
-      }
+      
+      
       if (navigator.geolocation) {
         this.loading = true;  
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            this.geolocation = position.coords;
-            this.$emit('geolocation', this.geolocation);
+            this.handlePosition(position);
             this.loading = false;
           },
           
           (error) => {
-            this.geolocationError = error;
-            this.$emit('error', this.geolocationError);
-
+            this.handleGeolocationError(error);
             this.loading = false;
           },
           options
         );
-      }
+      } 
+        
+    },
+    
+    getLocation() {
+      // Get the users location, and emit and event with
+      // the coordinates or the error
+      console.log(this.showTextProgress, this.showTextLabel, this.useTextButton, this.showCoords, this.hideButton);
+      
+      this.geolocate();
+      
     },
   },
 
   watch: {
-    hasPermission(val: boolean, _oldVal: boolean) {
-      if (val) {
-        this.getLocation();
-      }
+    
+    geolocation(val: GeolocationCoordinates) {
+      this.$emit('geolocation', val);
     },
+    
   }
   
 });

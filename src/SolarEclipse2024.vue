@@ -622,6 +622,7 @@
           faSize="1x"
         ></icon-button>
         <icon-button
+          v-if="getMyLocation"
           id="my-location"
           fa-icon="street-view"
           :color="accentColor"
@@ -646,12 +647,8 @@
       <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
         <geolocation-button
           :color="accentColor"
-          :show-text-progress = "true"
-          :hide-text = "true"
-          :showCoords = "false"
-          :hide-button = "true"
-          :requirePermission = "false"
-          :hasPermission = "true"
+          show-text-progress
+          hide-button
           ref="geolocation"
           @geolocation="(loc: GeolocationCoordinates) => { 
             myLocation = {
@@ -672,7 +669,16 @@
             getMyLocation = false;
             console.log(error);
             }"
-        />
+            @permission="(p: PermissionState) => {
+              if (p == 'granted') {
+                getMyLocation = true;
+              } else if (p == 'prompt') {
+                getMyLocation = true;
+              } else {
+                getMyLocation = false;
+              }
+            }"
+        ></geolocation-button>
       </div>
       
       <!-- <div id="mobile-zoom-control"> -->
@@ -1527,9 +1533,9 @@ export default defineComponent({
       showTextTooltip: false,
       showMapSelector: false,
       showLocationSelector: false,
-      getMyLocation: false,
+      getMyLocation: true,
       myLocation: null as LocationDeg | null,
-
+      
       showWWTGuideSheet: false,
       
       selectionProximity: 4,
