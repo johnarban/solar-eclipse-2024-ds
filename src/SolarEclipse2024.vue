@@ -2205,13 +2205,42 @@ export default defineComponent({
     },
 
     async centerSun(): Promise<void> {
-      this.sunOffset = null;
       return this.gotoTarget({
         place: this.sunPlace,
         instant: true,
         noZoom: true,
         trackObject: this.trackingSun
       });
+    },
+
+    async trackSunOffset(): Promise<void> {
+      const place = this.getSunOffsetWorldPosition();
+      if (place !== null) {
+        return this.gotoTarget({
+          place,
+          noZoom: true,
+          instant: true,
+          trackObject: true
+        });
+      } else {
+        return Promise.resolve();
+      }
+    },
+
+    getSunOffsetWorldPosition(): Place | null {
+      if (this.sunOffset === null) {
+        return null;
+      }
+
+      const sunLocation = Planets['_planetLocations'][0];
+      const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunLocation.RA, sunLocation.dec);
+      const offsetPoint = { x: sunPoint.x + this.sunOffset.x, y: sunPoint.y + this.sunOffset.y };
+      const offsetLocation = this.findRADecForScreenPoint(offsetPoint);
+      const place = new Place();
+      place.set_RA(offsetLocation.ra / 15);
+      place.set_dec(offsetLocation.dec);
+
+      return place;
     },
 
     angleInZeroToTwoPi(angle: number): number {
@@ -2441,20 +2470,7 @@ export default defineComponent({
       this.trackingSun = wwtControl._trackingObject === this.sunPlace;
 
       if (!this.trackingSun && this.sunOffset !== null) {
-        const sunLocation = Planets['_planetLocations'][0];
-        const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunLocation.RA, sunLocation.dec);
-        const offsetPoint = { x: sunPoint.x + this.sunOffset.x, y: sunPoint.y + this.sunOffset.y };
-        const offsetLocation = this.findRADecForScreenPoint(offsetPoint);
-        const place = new Place();
-        place.set_RA(offsetLocation.ra / 15);
-        place.set_dec(offsetLocation.dec);
-
-        this.gotoTarget({
-          place,
-          noZoom: true,
-          instant: true,
-          trackObject: true
-        });
+        this.trackSunOffset();
       }
     },
 
@@ -3179,6 +3195,7 @@ export default defineComponent({
 
       this.selectedTimezone = tzlookup(...locationDeg);
       this.playing = false;
+      // this.sunOffset = null;
       this.updateWWTLocation();
 
       // We need to let the location update before we redraw the horizon and overlay
