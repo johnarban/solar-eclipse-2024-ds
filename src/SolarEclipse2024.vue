@@ -83,7 +83,7 @@
                   <p>
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="share-nodes" class="bullet-icon"/>: copy url for a location
                   </p>
-                  <p>
+                  <p v-if="getMyLocation">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong>
                     <font-awesome-icon icon="street-view" class="bullet-icon"/>:
                     view eclipse from <strong>My Location</strong> (Location services must be enabled on device)
@@ -554,7 +554,7 @@
                               size="lg" 
                             ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
                       </li>
-                      <li>
+                      <li v-if="getMyLocation">
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
                               class="bullet-icon"
                               icon="street-view"
