@@ -1,5 +1,6 @@
 <template>
   <span :id="`geolocation-wrapper+${id}`" class="geolocation">
+    <span v-if="showPermissions">Geolocation {{ permissions }} </span>
     <v-btn 
       v-if="!hideButton"
       class="geolocation-button"
@@ -158,6 +159,10 @@ export default defineComponent({
       default: 'black',
     },
     
+    showPermissions: {
+      type: Boolean,
+      default: false,
+    },
     
   },
 
@@ -173,7 +178,7 @@ export default defineComponent({
     return {
       geolocation: null as GeolocationCoordinates | null,
       geolocationError: null as GeolocationPositionError | null,
-      hasPermission: false,
+      permissions: '',
       loading: false,
       show: false,
     };
@@ -215,6 +220,7 @@ export default defineComponent({
         this.show = false;
         this.$emit('permissionDenied', true);
       }
+      this.permissions = result.state;
       console.log('Permission:', result.state);
       this.$emit('permission', result.state);
     },

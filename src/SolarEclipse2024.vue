@@ -673,7 +673,7 @@
               if (p == 'granted') {
                 getMyLocation = true;
               } else if (p == 'prompt') {
-                getMyLocation = true;
+                getMyLocation = false;
               } else {
                 getMyLocation = false;
               }
