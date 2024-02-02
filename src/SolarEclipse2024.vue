@@ -1894,7 +1894,7 @@ export default defineComponent({
     
     selectedLocaledTimeDateString() {
       if (this.smallSize) {
-        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm:ss (zzz)');
+        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm');
       } else {
         return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd/yyyy HH:mm:ss (zzz)');
       }
@@ -1913,7 +1913,7 @@ export default defineComponent({
     
     selectedLocationCloudCoverString():string {
       if (this.selectedLocationCloudCover !== null) {
-        return `Hist. Cloud Cover: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
+        return `Hist Cld Cvr: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
       }
       return "Outside Range";
 
@@ -4684,6 +4684,18 @@ video, #info-video {
     justify-content: flex-end;
     flex-wrap: column;
     gap:5px;
+
+    @media (max-width: 700px) {
+      .v-chip.v-chip--density-default {
+        height: var(--default-line-height);
+        padding-inline: 0.8rem;
+        padding-block: 0.8rem;
+      }
+
+      .v-chip__content {
+        font-size: calc(0.8 * var(--default-font-size));
+      }
+    }
 
   }
 
