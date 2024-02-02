@@ -544,7 +544,8 @@
                           
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
 
-                    <h4 class="user-guide-header">Location Options:</h4>
+                    <h4 v-if="getMyLocation" class="user-guide-header">Location Options:</h4>
+                    <h4 v-else class="user-guide-header">Share location</h4>
                     <p  class="mb-3">(See top-left of the screen)</p>
                     <ul class="text-list">
                       <li>
