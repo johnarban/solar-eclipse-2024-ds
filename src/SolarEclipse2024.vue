@@ -3242,12 +3242,11 @@ export default defineComponent({
 
     toggleTrackSun(val: boolean) {
       if (val) {
+        this.trackSun();
         if(this.sunOffset === null) {
           this.sunCenteredTracking = true;
-          this.trackSun();
           return;
         } else {
-          this.trackSunOffset();
           return;
         }
       } else {
