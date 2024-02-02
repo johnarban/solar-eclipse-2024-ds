@@ -1973,7 +1973,7 @@ export default defineComponent({
     
     myLocationToolTip() {
       if (this.geolocationPermission === 'denied') {
-        return "Geolocation disabled. Check your browser settings.";
+        return "Geolocation disabled. Check browser permissions for this site.";
       } else {
         return "Use my location";
       } 
