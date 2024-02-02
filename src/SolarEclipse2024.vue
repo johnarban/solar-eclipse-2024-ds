@@ -329,7 +329,7 @@
                           <li><a href="https://science.nasa.gov/eclipses/future-eclipses/eclipse-2024/where-when/" target="_blank" rel="noopener noreferrer">NASA's website</a> about the April eclipse
                           </li>
                           <li>
-                            Infiniscope's <a href="https://infiniscope.org/lesson/21" target="_blank" rel="noopener noreferrer">Kingdom in Peril</a> lesson on eclipses (available in English and Spanish)
+                            Infiniscope's Kingdom in Peril lessons on eclipses, available in <a href="https://infiniscope.org/collection/3" target="_blank" rel="noopener noreferrer">English</a> and <a href="https://infiniscope.org/collection/6" target="_blank" rel="noopener noreferrer">Spanish</a>
                           </li>
                           <li>
                             <a href="https://EclipseSoundscapes.org" target="_blank" rel="noopener noreferrer">Eclipse Soundscapes</a> citizen science project
