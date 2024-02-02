@@ -191,6 +191,12 @@ export default defineComponent({
     
     // Check the Permissions API to see if the user has
     // granted the browser permission to access their location
+    if (!navigator.permissions) {
+      console.error('Permissions API not supported');
+      this.$emit('permission', 'denied');
+      this.show = false;
+      return;
+    }
     const query = navigator.permissions.query({ name: 'geolocation' });
     query.then((result) => {
       this.handlePermission(result);
