@@ -626,10 +626,10 @@
           v-if="getMyLocation"
           id="my-location"
           fa-icon="street-view"
-          :color="accentColor"
-          :focus-color="accentColor"
+          :color="myLocationColor"
+          :focus-color="myLocationColor"
           :box-shadow="false"
-          tooltip-text="Use my location"
+          :tooltip-text="myLocationToolTip"
           :show-tooltip="!mobile"
           @update:modelValue="(value: boolean) => {
             if(value) {
@@ -667,16 +667,19 @@
               text: error.message,
               type: 'error',
             }); 
-            getMyLocation = false;
+            getMyLocation = true;
             console.log(error);
             }"
             @permission="(p: PermissionState) => {
+              geolocationPermission = p;
+              // we're always gonna show the button,
+              // just leaving this if we wanna change
               if (p == 'granted') {
                 getMyLocation = true;
               } else if (p == 'prompt') {
-                getMyLocation = false;
+                getMyLocation = true;
               } else {
-                getMyLocation = false;
+                getMyLocation = true;
               }
             }"
         ></geolocation-button>
@@ -1536,6 +1539,7 @@ export default defineComponent({
       showLocationSelector: false,
       getMyLocation: true,
       myLocation: null as LocationDeg | null,
+      geolocationPermission: '' as 'granted' | 'denied' | 'prompt',
       
       showWWTGuideSheet: false,
       
@@ -1965,6 +1969,35 @@ export default defineComponent({
       }
       return "Outside Range";
 
+    },
+    
+    myLocationToolTip() {
+      if (this.geolocationPermission === 'denied') {
+        return "Geolocation disabled. Check your browser settings.";
+      } else {
+        return "Use my location";
+      } 
+    },
+    
+    myLocationColor() {
+      if (this.myLocation) {
+        // check if location = myLocation. if not fade the color a bit.
+        if (this.locationDeg.latitudeDeg === this.myLocation.latitudeDeg && this.locationDeg.longitudeDeg === this.myLocation.longitudeDeg) {
+          return "limegreen";
+        } else {
+          return "green";
+        }
+        
+      } else {
+        
+        if (this.geolocationPermission === 'denied') {
+          return "grey";
+        } else if (this.geolocationPermission === 'granted') {
+          return this.accentColor;
+        } else {
+          return this.accentColor;
+        }
+      }
     },
 
     ready(): boolean {
