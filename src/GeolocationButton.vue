@@ -243,6 +243,15 @@ export default defineComponent({
       // Handle the error
       this.geolocationError = error;
       console.error('Geolocation error:', error);
+      // if the permission still is prompt, then
+      // then the browser has not been given permission
+      if (this.permissions === 'prompt') {
+        // modify the error.message to be more user friendly
+        this.geolocationError = {
+          code: 1,
+          message: `Location services were denied. Please ensure location services are enabled your browser in system settings`,
+        } as GeolocationPositionError;
+      }
       this.$emit('error', this.geolocationError);
     },
     
