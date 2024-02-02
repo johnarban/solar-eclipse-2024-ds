@@ -944,7 +944,7 @@
                 >
                 </v-switch>
             </template>
-            {{ toggleTrackSun ? "Don't Track Sun" : 'Track Sun' }}
+            {{ toggleTrackSun ? "Stop Tracking Sun" : 'Start Tracking Sun' }}
           </hover-tooltip>
         </div>
       </div>
@@ -976,6 +976,14 @@
         </div>
         <transition-expand>
           <div v-if="showControls" id="control-checkboxes">
+            <v-checkbox
+              :color="accentColor"
+              v-model="sunCenteredTracking"
+              @change="centerSun()"
+              label="Center Sun"
+              :disabled="sunCenteredTracking"
+              hide-details 
+            />
             <v-checkbox
               :color="accentColor"
               v-model="showAltAzGrid"
@@ -1659,7 +1667,9 @@ export default defineComponent({
       playingIntervalId: null as ReturnType<typeof setInterval> | null,
       playingWaitCount: 0,
 
+      activePointer: false,
       showControls: true,
+      sunCenteredTracking: true,
       showAltAzGrid: true,
       showHorizon: true,
       showTextSheet: false, 
@@ -2069,15 +2079,19 @@ export default defineComponent({
 
     trackingSun: {
       set(value: boolean) {
-        this.toggleTrackSun = value;
+        if(this.sunOffset === null) {
+          this.sunCenteredTracking = value;
+        } else {
+          this.sunCenteredTracking = false;
+        }
       },
       
       get(): boolean {
         // do something more useful later
         return this.toggleTrackSun;
-      }
-      
+      }   
     },
+
     defaultRate(): number {
       return this.viewerMode === 'Horizon' ? this.horizonRate : this.scopeRate;
     },
@@ -2150,6 +2164,9 @@ export default defineComponent({
     },
 
     async centerSun(): Promise<void> {
+      this.sunOffset = null;
+      this.toggleTrackSun = true;
+      this.sunCenteredTracking = true;
       return this.gotoTarget({
         place: this.sunPlace,
         instant: true,
@@ -2159,6 +2176,7 @@ export default defineComponent({
     },
 
     async trackSunOffset(): Promise<void> {
+      this.sunCenteredTracking = false;
       const place = this.getSunOffsetWorldPosition();
       if (place !== null) {
         return this.gotoTarget({
@@ -2410,12 +2428,16 @@ export default defineComponent({
 
 
     onWWTRenderFrame(wwtControl: WWTControl) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      this.trackingSun = wwtControl._trackingObject === this.sunPlace;
-
-      if (!this.trackingSun && this.sunOffset !== null) {
-        this.trackSunOffset();
+      if (this.activePointer) {
+        // Check if user is moving WWT canvas. We don't want to disable tracking if they are just creating an offset.
+        return;
+      } else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.trackingSun = (wwtControl._trackingObject === this.sunPlace) || (this.sunOffset !== null);
+        if (this.trackingSun && this.sunOffset !== null) {
+          this.trackSunOffset();
+        }
       }
     },
 
@@ -2787,6 +2809,7 @@ export default defineComponent({
       this.sunOffset = null;
       this.isPointerMoving = false;
       this.pointerStartPosition = { x: event.pageX, y: event.pageY };
+      this.activePointer = true;
     },
 
     onPointerUp(_event: PointerEvent) {
@@ -2799,6 +2822,7 @@ export default defineComponent({
         x: this.wwtControl.renderContext.width / 2 - sunPoint.x,
         y: this.wwtControl.renderContext.height / 2 - sunPoint.y
       };
+      this.activePointer = false;
     },
 
 
@@ -3124,7 +3148,7 @@ export default defineComponent({
       this.updateFrontAnnotations();
       
       if (this.trackingSun) {
-        this.centerSun();
+        //this.centerSun();
       } else {
         this.trackSunOffset();
       }
@@ -3197,12 +3221,17 @@ export default defineComponent({
     },
 
     toggleTrackSun(val: boolean) {
-      // this turns of sun tracking
-      // console.log("toggleTrackSun", val);
       if (val) {
-        this.trackSun();
-        return;
+        if(this.sunOffset === null) {
+          this.sunCenteredTracking = true;
+          this.trackSun();
+          return;
+        } else {
+          this.trackSunOffset();
+          return;
+        }
       } else {
+        this.sunCenteredTracking = false;
         const currentPlace = new Place();
         currentPlace.set_RA(this.wwtRARad * R2D / 15);
         currentPlace.set_dec(this.wwtDecRad * R2D);
@@ -3212,6 +3241,16 @@ export default defineComponent({
           noZoom: true,
           trackObject: false
         });
+        return;
+      }
+    },
+
+    sunOffset(val: {x: number, y: number}) {
+      if (val === null && this.toggleTrackSun) {
+        this.sunCenteredTracking = true;
+        return;
+      } else {
+        this.sunCenteredTracking = false;
         return;
       }
     },
