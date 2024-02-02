@@ -269,15 +269,18 @@ export default defineComponent({
       
       if (navigator.geolocation) {
         this.loading = showLoading;  
+        console.log('Getting location');
         navigator.geolocation.getCurrentPosition(
           (position) => {
             this.handlePosition(position);
             this.loading = false;
+            console.log('Got location');
           },
           
           (error) => {
             this.handleGeolocationError(error);
             this.loading = false;
+            console.log('Error getting location');
           },
           options
         );
@@ -309,7 +312,9 @@ export default defineComponent({
     },
     
     geolocationError(val: GeolocationPositionError) {
-      this.$emit('error', val);
+      if (val) {
+        this.$emit('error', val);
+      }
     },
     
   }
