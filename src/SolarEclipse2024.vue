@@ -667,7 +667,9 @@
               text: error.message,
               type: 'error',
             }); 
-            getMyLocation = true;
+            if (error.code === 1) {
+              geolocationPermission = 'denied';
+            }
             console.log(error);
             }"
             @permission="(p: PermissionState) => {
