@@ -324,7 +324,20 @@
                     <details>
                       <summary>Where can I learn more?</summary>
                       <p>
-                        Check out <a href="https://science.nasa.gov/eclipses/future-eclipses/eclipse-2024/where-when/" target="_blank" rel="noopener noreferrer">NASA's website</a> about the October annular eclipse and Fiske Planetarium's <a href="https://www.colorado.edu/fiske/projects/science-through-shadows" target="_blank" rel="noopener noreferrer">Science Through Shadows</a> videos.
+                        Check out
+                        <ul>
+                          <li><a href="https://science.nasa.gov/eclipses/future-eclipses/eclipse-2024/where-when/" target="_blank" rel="noopener noreferrer">NASA's website</a> about the April eclipse
+                          </li>
+                          <li>
+                            Infiniscope's <a href="https://infiniscope.org/lesson/21" target="_blank" rel="noopener noreferrer">Kingdom in Peril</a> lesson on eclipses (available in English and Spanish)
+                          </li>
+                          <li>
+                            <a href="https://EclipseSoundscapes.org" target="_blank" rel="noopener noreferrer">Eclipse Soundscapes</a> citizen science project
+                          </li>
+                          <li>
+                            Fiske Planetarium's <a href="https://www.colorado.edu/fiske/projects/science-through-shadows" target="_blank" rel="noopener noreferrer">Science Through Shadows</a> videos
+                          </li>
+                        </ul>
                       </p>
                     </details>
                   </div>
@@ -398,7 +411,7 @@
                       style="min-height: 120px;"
                   >                   
                     <h4 class="user-guide-header">Time Controls:</h4>
-                    <p  class="mb-3">(See bottom-left of the screen)</p>
+                    <p  class="mb-3">(Bottom-left of the screen)</p>
                     <ul class="text-list">
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
@@ -441,57 +454,36 @@
                         to reset time, view, and speed. 
                       </li>
                       <li>
-                        You can also control time by dragging <v-icon
+                        Drag <v-icon
                           class="bullet-icon"
                           icon="mdi-circle"
                           size="medium" 
-                        ></v-icon> along the slider.
+                        ></v-icon> along the slider to move to any time.
                       </li>
                     </ul>
 
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
                     
                     <h4 class="user-guide-header">Viewing Mode:</h4>
-                    <p  class="mb-3">(See upper-right of the screen)</p>
+                    <p  class="mb-3">(Upper-right of the screen)</p>
                     <ul class="text-list">
                       <li class="mb-2">
                         The <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">selected location</span> and <span 
+                        font-weight: bold ">selected location</span>   
+                        <span 
+                        v-if="mobile"
+                        style="color: blue; background-color: white;
+                        padding-inline: 0.7em;
+                        border-radius: 20px;
+                        font-weight: bold ">historical cloud cover</span>  
+                        and <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
                         font-weight: bold ">date/time</span> are displayed under the map.
-                      </li>
-                      <li class="switch-bullets">
-                        <v-switch
-                          class="display-only-switch"
-                          v-model="displaySwitchOff"
-                          density="compact"
-                          hide-details
-                          disabled
-                          :ripple="false"
-                          :color="accentColor"
-                          false-icon="mdi-telescope"
-                        >
-                        </v-switch>
-                        <span class="user-guide-emphasis"> Solar Scope:</span> Display zoomed in Sun and Moon as through a dark solar filter or eclipse glasses.
-                      </li>
-                      <li class="switch-bullets mb-3">
-                        <v-switch
-                          class="display-only-switch"
-                          v-model="displaySwitchOn"
-                          density="compact"
-                          hide-details
-                          disabled
-                          :ripple="false"
-                          :color="accentColor"
-                          true-icon="mdi-image-filter-hdr"
-                        >
-                        </v-switch>
-                        <span class="user-guide-emphasis"> Horizon:</span> Display motion of Sun and Moon as they travel through the sky relative to the ground.
                       </li>
                       <li class="switch-bullets">
                         <v-switch
@@ -505,7 +497,7 @@
                           true-icon="mdi-white-balance-sunny"
                         >
                         </v-switch>
-                        <span class="user-guide-emphasis"> Track Sun:</span> Always keep camera centered on Sun.
+                        <span class="user-guide-emphasis"> Track Sun:</span> Camera follows the Sun.
                       </li>
                       <li class="switch-bullets mb-5">
                         <v-switch
@@ -519,20 +511,20 @@
                           false-icon="mdi-image"
                         >
                         </v-switch>
-                        <span class="user-guide-emphasis"> Don't Track Sun:</span> In Horizon View, show motion of Sun (and Moon) against the sky.
+                        <span class="user-guide-emphasis"> Don't Track Sun:</span> Camera stays fixed and shows motion of Sun (and Moon) against the sky.
                       </li>
                     </ul>
 
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
                     
                     <h4 class="user-guide-header">Display Options:</h4>
-                    <p  class="mb-3">(See bottom-right of the screen)</p>
+                    <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
                       <li>
                         <span class="user-guide-emphasis-white">Sky Grid:</span> Display altitude/azimuth grid with cardinal directions.
                       </li>
                       <li>
-                        <span class="user-guide-emphasis-white">Horizon:</span> Display a virtual "ground" that delineates where the Sun rises and sets.                     
+                        <span class="user-guide-emphasis-white">Horizon/Daytime Sky:</span> Display a virtual "ground" that delineates where the Sun rises and sets. Show a blue sky when the Sun is above the horizon.                     
                       </li>
                       <li>
                         <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
@@ -545,7 +537,7 @@
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
 
                     <h4 class="user-guide-header">Location Options:</h4>
-                    <p  class="mb-3">(See top-left of the screen)</p>
+                    <p  class="mb-3">(Top-left of the screen)</p>
                     <ul class="text-list">
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
@@ -953,30 +945,6 @@
       > </v-chip>
       </div>
       <div id="top-switches">
-        <hover-tooltip
-            location="left"
-            :disabled="mobile"
-            id="viewer-mode-switch"
-          >
-            <template v-slot:target>
-              <v-switch
-                inset
-                hide-details
-                :ripple="false"
-                v-model="viewerMode"
-                :color="accentColor"
-                false-value="SunScope"
-                false-icon="mdi-telescope"
-                true-value="Horizon"
-                true-icon="mdi-image-filter-hdr"
-                @keyup.enter="viewerMode = viewerMode === 'SunScope' ? 'Horizon' : 'SunScope'"
-                tabindex="0"
-              >
-              </v-switch>
-            </template>
-            Switch to {{ viewerMode === 'SunScope' ? 'Horizon' : 'Eclipse' }} View
-        </hover-tooltip>
-
         <div id="track-sun-switch"> 
           <hover-tooltip
               location="left"
@@ -996,7 +964,7 @@
                 >
                 </v-switch>
             </template>
-            {{ toggleTrackSun ? "Don't Track Sun" : 'Center on Sun' }}
+            {{ toggleTrackSun ? "Stop Tracking Sun" : 'Start Tracking Sun' }}
           </hover-tooltip>
         </div>
       </div>
@@ -1030,6 +998,14 @@
           <div v-if="showControls" id="control-checkboxes">
             <v-checkbox
               :color="accentColor"
+              v-model="sunCenteredTracking"
+              @change="centerSun()"
+              label="Center Sun"
+              :disabled="sunCenteredTracking"
+              hide-details 
+            />
+            <v-checkbox
+              :color="accentColor"
               v-model="showAltAzGrid"
               @keyup.enter="showAltAzGrid = !showAltAzGrid"
               label="Sky Grid"
@@ -1039,7 +1015,7 @@
               :color="accentColor"
               v-model="showHorizon"
               @keyup.enter="showHorizon = !showHorizon"
-              label="Horizon"
+              label="Horizon/Daytime Sky"
               hide-details
             />
             <v-checkbox
@@ -1280,7 +1256,7 @@ import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGrid
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn";
-type ViewerMode = "Horizon" | "SunScope";
+type ViewerMode = "Horizon";
 type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | `moon-sky-blue-overlay-${number}.png` | "empty.png";
 
 const D2R = Math.PI / 180;
@@ -1711,7 +1687,9 @@ export default defineComponent({
       playingIntervalId: null as ReturnType<typeof setInterval> | null,
       playingWaitCount: 0,
 
+      activePointer: false,
       showControls: true,
+      sunCenteredTracking: true,
       showAltAzGrid: true,
       showHorizon: true,
       showTextSheet: false, 
@@ -1878,11 +1856,8 @@ export default defineComponent({
       // If there are layers to set up, do that here!
       this.layersLoaded = true;
 
-      if (this.viewerMode == 'SunScope') {
-        this.startSolarScopeMode();
-      } else {
-        this.startHorizonMode();
-      }
+      this.startHorizonMode();
+
       this.trackSun().then(() => this.positionSet = true);
 
       // this.setTimeforSunAlt(10); // 10 degrees above horizon
@@ -1939,7 +1914,7 @@ export default defineComponent({
     
     selectedLocaledTimeDateString() {
       if (this.smallSize) {
-        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm:ss (zzz)');
+        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm');
       } else {
         return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd/yyyy HH:mm:ss (zzz)');
       }
@@ -1958,7 +1933,7 @@ export default defineComponent({
     
     selectedLocationCloudCoverString():string {
       if (this.selectedLocationCloudCover !== null) {
-        return `Hist. Cloud Cover: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
+        return `Hist Cld Cvr: ${(this.selectedLocationCloudCover * 100).toFixed(0)}%`;
       }
       return "Outside Range";
 
@@ -2124,15 +2099,19 @@ export default defineComponent({
 
     trackingSun: {
       set(value: boolean) {
-        this.toggleTrackSun = value;
+        if(this.sunOffset === null) {
+          this.sunCenteredTracking = value;
+        } else {
+          this.sunCenteredTracking = false;
+        }
       },
       
       get(): boolean {
         // do something more useful later
         return this.toggleTrackSun;
-      }
-      
+      }   
     },
+
     defaultRate(): number {
       return this.viewerMode === 'Horizon' ? this.horizonRate : this.scopeRate;
     },
@@ -2205,6 +2184,9 @@ export default defineComponent({
     },
 
     async centerSun(): Promise<void> {
+      this.sunOffset = null;
+      this.toggleTrackSun = true;
+      this.sunCenteredTracking = true;
       return this.gotoTarget({
         place: this.sunPlace,
         instant: true,
@@ -2214,6 +2196,7 @@ export default defineComponent({
     },
 
     async trackSunOffset(): Promise<void> {
+      this.sunCenteredTracking = false;
       const place = this.getSunOffsetWorldPosition();
       if (place !== null) {
         return this.gotoTarget({
@@ -2329,7 +2312,7 @@ export default defineComponent({
       this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
 
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
-      if (this.useRegularMoon || this.viewerMode === "SunScope") {
+      if (this.useRegularMoon) {
         return;
       }
 
@@ -2465,12 +2448,16 @@ export default defineComponent({
 
 
     onWWTRenderFrame(wwtControl: WWTControl) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      this.trackingSun = wwtControl._trackingObject === this.sunPlace;
-
-      if (!this.trackingSun && this.sunOffset !== null) {
-        this.trackSunOffset();
+      if (this.activePointer) {
+        // Check if user is moving WWT canvas. We don't want to disable tracking if they are just creating an offset.
+        return;
+      } else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        this.trackingSun = (wwtControl._trackingObject === this.sunPlace) || (this.sunOffset !== null);
+        if (this.trackingSun && this.sunOffset !== null) {
+          this.trackSunOffset();
+        }
       }
     },
 
@@ -2484,8 +2471,7 @@ export default defineComponent({
       if (!this.useRegularMoon) {
         // Are we even using showSky?
         const blueMoon = (this.showHorizon && this.showSky) &&
-                          this.moonPosition.altRad > 0 &&
-                          this.viewerMode !== 'SunScope';
+                          this.moonPosition.altRad > 0 ;
         if (!blueMoon) {
           filename = "moon-dark-gray-overlay.png";
         } else {
@@ -2843,6 +2829,7 @@ export default defineComponent({
       this.sunOffset = null;
       this.isPointerMoving = false;
       this.pointerStartPosition = { x: event.pageX, y: event.pageY };
+      this.activePointer = true;
     },
 
     onPointerUp(_event: PointerEvent) {
@@ -2855,6 +2842,7 @@ export default defineComponent({
         x: this.wwtControl.renderContext.width / 2 - sunPoint.x,
         y: this.wwtControl.renderContext.height / 2 - sunPoint.y
       };
+      this.activePointer = false;
     },
 
 
@@ -2920,27 +2908,6 @@ export default defineComponent({
       });
       this.playbackRate = this.horizonRate;
       // console.log('=== startHorizonMode ===');
-      return;
-    },
-
-    startSolarScopeMode() {
-      this.wwtSettings.set_localHorizonMode(false);
-      this.showAltAzGrid = false;
-      this.skyColor = this.skyColorNight;
-      this.horizonOpacity = this.sunPosition.altRad > (0 + 0.5 * D2R) ? 1 : 0.6;
-      this.updateFrontAnnotations(); // manually update horizon
-      this.playbackRate = this.scopeRate;
-      // this.setForegroundImageByName("Black Sky Background");
-      // this.setForegroundOpacity(100);
-      this.sunPlace.set_zoomLevel(20); // the original default value
-      // track sun
-      this.gotoTarget({
-        place: this.sunPlace,
-        instant: true,
-        noZoom: false,
-        trackObject: true
-      });
-      // console.log('=== startSolarScopeMode ===');
       return;
     },
   
@@ -3015,13 +2982,10 @@ export default defineComponent({
       
       const sunAlt = altRad;
       let dssOpacity = 0;
-      if (this.viewerMode == 'SunScope') {
-        this.skyOpacity = 1;
-      } else {
-        this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-        this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
-        dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      }
+      this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
+      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
+      dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
+    
       this.updateMoonTexture();
 
       this.setForegroundOpacity(dssOpacity * 100);
@@ -3204,7 +3168,7 @@ export default defineComponent({
       this.updateFrontAnnotations();
       
       if (this.trackingSun) {
-        this.centerSun();
+        //this.centerSun();
       } else {
         this.trackSunOffset();
       }
@@ -3250,10 +3214,7 @@ export default defineComponent({
     viewerMode(mode: ViewerMode) {
       if (mode === 'Horizon') {
         this.startHorizonMode();
-      } else if (mode === 'SunScope') {
-        this.horizonOpacity = 0.6;
-        this.startSolarScopeMode();
-      }
+      } 
       this.updateSkyOpacityForSunAlt(this.sunPosition.altRad);
       this.updateMoonTexture();
     },
@@ -3280,12 +3241,16 @@ export default defineComponent({
     },
 
     toggleTrackSun(val: boolean) {
-      // this turns of sun tracking
-      // console.log("toggleTrackSun", val);
       if (val) {
         this.trackSun();
-        return;
+        if(this.sunOffset === null) {
+          this.sunCenteredTracking = true;
+          return;
+        } else {
+          return;
+        }
       } else {
+        this.sunCenteredTracking = false;
         const currentPlace = new Place();
         currentPlace.set_RA(this.wwtRARad * R2D / 15);
         currentPlace.set_dec(this.wwtDecRad * R2D);
@@ -3295,6 +3260,16 @@ export default defineComponent({
           noZoom: true,
           trackObject: false
         });
+        return;
+      }
+    },
+
+    sunOffset(val: {x: number, y: number}) {
+      if (val === null && this.toggleTrackSun) {
+        this.sunCenteredTracking = true;
+        return;
+      } else {
+        this.sunCenteredTracking = false;
         return;
       }
     },
@@ -4729,6 +4704,18 @@ video, #info-video {
     flex-wrap: column;
     gap:5px;
 
+    @media (max-width: 700px) {
+      .v-chip.v-chip--density-default {
+        height: var(--default-line-height);
+        padding-inline: 0.8rem;
+        padding-block: 0.8rem;
+      }
+
+      .v-chip__content {
+        font-size: calc(0.8 * var(--default-font-size));
+      }
+    }
+
   }
 
   .icon-wrapper {
@@ -4835,7 +4822,7 @@ video, #info-video {
 a {
     text-decoration: none;
     font-weight: bold;
-    color: #589eef; // lighter variant of sky color
+    color: #6facf1; // lighter variant of sky color
     pointer-events: auto;
   }
 
