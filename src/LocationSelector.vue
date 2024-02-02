@@ -143,6 +143,7 @@ export default defineComponent({
 
   data() {
     return {
+      eclipsePath: null as L.GeoJSON | null,
       placeCircles: [] as L.CircleMarker[],
       hoveredPlace: null as Place | null,
       selectedCircle: null as L.CircleMarker | null,
@@ -256,7 +257,9 @@ export default defineComponent({
       if (this.selectedPlace) {
         return null;
       }
-      return this.circleForLocation(this.modelValue, { ...this.selectedCircleOptions, interactive: false });
+      const circle = this.circleForLocation(this.modelValue, { ...this.selectedCircleOptions, interactive: false });
+      circle.bringToFront();
+      return circle;
     },
 
     circleForPlace(place: Place): L.CircleMarker {
@@ -304,6 +307,7 @@ export default defineComponent({
 
       this.loadCloudCover().then(() => {
         this.updateCloudCover(this.cloudCover);
+        this.bringLocationAndPathToFront();
       });
 
       this.placeCircles = this.places.map(place => this.circleForPlace(place));
@@ -346,7 +350,11 @@ export default defineComponent({
           fetch(url)
             .then((response) => response.json())
             .then((data) => {
-              L.geoJSON(data, {style: style}).addTo(map);
+              const geoJSON = L.geoJSON(data, { style }).addTo(map);
+              if (url.includes("center")) {
+                geoJSON.bringToFront();
+                this.eclipsePath = geoJSON;
+              }
             })
             .catch((error) => {
               console.error('Error:', error);
@@ -371,6 +379,9 @@ export default defineComponent({
           }).addTo(map);
         }
       });
+
+      this.eclipsePath?.bringToFront();
+      this.selectedCircle?.bringToFront();
       
       this.map = map;
     },
@@ -385,8 +396,14 @@ export default defineComponent({
         this.selectedCircle = this.circleForSelection();
         if (this.selectedCircle) {
           this.selectedCircle.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
+          this.bringLocationAndPathToFront();
         }
       }
+    },
+
+    bringLocationAndPathToFront() {
+      this.eclipsePath?.bringToFront();
+      this.selectedCircle?.bringToFront();
     },
 
     locationToLatLng(location: LocationDeg): L.LatLngExpression {
@@ -432,6 +449,7 @@ export default defineComponent({
     
     cloudCover(value: boolean) {
       this.updateCloudCover(value);
+      this.bringLocationAndPathToFront();
     },
     places() {
       this.map?.remove();
