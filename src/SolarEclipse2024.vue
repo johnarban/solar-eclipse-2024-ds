@@ -324,7 +324,20 @@
                     <details>
                       <summary>Where can I learn more?</summary>
                       <p>
-                        Check out <a href="https://science.nasa.gov/eclipses/future-eclipses/eclipse-2024/where-when/" target="_blank" rel="noopener noreferrer">NASA's website</a> about the October annular eclipse and Fiske Planetarium's <a href="https://www.colorado.edu/fiske/projects/science-through-shadows" target="_blank" rel="noopener noreferrer">Science Through Shadows</a> videos.
+                        Check out
+                        <ul>
+                          <li><a href="https://science.nasa.gov/eclipses/future-eclipses/eclipse-2024/where-when/" target="_blank" rel="noopener noreferrer">NASA's website</a> about the April eclipse
+                          </li>
+                          <li>
+                            Infiniscope's <a href="https://infiniscope.org/lesson/21" target="_blank" rel="noopener noreferrer">Kingdom in Peril</a> lesson on eclipses (available in English and Spanish)
+                          </li>
+                          <li>
+                            <a href="https://EclipseSoundscapes.org" target="_blank" rel="noopener noreferrer">Eclipse Soundscapes</a> citizen science project
+                          </li>
+                          <li>
+                            Fiske Planetarium's <a href="https://www.colorado.edu/fiske/projects/science-through-shadows" target="_blank" rel="noopener noreferrer">Science Through Shadows</a> videos
+                          </li>
+                        </ul>
                       </p>
                     </details>
                   </div>
@@ -4810,7 +4823,7 @@ video, #info-video {
 a {
     text-decoration: none;
     font-weight: bold;
-    color: #589eef; // lighter variant of sky color
+    color: #6facf1; // lighter variant of sky color
     pointer-events: auto;
   }
 
