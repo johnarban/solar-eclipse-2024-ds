@@ -459,7 +459,14 @@
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">selected location</span> and <span 
+                        font-weight: bold ">selected location</span>   
+                        <span 
+                        v-if="mobile"
+                        style="color: blue; background-color: white;
+                        padding-inline: 0.7em;
+                        border-radius: 20px;
+                        font-weight: bold ">historical cloud cover</span>  
+                        and <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
