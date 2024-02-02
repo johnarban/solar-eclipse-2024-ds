@@ -624,6 +624,7 @@
         ></icon-button>
         <icon-button
           v-if="getMyLocation"
+          class="geolocation-button"
           id="my-location"
           fa-icon="street-view"
           :color="myLocationColor"
@@ -648,8 +649,8 @@
       <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
         <geolocation-button
           :color="accentColor"
-          show-text-progress
           hide-button
+          show-progress-circle
           ref="geolocation"
           @geolocation="(loc: GeolocationCoordinates) => { 
             myLocation = {
@@ -1268,7 +1269,7 @@
     </v-dialog>
 
   <notifications group="copy-url" position="center top" classes="url-notification"/>
-  <notifications group="geolocation-error" position="center top" />
+  <notifications dangerouslySetInnerHtml group="geolocation-error" position="center top" />
   </div>
 </v-app>
 </template>
@@ -1973,6 +1974,17 @@ export default defineComponent({
 
     },
     
+    myLocationIcon() {
+      if (this.geolocationPermission === 'denied') {
+        return "mdi-map-marker-remove-variant";
+      } else if (this.geolocationPermission === 'prompt') {
+        return "mdi-crosshairs";
+      } else if (this.geolocationPermission === 'granted') {
+        return "mdi-crosshairs-gps";
+      }
+      return "mdi-crosshairs-question";
+    },
+    
     myLocationToolTip() {
       if (this.geolocationPermission === 'denied') {
         return "Geolocation disabled. Check browser permissions for this site.";
@@ -1982,24 +1994,32 @@ export default defineComponent({
     },
     
     myLocationColor() {
-      if (this.myLocation) {
-        // check if location = myLocation. if not fade the color a bit.
-        if (this.locationDeg.latitudeDeg === this.myLocation.latitudeDeg && this.locationDeg.longitudeDeg === this.myLocation.longitudeDeg) {
-          return "limegreen";
-        } else {
-          return "green";
-        }
+      
+      if (this.geolocationPermission === 'denied') {
+        return "grey";
+      }
+      
+      if (this.geolocationPermission === 'prompt') {
+        return "grey";
+      }
+      
+      if (this.geolocationPermission === 'granted') {
         
-      } else {
-        
-        if (this.geolocationPermission === 'denied') {
-          return "grey";
-        } else if (this.geolocationPermission === 'granted') {
-          return this.accentColor;
-        } else {
-          return this.accentColor;
+        if (this.myLocation) {
+          // check if location = myLocation. if not fade the color a bit.
+          if (
+            this.locationDeg.latitudeDeg === this.myLocation.latitudeDeg && this.locationDeg.longitudeDeg === this.myLocation.longitudeDeg
+          ) {
+            return "limegreen";
+          } else {
+            return "green";
+          }
         }
       }
+      
+      return this.accentColor;
+      
+      
     },
 
     ready(): boolean {
@@ -3381,7 +3401,9 @@ body {
     user-select: none;
   }
 
-  
+  #my-location-button {
+    border-width: 2px;
+  }
 }
 
 
@@ -3533,6 +3555,9 @@ body {
   .icon-wrapper {
     padding-inline: calc(0.3 * var(--default-line-height));
     padding-block: calc(0.4 * var(--default-line-height));
+  }
+  
+  .icon-wrapper:not(#my-location-button) {
     border: 2px solid var(--accent-color);
   }
 }

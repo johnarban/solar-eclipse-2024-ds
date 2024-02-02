@@ -17,27 +17,18 @@
     />
 
 
-    <span v-if="showTextProgress && loading">
+    <span v-if="(showTextProgress || showProgressCircle) && loading && hideButton">
       <v-progress-circular
+        v-if="showProgressCircle"
         :size="progressCircleSize"
         :width="2"
         :color="color"
         indeterminate
       ></v-progress-circular> 
-      Fetching locations
+      <span v-if="showTextProgress">Fetching location</span>
     </span>
 
     <span class="geolocation-text" v-if="showTextLabel && !useTextButton">
-      <v-progress-circular
-        v-if="loading && showTextProgress"
-        :size="progressCircleSize"
-        :width="2"
-        :color="color"
-        indeterminate
-      > </v-progress-circular>
-      <span v-if="loading && showTextProgress">
-        Fetching location
-      </span>
       <slot>
       {{ label }}
       </slot>
@@ -122,6 +113,11 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    
+    showProgressCircle: {
+      type: Boolean,
+      default: true,
+    },
 
     useTextButton: {
       type: Boolean,
@@ -180,7 +176,7 @@ export default defineComponent({
       geolocationError: null as GeolocationPositionError | null,
       permissions: '',
       loading: false,
-      show: false,
+      emitLocation: false,
     };
   },
   
@@ -194,7 +190,6 @@ export default defineComponent({
     if (!navigator.permissions) {
       console.error('Permissions API not supported');
       this.$emit('permission', 'denied');
-      this.show = false;
       return;
     }
     const query = navigator.permissions.query({ name: 'geolocation' });
@@ -219,16 +214,19 @@ export default defineComponent({
     handlePermission(result: PermissionStatus) { 
       
       if (result.state === 'granted') {
-        this.show = true;
+        
+        console.log('Permission granted');
+        
       } else if (result.state === 'prompt') {
-        this.show = true;
+        
+        console.log('Permission prompt');
+        
       } else if (result.state === 'denied') {
-        this.show = false;
-        this.$emit('permissionDenied', true);
+
+        console.log('Permission denied');
+
       }
       this.permissions = result.state;
-      console.log('Permission:', result.state);
-      this.$emit('permission', result.state);
     },
     
     
@@ -236,26 +234,26 @@ export default defineComponent({
       // Handle the position
       this.geolocation = position.coords;
       this.geolocationError = null;
-      this.$emit('geolocation', this.geolocation);
     },
     
     handleGeolocationError(error: GeolocationPositionError) {
       // Handle the error
-      this.geolocationError = error;
+      
       console.error('Geolocation error:', error);
-      // if the permission still is prompt, then
-      // then the browser has not been given permission
+      
       if (this.permissions === 'prompt') {
-        // modify the error.message to be more user friendly
+        const url = "https://www.lifewire.com/turn-on-mobile-location-services-4156232";
         this.geolocationError = {
           code: 1,
-          message: `Location services were denied. Please ensure location services are enabled your browser in system settings`,
+          message: `Location access was denied. Please ensure location services are enabled for your browser in system settings. <a href="${url}" target="_blank" rel="noopener noreferrer">Help</a>`,
         } as GeolocationPositionError;
+      } else {
+        this.geolocationError = error;
       }
-      this.$emit('error', this.geolocationError);
+      
     },
     
-    geolocate() {
+    geolocate(showLoading=true) {
       
       if (this.geolocation) {
         this.$emit('geolocation', this.geolocation);
@@ -270,7 +268,7 @@ export default defineComponent({
       
       
       if (navigator.geolocation) {
-        this.loading = true;  
+        this.loading = showLoading;  
         navigator.geolocation.getCurrentPosition(
           (position) => {
             this.handlePosition(position);
@@ -291,7 +289,7 @@ export default defineComponent({
       // Get the users location, and emit and event with
       // the coordinates or the error
       console.log(this.showTextProgress, this.showTextLabel, this.useTextButton, this.showCoords, this.hideButton);
-      
+      this.emitLocation = true;
       this.geolocate();
       
     },
@@ -299,8 +297,19 @@ export default defineComponent({
 
   watch: {
     
+    permissions(val: string) {
+      console.log('Permission:', val);
+      this.$emit('permission', val);
+    },
+    
     geolocation(val: GeolocationCoordinates) {
-      this.$emit('geolocation', val);
+      if (this.emitLocation) {
+        this.$emit('geolocation', val);
+      }
+    },
+    
+    geolocationError(val: GeolocationPositionError) {
+      this.$emit('error', val);
     },
     
   }
