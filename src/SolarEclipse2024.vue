@@ -98,7 +98,7 @@
                     :height="100"
                     borderColor="#fff"
                     :color="accentColor"
-                    :yrange="[0, 1.1]"
+                    :yrange="[-.101, 1.101]"
                     :xrange="[startEclipseTime, endEclipseTime]"
                     :xtickformatter="(x: number) => {
                       const date = new Date(x + selectedTimezoneOffset);
@@ -107,6 +107,8 @@
                       return `${date.getUTCHours()}:${zm}`
                     }"
                     :lineOptions="{ borderWidth: 1}"
+                    :scatterOptions="{radius: 1}"
+                    :yAxisOptions="{ticks: {stepSize: 0.2, autoSkip: false, includeBounds: false}}"
                     />
                   </v-col>
                   <v-col style="font-size: 0.75em;line-height:1.25;">
@@ -2284,6 +2286,7 @@ export default defineComponent({
       for (let date = start; date <= end; date = new Date(date.getTime() + step)) {
         eclipseFractions.push({'x':date.getTime(), 'y':this.getEclipseFraction(date)});
       }
+      console.log('eclipseFractions length: ',eclipseFractions.length);
       // get the maximum of eclipsegraph
       // const max = eclipseFractions.reduce((prev, current) => (prev.y > current.y) ? prev : current);
       // const learningRate = Math.pow(10,Math.floor(Math.log10(max.x)));
@@ -2307,9 +2310,8 @@ export default defineComponent({
           return 10 * 60 * 1000;
         } else {
           if (frac > 0.9) { return 500; }
-          else if (frac > 0.5) { return 5000; }
-          else if (frac > 0.1) { return 5000; }
-          else { return 30 * 1000; }
+          else if (frac > 0.1) { return 40 * 1000; }
+          else { return 60 * 1000; }
         }
       }
       let cc = 0;
@@ -2317,7 +2319,7 @@ export default defineComponent({
         cc = this.getEclipseFraction(date);
         this.eclipseGraph.push({'x':date.getTime(), 'y':cc});
       } 
-
+      console.log('eclipseGraph length: ',this.eclipseGraph.length);
       // get max eclipse index
       // const maxIndex = this.eclipseGraph.reduce((prev, current) => (prev && prev.y > current.y) ? prev : current);
       const isTotalEclipse = this.eclipseGraph.filter(x => x.y >= 1).length > 0;
