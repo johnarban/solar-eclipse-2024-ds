@@ -114,7 +114,6 @@
                 >
                 Back
               </v-btn>
-
             </div>
             
             <div class="instructions-text" v-if="learnerPath=='Graph'">
@@ -1936,8 +1935,6 @@ export default defineComponent({
           this.showVideoSheet = false;
         }
       });
-      
-
 
     });
 
@@ -2511,12 +2508,13 @@ export default defineComponent({
       
       
     },
-
     
     updateIntersection() {
+
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       const canvasHeight: number = this.wwtControl.canvas.height;
+
       const sunPosition = Planets['_planetLocations'][0];
       const moonPosition = Planets['_planetLocations'][9];
       const sunPoint = getScreenPosForCoordinates(this.wwtControl, sunPosition.RA, sunPosition.dec);
