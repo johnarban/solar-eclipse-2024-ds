@@ -1,5 +1,5 @@
 <script lang ="ts">
-import { defineComponent } from "vue";
+import { defineComponent, PropType } from "vue";
 import { VIcon } from "vuetify/components/VIcon";
 // import { VTooltip } from "vuetify/components/VTooltip";
 
@@ -13,7 +13,7 @@ export default defineComponent({
   
   props: {
     cloudCover: {
-      type: Number || null,
+      type: null as unknown as PropType<number | null>,
       required: true,
       default: null
     }
@@ -22,7 +22,6 @@ export default defineComponent({
   
   computed: {
     cloudCoverFracToLabel() {
-      console.log(this.cloudCover);
       if (this.cloudCover !== null) {
         return `${(this.cloudCover * 100).toFixed(0)}%`;
       }
