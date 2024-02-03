@@ -1069,8 +1069,7 @@
               id="speed-down"
               :fa-icon="'angle-double-down'"
               @activate="() => {
-                    speedIndex -= 1;
-                    playbackRate = Math.pow(10, speedIndex);
+                    playbackRate = playbackRate / 10
                     playing = true;
                   }"
               :color="accentColor"
@@ -1085,8 +1084,7 @@
               id="speed-up"
               :fa-icon="'angle-double-up'"
               @activate="() => {
-                    speedIndex += 1;
-                    playbackRate = Math.pow(10, speedIndex);
+                    playbackRate = playbackRate * 10;
                     playing = true;
                   }"
               :color="accentColor"
@@ -1102,8 +1100,7 @@
               :fa-icon="'rotate'"
               @activate="() => {
                     selectedTime = 1697292380000;
-                    speedIndex = 3;
-                    playbackRate = Math.pow(10, speedIndex);
+                    playbackRate = 10;
                     playing = false;
                     toggleTrackSun = true;
                   }"
@@ -1167,7 +1164,6 @@
               //   return Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a;
               // });
               selectedTime = Date.now();
-              speedIndex = 0;
               playbackRate=1;
               playing = true;
               console.log('to now')
@@ -1730,10 +1726,10 @@ export default defineComponent({
       useRegularMoon: false,
       moonTexture: 'moon-sky-blue-overlay.png' as MoonImageFile,
 
-      playbackRate: 1,
+      playbackRateValue: 1,
+      
       horizonRate: 100, 
       scopeRate: 100, 
-      speedIndex: 3,
 
       startPaused: false,
 
@@ -2114,6 +2110,18 @@ export default defineComponent({
 
     defaultRate(): number {
       return this.viewerMode === 'Horizon' ? this.horizonRate : this.scopeRate;
+    },
+    
+    playbackRate: {
+      set(value: number) {
+        this.playbackRateValue = value;
+      },
+      get(): number {
+        if (this.currentFractionEclipsed > .95) {
+          return Math.min(this.playbackRateValue, 10);
+        }
+        return this.playbackRateValue;
+      }
     },
 
     showVideoSheet: {
@@ -2983,7 +2991,7 @@ export default defineComponent({
       const sunAlt = altRad;
       let dssOpacity = 0;
       this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
+      this.skyOpacity = this.skyOpacity * (1 - 0.5 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
       dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
     
       this.updateMoonTexture();
@@ -2991,36 +2999,6 @@ export default defineComponent({
       this.setForegroundOpacity(dssOpacity * 100);
     },
 
-    getplaybackRate(rate: string) {
-      // console.log('setplaybackRate', rate);
-      // parse a string that looks like "x [time] per y [time]"
-      // e.g. "1 second per 1 minute"
-      // returns a number that is the ratio of the two times converted to seconds/seconds
-      // e.g. 1/60
-      // if the string is not parseable, returns 1
-      function unitToSec(unitString: string): number {
-        if (unitString[0] == 'h') {
-          return 3600;
-        } else if (unitString[0] == 'm') {
-          return 60;
-        } else if (unitString[0] == 's') {
-          return 1;
-        } else {
-          return 0;
-        }
-      }
-      
-      // parse string
-      const parsedString = rate.match(/(\d+(\.(\d+)?)?)\s(\w+)\sper\s(\d+(\.(\d+)?)?)?\s?(\w+)/);
-
-      if (parsedString === null) {
-        return 1;
-      }
-      const num1 = parseInt(parsedString[1]) * unitToSec(parsedString[4]);
-      const num2 = (parseInt(parsedString[5]?? 1) ) * unitToSec(parsedString[8]);
-      
-      return num1 / num2;
-    },
   
     copyShareURL() {
       const baseURL = `${window.location.origin}${window.location.pathname}`;
@@ -3278,13 +3256,11 @@ export default defineComponent({
       
       if (val > 11_000) {
         console.warn('playbackRate too high, setting to maxPlaybackRate');
-        this.speedIndex = 4;
         this.playbackRate = 10_000;
       }
 
       if (val < .1) {
         console.warn('playbackRate too low, setting to minPlaybackRate');
-        this.speedIndex = -1;
         this.playbackRate = .1;
       }
       
