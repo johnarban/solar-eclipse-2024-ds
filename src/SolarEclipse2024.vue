@@ -2349,30 +2349,6 @@ export default defineComponent({
       return this.circleCircleIntersection(sunMoon.sun, sunMoon.moon);
     },
     
-
-    gradientDescent(f: (x: number) => number, x0: number, maxIter: number, learningRate: number, h: number, tol: number) {
-      function gradient(f: (x: number) => number, x: number, h: number) {
-        return (f(x + h) - f(x - h)) / (2 * h);
-      }
-      function converged(x: number, newX: number, tol: number) {
-        return Math.abs(newX - x) < tol;
-      }
-      
-      let x = x0;
-      let gradfx = gradient(f, x, h);
-      let newX = x - gradfx * learningRate;
-      let iter = 0;
-      while (!converged(x, newX, tol) && iter < maxIter) {
-        x = newX;
-        gradfx = gradient(f, x, h);
-        newX = x - gradfx * learningRate;
-        iter++;
-      }
-      console.log('iterations', iter);
-      return x;
-      
-    },
-    
     getIngressEgress(arr: {x: number, y: number}[]) {
       // identify where the array goes from 0 to increasing and decreasing to 0
       const increasing = arr.filter((x, i, a) => i > 0 && x.y > a[i-1].y);
@@ -2402,21 +2378,6 @@ export default defineComponent({
         eclipseFractions.push({'x':date.getTime(), 'y':this.getEclipseFraction(date)});
       }
       console.log('eclipseFractions length: ',eclipseFractions.length);
-      // get the maximum of eclipsegraph
-      // const max = eclipseFractions.reduce((prev, current) => (prev.y > current.y) ? prev : current);
-      // const learningRate = Math.pow(10,Math.floor(Math.log10(max.x)));
-      // const h = 10; // .1 second steps
-      // const tol = 1000; // 1 second tolerance
-      // const maxDate = this.gradientDescent((x: number) => -this.getEclipseFraction(new Date(x)), max.x, 1000, learningRate, h, tol);
-      // const maxFrac = this.getEclipseFraction(new Date(maxDate));
-
-      // now get the innermost zeros of the eclipseFractions
-      // split eclipseFractions into two arrays at the max
-      // const eclipseFractions1 = eclipseFractions.filter((x) => x.x <= maxDate);
-      // const eclipseFractions2 = eclipseFractions.filter((x) => x.x >= maxDate);
-      // // find the last zero of 1 and first zero of 2
-      // const before = eclipseFractions1.reduce((prev, current) => (prev.y < current.y) ? prev : current);
-      // const after = eclipseFractions2.reduce((prev, current) => (prev.y < current.y) ? prev : current);
       const [before, after] = this.getIngressEgress(eclipseFractions);
       
       function getStep(date: Date, frac: number) {
