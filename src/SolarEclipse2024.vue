@@ -916,6 +916,7 @@
     </v-dialog>
   
   <div id="top-wwt-content">
+    <p> in total eclipse {{ locationInTotality }}</p>
       <div id="location-date-display">
         <v-chip 
           :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
@@ -1249,6 +1250,8 @@ import tzlookup from "tz-lookup";
 import { v4 } from "uuid";
 
 import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
+import pointInPolygon from 'point-in-polygon';
+
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn";
@@ -1427,6 +1430,9 @@ const minLon = Math.min(...cloudData[0].slice(1));
 cloudData = cloudData.slice(1).map(row => row.slice(1));
 
 console.log("cloud cover data loaded");
+
+/* READ IN Eclipse Umbra */
+import eclipseUmbra from "./assets/upath_hi.json";
 
 export default defineComponent({
   extends: MiniDSBase,
@@ -1741,7 +1747,7 @@ export default defineComponent({
       // the order is the layer order form bottom to top
       geojson: [
         {
-          url: 'https://raw.githubusercontent.com/johnarban/wwt_interactives/main/images/upath_hi.json',
+          geojson: eclipseUmbra as GeoJSON.GeometryCollection,
           style: {fillColor: '#333', weight: 1, opacity: 0, fillOpacity: 0.3, id:"upath"}
         },
         {
@@ -2123,6 +2129,15 @@ export default defineComponent({
         return this.playbackRateValue;
       }
     },
+    
+    locationInTotality() {
+      // check if the location is within eclipseUmbra path
+      const location = this.locationDeg;
+      const poly = eclipseUmbra.geometries[0].coordinates[0];
+      const point = [location.longitudeDeg, location.latitudeDeg];
+      return pointInPolygon(point, poly);
+    },
+
 
     showVideoSheet: {
       get(): boolean {
