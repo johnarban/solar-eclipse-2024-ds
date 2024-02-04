@@ -2351,13 +2351,13 @@ export default defineComponent({
     
     getIngressEgress(arr: {x: number, y: number}[]) {
       // identify where the array goes from 0 to increasing and decreasing to 0
-      const increasing = arr.filter((x, i, a) => i > 0 && x.y > a[i-1].y);
-      const decreasing = arr.filter((x, i, a) => i > 0 && x.y < a[i-1].y);
+      const increasing = arr.filter((x, i, a) => i > 0 && x.y > a[i-1].y && x.y > 0);
+      const decreasing = arr.filter((x, i, a) => i > 0 && x.y < a[i-1].y && x.y > 0);
       const firstIngress = increasing.reduce((prev, current) => (prev.y < current.y) ? prev : current);
       const firstEgress = decreasing.reduce((prev, current) => (prev.y < current.y) ? prev : current);
       // expand by one index either side
-      const before = arr[arr.indexOf(firstIngress) - 1];
-      const after = arr[arr.indexOf(firstEgress) + 1];
+      const before = arr[arr.indexOf(firstIngress) - 2];
+      const after = arr[arr.indexOf(firstEgress) + 2];
       // return with check for undefined
       return [before ?? firstIngress, after ?? firstEgress];
       
@@ -2386,12 +2386,12 @@ export default defineComponent({
           return 10 * 60 * 1000;
         } else {
           if (frac > 0.9) { return 500; }
-          else if (frac > 0.1) { return 40 * 1000; }
-          else { return 60 * 1000; }
+          else if (frac > 0.05) { return 40 * 1000; }
+          else { return 5 * 1000; }
         }
       }
       let cc = 0;
-      for (let date = start; date <= end; date = new Date(date.getTime() + getStep(date, cc))) {
+      for (let date = new Date(before.x) ; date <= new Date(after.x); date = new Date(date.getTime() + getStep(date, cc))) {
         cc = this.getEclipseFraction(date);
         this.eclipseGraph.push({'x':date.getTime(), 'y':cc});
       } 
