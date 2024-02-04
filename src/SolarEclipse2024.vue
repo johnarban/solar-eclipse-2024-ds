@@ -2123,7 +2123,7 @@ export default defineComponent({
         this.playbackRateValue = value;
       },
       get(): number {
-        if (this.currentFractionEclipsed > .95) {
+        if ((this.currentFractionEclipsed > .95) && (this.locationInTotality)) {
           return Math.min(this.playbackRateValue, 10);
         }
         return this.playbackRateValue;
