@@ -1,6 +1,6 @@
 <template>
   <span :id="`geolocation-wrapper+${id}`" class="geolocation">
-    <span v-if="showPermissions">Geolocation {{ permissions }} </span>
+    <p v-if="showPermissions">Geolocation {{ permissions }} </p>
     <v-btn 
       v-if="!hideButton"
       class="geolocation-button"
@@ -307,12 +307,20 @@ export default defineComponent({
     
     geolocation(val: GeolocationCoordinates) {
       if (this.emitLocation) {
+        // on Safari, the Permissions API is not supported, but still works
+        // make sure the frontend knows the permissions were "granted"
+        if (this.permissions != 'granted') {
+          this.permissions = 'granted';
+        }
         this.$emit('geolocation', val);
       }
     },
     
     geolocationError(val: GeolocationPositionError) {
       if (val) {
+        if (this.permissions != 'denied' && this.permissions != 'prompt') {
+          this.permissions = 'denied';
+        }
         this.$emit('error', val);
       }
     },

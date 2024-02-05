@@ -648,6 +648,7 @@
       </div>
       <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
         <geolocation-button
+          show-permissions
           :color="accentColor"
           hide-button
           show-progress-circle
@@ -1994,7 +1995,7 @@ export default defineComponent({
     },
     
     myLocationColor() {
-      
+      console.log(this.geolocationPermission);
       if (this.geolocationPermission === 'denied') {
         return "grey";
       }
