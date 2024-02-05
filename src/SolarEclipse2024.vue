@@ -1530,7 +1530,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true,
+      showSplashScreen: false,
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,

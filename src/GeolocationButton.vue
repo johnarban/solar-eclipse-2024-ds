@@ -1,6 +1,9 @@
 <template>
   <span :id="`geolocation-wrapper+${id}`" class="geolocation">
-    <p v-if="showPermissions">Geolocation {{ permissions }} </p>
+    <span v-if="showPermissions">Geolocation {{ permissions }} </span>
+    <span v-if="showPermissions">location {{ geolocation }} </span>
+    <span v-if="showPermissions">counter {{ counter }} </span>
+    <p v-if="showPermissions" v-html=msg> </p>
     <v-btn 
       v-if="!hideButton"
       class="geolocation-button"
@@ -177,6 +180,9 @@ export default defineComponent({
       permissions: '',
       loading: false,
       emitLocation: false,
+      noPermissionsApi: false,
+      counter: 0,
+      msg: ''
     };
   },
   
@@ -189,15 +195,16 @@ export default defineComponent({
     // granted the browser permission to access their location
     if (!navigator.permissions) {
       console.error('Permissions API not supported');
+      this.noPermissionsApi = true;
       this.$emit('permission', 'denied');
       return;
     }
     const query = navigator.permissions.query({ name: 'geolocation' });
     query.then((result) => {
       this.handlePermission(result);
-      result.addEventListener('change', () => {
+      result.onchange= () => {
         this.handlePermission(result);
-      });
+      };
     });
     
     
@@ -215,15 +222,15 @@ export default defineComponent({
       
       if (result.state === 'granted') {
         
-        console.log('Permission granted');
+        this.debugmsg('Permission granted');
         
       } else if (result.state === 'prompt') {
         
-        console.log('Permission prompt');
+        this.debugmsg('Permission prompt');
         
       } else if (result.state === 'denied') {
 
-        console.log('Permission denied');
+        this.debugmsg('Permission denied');
 
       }
       this.permissions = result.state;
@@ -269,18 +276,18 @@ export default defineComponent({
       
       if (navigator.geolocation) {
         this.loading = showLoading;  
-        console.log('Getting location');
+        this.debugmsg('Getting location');
         navigator.geolocation.getCurrentPosition(
           (position) => {
             this.handlePosition(position);
             this.loading = false;
-            console.log('Got location');
+            this.debugmsg('Got location');
           },
           
           (error) => {
             this.handleGeolocationError(error);
             this.loading = false;
-            console.log('Error getting location');
+            this.debugmsg(`Error: ${error.message}`);
           },
           options
         );
@@ -296,12 +303,20 @@ export default defineComponent({
       this.geolocate();
       
     },
+    
+    debugmsg(msg: string) {
+      console.log(msg);
+      // append msg to the debug message
+      if (this.showPermissions) {
+        this.msg = this.msg + '<br>' + msg;
+      }
+    },
   },
 
   watch: {
     
     permissions(val: string) {
-      console.log('Permission:', val);
+      this.debugmsg(`Permission: ${val}`);
       this.$emit('permission', val);
     },
     
