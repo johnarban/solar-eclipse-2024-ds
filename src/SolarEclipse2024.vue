@@ -3096,7 +3096,7 @@ export default defineComponent({
     },
 
     async updateSelectedLocationText() {
-      const accessToken = process.env.MAPBOX_ACCESS_TOKEN;
+      const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.locationDeg.longitudeDeg},${this.locationDeg.latitudeDeg}.json?access_token=${accessToken}`;
       const mapBoxText = await fetch(url)
         .then(response => response.json())
