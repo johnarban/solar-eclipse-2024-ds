@@ -916,7 +916,7 @@
     </v-dialog>
   
   <div id="top-wwt-content">
-    <p> in total eclipse {{ locationInTotality }}</p>
+    <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
       <div id="location-date-display">
         <v-chip 
           :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
@@ -2123,7 +2123,7 @@ export default defineComponent({
         this.playbackRateValue = value;
       },
       get(): number {
-        if ((this.currentFractionEclipsed > .95) && (this.locationInTotality)) {
+        if ((this.currentFractionEclipsed > .99) && (this.locationInTotality)) {
           return Math.min(this.playbackRateValue, 10);
         }
         return this.playbackRateValue;
