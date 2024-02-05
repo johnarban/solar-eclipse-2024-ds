@@ -648,7 +648,6 @@
       </div>
       <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
         <geolocation-button
-          show-permissions
           :color="accentColor"
           hide-button
           show-progress-circle
@@ -1973,17 +1972,6 @@ export default defineComponent({
       }
       return "Outside Range";
 
-    },
-    
-    myLocationIcon() {
-      if (this.geolocationPermission === 'denied') {
-        return "mdi-map-marker-remove-variant";
-      } else if (this.geolocationPermission === 'prompt') {
-        return "mdi-crosshairs";
-      } else if (this.geolocationPermission === 'granted') {
-        return "mdi-crosshairs-gps";
-      }
-      return "mdi-crosshairs-question";
     },
     
     myLocationToolTip() {

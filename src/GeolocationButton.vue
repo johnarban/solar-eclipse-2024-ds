@@ -252,7 +252,7 @@ export default defineComponent({
         const url = "https://www.lifewire.com/turn-on-mobile-location-services-4156232";
         this.geolocationError = {
           code: 1,
-          message: `Location access was denied. Please ensure location services are enabled for your browser in system settings. <a href="${url}" target="_blank" rel="noopener noreferrer">Help</a>`,
+          message: `Location access was denied. Please ensure location services are enabled for your browser in system settings. Note: this feature does not work on Safari on some iPhones. <a href="${url}" target="_blank" rel="noopener noreferrer">Help</a>`,
         } as GeolocationPositionError;
       } else {
         this.geolocationError = error;
