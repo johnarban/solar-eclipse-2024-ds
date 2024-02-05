@@ -20,7 +20,7 @@
     />
 
 
-    <span v-if="(showTextProgress || showProgressCircle) && loading && hideButton">
+    <span v-if="(showTextProgress || showProgressCircle) && loading && hideButton && permissionGranted">
       <v-progress-circular
         v-if="showProgressCircle"
         :size="progressCircleSize"
@@ -182,6 +182,7 @@ export default defineComponent({
       geolocation: null as GeolocationCoordinates | null,
       geolocationError: null as GeolocationPositionError | null,
       permissions: '',
+      permissionGranted: false,
       loading: false,
       loaded: false,
       emitLocation: false,
@@ -226,7 +227,7 @@ export default defineComponent({
     handlePermission(result: PermissionStatus) { 
       
       if (result.state === 'granted') {
-        
+        this.permissionGranted = true;
         this.debugmsg('Permission granted');
         
       } else if (result.state === 'prompt') {
