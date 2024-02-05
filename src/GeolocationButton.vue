@@ -318,9 +318,6 @@ export default defineComponent({
     
     geolocationError(val: GeolocationPositionError) {
       if (val) {
-        if (this.permissions != 'denied' && this.permissions != 'prompt') {
-          this.permissions = 'denied';
-        }
         this.$emit('error', val);
       }
     },
