@@ -31,6 +31,10 @@
       <span v-if="showTextProgress">Fetching location</span>
     </span>
 
+    <span v-if="(showTextProgress ) && loaded">
+      <span v-if="showTextProgress"><v-icon size="small" icon="mdi-check-circle-outline"></v-icon> Using your location</span>
+    </span>
+
     <span class="geolocation-text" v-if="showTextLabel && !useTextButton">
       <slot>
       {{ label }}
@@ -179,6 +183,7 @@ export default defineComponent({
       geolocationError: null as GeolocationPositionError | null,
       permissions: '',
       loading: false,
+      loaded: false,
       emitLocation: false,
       noPermissionsApi: false,
       counter: 0,
@@ -282,6 +287,11 @@ export default defineComponent({
             this.handlePosition(position);
             this.loading = false;
             this.debugmsg('Got location');
+            this.loaded = true;
+            setTimeout(() => {
+              this.loaded = false; 
+            }, 5000); // 5 seconds
+
           },
           
           (error) => {

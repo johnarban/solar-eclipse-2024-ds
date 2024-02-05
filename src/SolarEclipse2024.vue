@@ -649,6 +649,7 @@
       <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
         <geolocation-button
           :color="accentColor"
+          :show-text-progress = "true"
           hide-button
           show-progress-circle
           ref="geolocation"
