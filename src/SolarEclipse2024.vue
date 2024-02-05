@@ -918,17 +918,6 @@
   <div id="top-wwt-content">
       <div id="location-date-display">
         <v-chip 
-          :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
-          variant="outlined"
-          size="small"
-          elevation="2"
-          :text="selectedLocationText"
-          @click="() => {
-            showGuidedContent = true; 
-            learnerPath = 'Location'
-            }"
-        > </v-chip>
-        <v-chip 
           :prepend-icon="smallSize ? `` : `mdi-clouds`"
           v-if="mobile"
           variant="outlined"
@@ -943,6 +932,17 @@
         elevation="2"
         :text="selectedLocaledTimeDateString"
       > </v-chip>
+      <v-chip 
+          :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
+          variant="outlined"
+          size="small"
+          elevation="2"
+          :text="selectedLocationText"
+          @click="() => {
+            showGuidedContent = true; 
+            learnerPath = 'Location'
+            }"
+        > </v-chip>
       </div>
       <div id="top-switches">
         <div id="track-sun-switch"> 
