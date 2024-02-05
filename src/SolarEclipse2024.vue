@@ -556,11 +556,12 @@
                             ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
                       </li>
                       <li v-if="getMyLocation">
-                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="street-view"
-                              size="lg" 
-                            ></font-awesome-icon> to use the view my <strong>My Location</strong>. (Consult your device's user guide to enable location services.)                     
+                        {{ touchscreen ? "Tap" : "Click" }}
+                        <font-awesome-icon
+                          class="bullet-icon"
+                          icon="street-view"
+                          size="lg" 
+                        ></font-awesome-icon> to view from <strong>My Location</strong>. (If icon is grayed out, consult your device's user guide to enable location services. This feature works most reliably on Chrome and might not be available on every browser+operating system combination.)                    
                       </li>
                     </ul>
 
@@ -1977,7 +1978,9 @@ export default defineComponent({
     
     myLocationToolTip() {
       if (this.geolocationPermission === 'denied') {
-        return "Geolocation disabled. Check browser permissions for this site.";
+        return "Geolocation disabled. Check browser and site permissions and reload page.";
+      } else if (this.geolocationPermission === 'prompt') {
+        return "Click to enable location permissions";
       } else {
         return "Use my location";
       } 
