@@ -2011,9 +2011,9 @@ export default defineComponent({
           if (
             this.locationDeg.latitudeDeg === this.myLocation.latitudeDeg && this.locationDeg.longitudeDeg === this.myLocation.longitudeDeg
           ) {
-            return "limegreen";
+            return this.accentColor;
           } else {
-            return "green";
+            return this.accentColor;
           }
         }
       }
