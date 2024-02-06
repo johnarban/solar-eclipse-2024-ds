@@ -419,7 +419,7 @@
                               icon="play"
                               size="lg" 
                             ></font-awesome-icon>
-                        to move time forward at 100x the real speed.
+                        to move time forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
                       </li>
                       <li>
                         If playing, {{ touchscreen ? "tap" : "click" }} <font-awesome-icon
