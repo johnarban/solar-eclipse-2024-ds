@@ -933,17 +933,6 @@
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
       <div id="location-date-display">
         <v-chip 
-          :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
-          variant="outlined"
-          size="small"
-          elevation="2"
-          :text="selectedLocationText"
-          @click="() => {
-            showGuidedContent = true; 
-            learnerPath = 'Location'
-            }"
-        > </v-chip>
-        <v-chip 
           :prepend-icon="smallSize ? `` : `mdi-clouds`"
           v-if="mobile"
           variant="outlined"
@@ -958,6 +947,17 @@
         elevation="2"
         :text="selectedLocaledTimeDateString"
       > </v-chip>
+      <v-chip 
+          :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
+          variant="outlined"
+          size="small"
+          elevation="2"
+          :text="selectedLocationText"
+          @click="() => {
+            showGuidedContent = true; 
+            learnerPath = 'Location'
+            }"
+        > </v-chip>
       </div>
       <div id="top-switches">
         <div id="track-sun-switch"> 
@@ -1275,6 +1275,20 @@ type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | `moon-sky-blue-
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
 
+// The field names here come from MapBox
+export interface MapBoxFeature {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  place_type: string[];
+  text: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  properties: { short_code: string; };
+}
+
+export interface MapBoxFeatureCollection {
+  type: "FeatureCollection";
+  features: MapBoxFeature[];
+}
+
 
 // number of milliseconds since January 1, 1970, 00:00:00 UTC
 // month is indexed from 0..?!
@@ -1542,7 +1556,8 @@ export default defineComponent({
         latitudeRad: D2R * 25.2866667,
         longitudeRad: D2R * -104.1383333
       } as LocationRad,
-      selectedLocation: queryData ? USER_SELECTED : "Greatest Eclipse",
+      selectedLocation,
+      selectedLocationText: "",
       locationErrorMessage: "",
       
       syncDateTimeWithWWTCurrentTime: true,
@@ -1802,6 +1817,7 @@ export default defineComponent({
         };
       });
 
+    this.updateSelectedLocationText();
 
   },
 
@@ -2131,18 +2147,6 @@ export default defineComponent({
 
     sunAboveHorizon(): boolean {
       return this.sunPosition.altRad > 0;
-    },
-
-    selectedLocationText(): string {
-      if ((this.selectedLocation !== USER_SELECTED) && (this.selectedLocation !== 'My Location')) {
-        return this.selectedLocation;
-      } else {
-        const ns = this.locationDeg.latitudeDeg >= 0 ? 'N' : 'S';
-        const ew = this.locationDeg.longitudeDeg >= 0 ? 'E' : 'W';
-        const lat = Math.abs(this.locationDeg.latitudeDeg).toFixed(3);
-        const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
-        return `${lat}° ${ns}, ${lon}° ${ew}`;
-      }
     },
 
     percentEclipsedText(): string {
@@ -3112,6 +3116,54 @@ export default defineComponent({
       return cloudData[row][col];
     },
 
+    mapboxLocationText(location: MapBoxFeatureCollection): string {
+      const relevantFeatureTypes = ["postcode", "place", "region", "country"];
+      const relevantFeatures = location.features.filter(feature => relevantFeatureTypes.some(type => feature.place_type.includes(type)));
+      const placeFeature = relevantFeatures.find(feature => feature.place_type.includes("place")) ?? (relevantFeatures.find(feature => feature.place_type.includes("postcode")) ?? null);
+      let text = placeFeature ? placeFeature.text : "";
+      const countryFeature = relevantFeatures.find(feature => feature.place_type.includes("country"));
+      if (countryFeature) {
+        let countryText = countryFeature.text;
+        if (countryText === "United States") {
+          countryText = "USA";
+          const regionFeature = relevantFeatures.find(feature => feature.place_type.includes("region"));
+          if (regionFeature) {
+            let stateCode = regionFeature.properties.short_code as string;
+            if (stateCode) {
+              if (stateCode.startsWith("US-")) {
+                stateCode = stateCode.substring(3);
+              }
+              text = `${text}, ${stateCode}`;
+            }
+          }
+        }
+        text = `${text}, ${countryText}`;
+      }
+      return text;
+    },
+
+    async updateSelectedLocationText() {
+      const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.locationDeg.longitudeDeg},${this.locationDeg.latitudeDeg}.json?access_token=${accessToken}`;
+      const mapBoxText = await fetch(url)
+        .then(response => response.json())
+        .then((result: MapBoxFeatureCollection) => {
+          if (result.features.length === 0) {
+            return null;
+          }
+          return this.mapboxLocationText(result);
+        })
+        .catch((_err) => null);
+      if (mapBoxText) {
+        this.selectedLocationText = mapBoxText;
+      } else {
+        const ns = this.locationDeg.latitudeDeg >= 0 ? 'N' : 'S';
+        const ew = this.locationDeg.longitudeDeg >= 0 ? 'E' : 'W';
+        const lat = Math.abs(this.locationDeg.latitudeDeg).toFixed(3);
+        const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
+        this.selectedLocationText = `${lat}° ${ns}, ${lon}° ${ew}`;
+      }
+    }
   },
 
   watch: {
@@ -3208,6 +3260,7 @@ export default defineComponent({
       this.playing = false;
       // this.sunOffset = null;
       this.updateWWTLocation();
+      this.updateSelectedLocationText();
 
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
