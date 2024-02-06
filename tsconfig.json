@@ -8,6 +8,7 @@
     "importHelpers": true,
     "downlevelIteration": true,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -29,6 +30,7 @@
   "include": [
     "plugins/*.ts",
     "src/**/*.ts",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "src/assets/upath_hi.json"
   ]
 }
