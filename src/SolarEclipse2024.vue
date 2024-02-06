@@ -2423,16 +2423,16 @@ export default defineComponent({
         }
         this.maxEclipseTime = (this.maxEclipseStart + this.maxEclipseEnd) / 2;
         this.maxEclipseFraction = 1;
-        this.startEclipseTime = this.eclipseGraph.filter(x => x.x < this.maxEclipseStart).reduce((prev, current) => (prev.y < current.y) ? prev : current).x - 60 * 60 * 1000;
-        this.endEclipseTime = this.eclipseGraph.filter(x => x.x > this.maxEclipseEnd).filter(x => x.y > 0).reduce((prev, current) => (prev.y < current.y) ? prev : current).x + 60 * 60 * 1000;
+        this.startEclipseTime = this.eclipseGraph.filter(x => x.x < this.maxEclipseStart).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
+        this.endEclipseTime = this.eclipseGraph.filter(x => x.x > this.maxEclipseEnd).filter(x => x.y > 0).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
       } else {
         const maxIndex = this.eclipseGraph.reduce((prev, current) => (prev.y > current.y) ? prev : current);
         this.maxEclipseStart = 0;
         this.maxEclipseEnd = 0;
         this.maxEclipseTime = maxIndex.x;
         this.maxEclipseFraction = maxIndex.y;
-        this.startEclipseTime = this.eclipseGraph.filter(x => x.x < maxIndex.x).reduce((prev, current) => (prev.y < current.y) ? prev : current).x - 60 * 60 * 1000;
-        this.endEclipseTime = this.eclipseGraph.filter(x => x.x > maxIndex.x).filter(x => x.y > 0).reduce((prev, current) => (prev.y < current.y) ? prev : current).x + 60 * 60 * 1000;
+        this.startEclipseTime = this.eclipseGraph.filter(x => x.x < maxIndex.x).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
+        this.endEclipseTime = this.eclipseGraph.filter(x => x.x > maxIndex.x).filter(x => x.y > 0).reduce((prev, current) => (prev.y < current.y) ? prev : current).x;
       }
       console.log('getEclipseGraph', performance.now() - perfStart);
       
@@ -2763,7 +2763,7 @@ export default defineComponent({
 
     toTimeString(date: Date) {
       // return this.toLocaleTimeString(date);
-      return formatInTimeZone(date, this.selectedTimezone, 'h:mm aaa (zzz)');
+      return formatInTimeZone(date, this.selectedTimezone, 'HH:mm aaa (zzz)');
     },
     
     toUTCHMS(date: Date) {
