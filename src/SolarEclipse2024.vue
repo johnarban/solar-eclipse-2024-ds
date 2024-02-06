@@ -83,7 +83,7 @@
                   <p>
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="share-nodes" class="bullet-icon"/>: copy url for a location
                   </p>
-                  <p>
+                  <p v-if="getMyLocation">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong>
                     <font-awesome-icon icon="street-view" class="bullet-icon"/>:
                     view eclipse from <strong>My Location</strong> (Location services must be enabled on device)
@@ -547,11 +547,12 @@
                             ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
                       </li>
                       <li>
-                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="street-view"
-                              size="lg" 
-                            ></font-awesome-icon> to use the view my <strong>My Location</strong>. (Consult your device's user guide to enable location services.)                     
+                        {{ touchscreen ? "Tap" : "Click" }}
+                        <font-awesome-icon
+                          class="bullet-icon"
+                          icon="street-view"
+                          size="lg" 
+                        ></font-awesome-icon> to view from <strong>My Location</strong>. (If icon is grayed out, consult your device's user guide to enable location services. This feature works most reliably on Chrome and might not be available on every browser+operating system combination.)                    
                       </li>
                     </ul>
 
@@ -616,12 +617,14 @@
           faSize="1x"
         ></icon-button>
         <icon-button
+          v-if="getMyLocation"
+          class="geolocation-button"
           id="my-location"
           fa-icon="street-view"
-          :color="accentColor"
-          :focus-color="accentColor"
+          :color="myLocationColor"
+          :focus-color="myLocationColor"
           :box-shadow="false"
-          tooltip-text="Use my location"
+          :tooltip-text="myLocationToolTip"
           :show-tooltip="!mobile"
           @update:modelValue="(value: boolean) => {
             if(value) {
@@ -641,11 +644,8 @@
         <geolocation-button
           :color="accentColor"
           :show-text-progress = "true"
-          :hide-text = "true"
-          :showCoords = "false"
-          :hide-button = "true"
-          :requirePermission = "false"
-          :hasPermission = "true"
+          hide-button
+          show-progress-circle
           ref="geolocation"
           @geolocation="(loc: GeolocationCoordinates) => { 
             myLocation = {
@@ -663,10 +663,24 @@
               text: error.message,
               type: 'error',
             }); 
-            getMyLocation = false;
+            if (error.code === 1) {
+              geolocationPermission = 'denied';
+            }
             console.log(error);
             }"
-        />
+            @permission="(p: PermissionState) => {
+              geolocationPermission = p;
+              // we're always gonna show the button,
+              // just leaving this if we wanna change
+              if (p == 'granted') {
+                getMyLocation = true;
+              } else if (p == 'prompt') {
+                getMyLocation = true;
+              } else {
+                getMyLocation = true;
+              }
+            }"
+        ></geolocation-button>
       </div>
       
       <!-- <div id="mobile-zoom-control"> -->
@@ -1231,7 +1245,7 @@
     </v-dialog>
 
   <notifications group="copy-url" position="center top" classes="url-notification"/>
-  <notifications group="geolocation-error" position="center top" />
+  <notifications dangerouslySetInnerHtml group="geolocation-error" position="center top" />
   </div>
 </v-app>
 </template>
@@ -1496,7 +1510,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true,
+      showSplashScreen: false,
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -1507,9 +1521,10 @@ export default defineComponent({
       showTextTooltip: false,
       showMapSelector: false,
       showLocationSelector: false,
-      getMyLocation: false,
+      getMyLocation: true,
       myLocation: null as LocationDeg | null,
-
+      geolocationPermission: '' as 'granted' | 'denied' | 'prompt',
+      
       showWWTGuideSheet: false,
       
       selectionProximity: 4,
@@ -1939,6 +1954,45 @@ export default defineComponent({
       }
       return "Outside Range";
 
+    },
+    
+    myLocationToolTip() {
+      if (this.geolocationPermission === 'denied') {
+        return "Geolocation disabled. Check browser and site permissions and reload page.";
+      } else if (this.geolocationPermission === 'prompt') {
+        return "Click to enable location permissions";
+      } else {
+        return "Use my location";
+      } 
+    },
+    
+    myLocationColor() {
+      console.log(this.geolocationPermission);
+      if (this.geolocationPermission === 'denied') {
+        return "grey";
+      }
+      
+      if (this.geolocationPermission === 'prompt') {
+        return "grey";
+      }
+      
+      if (this.geolocationPermission === 'granted') {
+        
+        if (this.myLocation) {
+          // check if location = myLocation. if not fade the color a bit.
+          if (
+            this.locationDeg.latitudeDeg === this.myLocation.latitudeDeg && this.locationDeg.longitudeDeg === this.myLocation.longitudeDeg
+          ) {
+            return this.accentColor;
+          } else {
+            return this.accentColor;
+          }
+        }
+      }
+      
+      return this.accentColor;
+      
+      
     },
 
     ready(): boolean {
@@ -3358,7 +3412,9 @@ body {
     user-select: none;
   }
 
-  
+  #my-location-button {
+    border-width: 2px;
+  }
 }
 
 
@@ -3510,6 +3566,9 @@ body {
   .icon-wrapper {
     padding-inline: calc(0.3 * var(--default-line-height));
     padding-block: calc(0.4 * var(--default-line-height));
+  }
+  
+  .icon-wrapper:not(#my-location-button) {
     border: 2px solid var(--accent-color);
   }
 }
