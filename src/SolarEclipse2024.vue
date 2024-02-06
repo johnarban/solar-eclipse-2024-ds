@@ -1349,6 +1349,10 @@ const OPT_OUT_KEY = "eclipse-mini-optout" as const;
 const USER_SELECTED_LOCATIONS_KEY = "user-selected-locations" as const;
 const PRESET_LOCATIONS_KEY = "preset-locations" as const;
 
+const RELEVANT_FEATURE_TYPES = ["postcode", "place", "region", "country"];
+const NA_COUNTRIES = ["United States", "Canada", "Mexico"];
+const NA_ABBREVIATIONS = ["US-", "CA-", "MX-"];
+
 import { dsvFormat } from "d3-dsv";
 import { eclipse } from "./eclipse_path";
 
@@ -1557,7 +1561,7 @@ export default defineComponent({
         longitudeRad: D2R * -104.1383333
       } as LocationRad,
       selectedLocation,
-      selectedLocationText: "",
+      selectedLocationText: "Nazas, DUR",
       locationErrorMessage: "",
       
       syncDateTimeWithWWTCurrentTime: true,
@@ -1816,8 +1820,6 @@ export default defineComponent({
           longitudeDeg: R2D * pl.longitudeRad
         };
       });
-
-    this.updateSelectedLocationText();
 
   },
 
@@ -3117,29 +3119,33 @@ export default defineComponent({
     },
 
     mapboxLocationText(location: MapBoxFeatureCollection): string {
-      const relevantFeatureTypes = ["postcode", "place", "region", "country"];
-      const relevantFeatures = location.features.filter(feature => relevantFeatureTypes.some(type => feature.place_type.includes(type)));
+      const relevantFeatures = location.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
       const placeFeature = relevantFeatures.find(feature => feature.place_type.includes("place")) ?? (relevantFeatures.find(feature => feature.place_type.includes("postcode")) ?? null);
-      let text = placeFeature ? placeFeature.text : "";
+      const pieces: string[] = [];
+      if (placeFeature && placeFeature.text) {
+        pieces.push(placeFeature.text);
+      }
       const countryFeature = relevantFeatures.find(feature => feature.place_type.includes("country"));
       if (countryFeature) {
-        let countryText = countryFeature.text;
-        if (countryText === "United States") {
-          countryText = "USA";
+        let countryText: string | null = countryFeature.text;
+        if (NA_COUNTRIES.includes(countryText)) {
+          countryText = null;
           const regionFeature = relevantFeatures.find(feature => feature.place_type.includes("region"));
           if (regionFeature) {
             let stateCode = regionFeature.properties.short_code as string;
             if (stateCode) {
-              if (stateCode.startsWith("US-")) {
+              if (NA_ABBREVIATIONS.some(abbr => stateCode.startsWith(abbr))) {
                 stateCode = stateCode.substring(3);
               }
-              text = `${text}, ${stateCode}`;
+              pieces.push(stateCode);
             }
           }
         }
-        text = `${text}, ${countryText}`;
+        if (countryText) {
+          pieces.push(countryText);
+        }
       }
-      return text;
+      return pieces.join(", ");
     },
 
     async updateSelectedLocationText() {
