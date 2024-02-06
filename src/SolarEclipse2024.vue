@@ -1561,7 +1561,7 @@ export default defineComponent({
         longitudeRad: D2R * -104.1383333
       } as LocationRad,
       selectedLocation,
-      selectedLocationText: "Nazas, DUR, Mexico",
+      selectedLocationText: "Nazas, DUR",
       locationErrorMessage: "",
       
       syncDateTimeWithWWTCurrentTime: true,
