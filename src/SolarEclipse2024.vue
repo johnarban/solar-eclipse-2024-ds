@@ -143,13 +143,23 @@
                   </v-col>
                   <v-col style="font-size: 0.75em;line-height:1.25;">
                     <!-- return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm:ss (zzz)'); -->
+                    <!-- add toggle for UTC/Local time -->
+                    <v-switch
+                      v-model="displayUTC"
+                      :color="accentColor"
+                      hide-details
+                      inline
+                      density="compact"
+                      :label="displayUTC ? 'UTC Time' : 'Local Time'"
+                      ></v-switch>
+                    {{ !displayUTC ? `TZ: ${selectedTimezoneOffset / (3_600_000)} (${selectedTimezone})` : '' }}
                     Max %: {{ maxEclipseFraction }}<br />
-                    Ecl start: {{ toUTCHMS(new Date(startEclipseTime)) }}<br />
-                    Tot start: {{ maxEclipseStart ? toUTCHMS(new Date(maxEclipseStart)) : null }}<br />
-                    Max eclipse: {{ toUTCHMS(new Date(maxEclipseTime)) }} <br />
-                    Max (local): {{ toTimeString(new Date(maxEclipseTime)) }} <br />
-                    Tot end:   {{ maxEclipseEnd  ? toUTCHMS(new Date(maxEclipseEnd)) : null }} <br />
-                    Ecl end: {{ toUTCHMS(new Date(endEclipseTime)) }} <br />
+                    Ecl start: {{ displayUTC ? toUTCHMS(new Date(startEclipseTime)) : toTimeString(new Date(startEclipseTime)) }}<br />
+                    Tot start: {{ maxEclipseStart ? (displayUTC ? toUTCHMS(new Date(maxEclipseStart)) : toTimeString(new Date(maxEclipseStart))) : null }}<br />
+                    Max eclipse: {{ displayUTC ? toUTCHMS(new Date(maxEclipseTime)) : toTimeString(new Date(maxEclipseTime)) }} <br />
+                    Max (local): {{ displayUTC ? toUTCHMS(new Date(maxEclipseTime)) : toTimeString(new Date(maxEclipseTime)) }} <br />
+                    Tot end:   {{ maxEclipseEnd  ? (displayUTC ? toUTCHMS(new Date(maxEclipseEnd)) : toTimeString(new Date(maxEclipseEnd))) : null }} <br />
+                    Ecl end: {{ displayUTC ? toUTCHMS(new Date(endEclipseTime)) : toTimeString(new Date(endEclipseTime)) }} <br />
                     <v-btn
                       @click="selectedTime=maxEclipseTime"
                     >Go to max</v-btn>
@@ -1666,6 +1676,7 @@ export default defineComponent({
       
       syncDateTimeWithWWTCurrentTime: true,
       syncDateTimewithSelectedTime: true,
+      displayUTC: false,
 
       sunOffset: null as { x: number; y: number } | null,
 
