@@ -2412,7 +2412,17 @@ export default defineComponent({
           );
         fractionEclipsed = intersectionArea / sunArea;
       }
-      this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+      
+      let forceTotality = false;
+      if (this.locationInTotality && this.selectedTime >= this.eclipseStart && this.selectedTime <= this.eclipseEnd) {
+        if (this.currentFractionEclipsed < 1) {
+          console.log('forcing', this.toTimeString(this.dateTime, true, false), this.currentFractionEclipsed);
+          this.currentFractionEclipsed = 1;
+          forceTotality = true;
+        }
+      } else {
+        this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+      }
 
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
       if (this.useRegularMoon) {
@@ -2422,7 +2432,7 @@ export default defineComponent({
       const n = 50;
       
       // If the moon/sun is completely "inside" of the sun/moon
-      if (moonInsideSun || sunInsideMoon) {
+      if (moonInsideSun || sunInsideMoon || forceTotality) {
         for (let i = 0; i <= n; i++) {
           const angle = (i / n) * 2 * Math.PI;
           points.push({ x: rMoonPx * Math.cos(angle), y: rMoonPx * Math.sin(angle) });
@@ -2550,13 +2560,6 @@ export default defineComponent({
       locations.forEach(pt => overlay.addPoint(pt.ra, pt.dec));
       Annotation2.addAnnotation(overlay);
       
-      if (this.locationInTotality && this.selectedTime >= this.eclipseStart && this.selectedTime <= this.eclipseEnd) {
-        if (this.currentFractionEclipsed < 1) {
-          console.log('forcing', this.toTimeString(this.dateTime, true, false), this.currentFractionEclipsed);
-          this.currentFractionEclipsed = 1;
-          return;
-        }
-      }
     },
 
 
