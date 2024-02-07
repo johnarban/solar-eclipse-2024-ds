@@ -1322,6 +1322,8 @@ import { v4 } from "uuid";
 import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 
 import { GeoJSON } from "leaflet";
+import { recalculateForObserverUTC, EclipseData } from "./eclipse_predict";
+
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn" | "Graph";
@@ -1830,6 +1832,7 @@ export default defineComponent({
       presetLocationsVisited,
       userSelectedLocationsVisited,
       eclipseGraph: [] as { x: number; y: number }[],
+      eclipsePrediction: [] as EclipseData[],
     };
   },
 
@@ -1928,7 +1931,9 @@ export default defineComponent({
       this.startHorizonMode();
 
       this.trackSun().then(() => this.positionSet = true);
+
       this.getEclipseGraph();
+      this.getEclipsePrediction();
       // this.setTimeforSunAlt(10); // 10 degrees above horizon
       
       // console.log("selected time", this.selectedTime);
@@ -3298,6 +3303,12 @@ export default defineComponent({
       }
       return cloudData[row][col];
     },
+    
+    getEclipsePrediction() {
+      
+      const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100);
+      this.eclipsePrediction = eclipsePrediction;
+    },
 
   },
 
@@ -3402,6 +3413,7 @@ export default defineComponent({
       this.updateFrontAnnotations();
 
       this.getEclipseGraph();
+      this.getEclipsePrediction();
 
       
       if (this.trackingSun) {
