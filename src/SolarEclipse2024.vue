@@ -1726,7 +1726,7 @@ export default defineComponent({
       activePointer: false,
       showControls: true,
       sunCenteredTracking: true,
-      showAltAzGrid: true,
+      showAltAzGrid: false,
       showHorizon: true,
       showTextSheet: false, 
       showEclipsePercentage: true, 
@@ -2977,7 +2977,7 @@ export default defineComponent({
     startHorizonMode() {
       // turn on local horizon mode
       this.wwtSettings.set_localHorizonMode(true);
-      this.showAltAzGrid = true;
+      this.showAltAzGrid = false;
       this.skyColor = this.skyColorLight;
       this.showHorizon = true; // automatically calls it's watcher and updates horizon
       this.horizonOpacity = 1;
