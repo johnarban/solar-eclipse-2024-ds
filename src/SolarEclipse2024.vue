@@ -1266,6 +1266,8 @@ import { v4 } from "uuid";
 import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 import pointInPolygon from 'point-in-polygon';
 
+import { recalculateForObserverUTC, EclipseData } from "./eclipse_predict";
+
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn";
@@ -1796,7 +1798,8 @@ export default defineComponent({
       
 
       presetLocationsVisited,
-      userSelectedLocationsVisited
+      userSelectedLocationsVisited,
+      eclipsePrediction: [] as EclipseData[],
     };
   },
 
@@ -1894,7 +1897,7 @@ export default defineComponent({
       this.startHorizonMode();
 
       this.trackSun().then(() => this.positionSet = true);
-
+      this.getEclipsePrediction();
       // this.setTimeforSunAlt(10); // 10 degrees above horizon
       
       // console.log("selected time", this.selectedTime);
@@ -3117,6 +3120,12 @@ export default defineComponent({
       }
       return cloudData[row][col];
     },
+    
+    getEclipsePrediction() {
+      
+      const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100);
+      this.eclipsePrediction = eclipsePrediction;
+    },
 
     mapboxLocationText(location: MapBoxFeatureCollection): string {
       const relevantFeatures = location.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
@@ -3272,6 +3281,9 @@ export default defineComponent({
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
       this.wwtControl.renderOneFrame();
       this.updateFrontAnnotations();
+
+      this.getEclipsePrediction();
+
       
       if (this.trackingSun) {
         //this.centerSun();
