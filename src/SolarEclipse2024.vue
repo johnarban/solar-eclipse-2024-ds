@@ -71,9 +71,9 @@
                   Magnitude: {{ eclipsePrediction.magnitude[0] }} <br>
                   Coverage:  {{ eclipsePrediction.coverage[0] }} <br>
                   Partial start: {{ toTimeString(eclipsePrediction.partialStart[0], true) }} <br>
-                  Central start: {{ toTimeString(eclipsePrediction.centralStart[0], true ) }} <br>
+                  <strong>Central start: {{ toTimeString(eclipsePrediction.centralStart[0], true ) }} <br>
                   Max time: {{ toTimeString(eclipsePrediction.maxTime[0], true) }} <br>
-                  Central end: {{ toTimeString(eclipsePrediction.centralEnd[0], true ) }} <br>
+                  Central end: {{ toTimeString(eclipsePrediction.centralEnd[0], true ) }} </strong><br>
                   Partial end: {{ toTimeString(eclipsePrediction.partialEnd[0], true) }} <br>
                   Duration: {{ eclipsePrediction.duration }} <br>
                   </div>
@@ -1151,7 +1151,7 @@
                 {{ playbackRate }}&times;
               </span>
               <span v-if="!playing">
-                Paused
+                ({{ playbackRate }}) Paused
               </span>
             </div>
           </div>
@@ -1816,6 +1816,7 @@ export default defineComponent({
       userSelectedLocationsVisited,
       eclipsePrediction: null as EclipseData<Date> | null,
       eclipseStart: 0,
+      eclipseMid: 0,
       eclipseEnd: 0,
     };
   },
@@ -2198,15 +2199,36 @@ export default defineComponent({
       return this.viewerMode === 'Horizon' ? this.horizonRate : this.scopeRate;
     },
     
+    inEclipse(): boolean | null {
+      if (this.eclipsePrediction) {
+        return this.selectedTime > this.eclipseStart && this.selectedTime < this.eclipseEnd;
+      } else {
+        return null;
+      }
+    },
+    
     playbackRate: {
       set(value: number) {
         this.playbackRateValue = value;
       },
       get(): number {
-        if ((this.currentFractionEclipsed > .99) && (this.locationInTotality)) {
-          return Math.min(this.playbackRateValue, 10);
+        let rate = this.playbackRateValue;
+        
+        // max rate = 100 if eclipsed
+        // if (this.currentFractionEclipsed > .5) {
+        //   rate = Math.min(this.playbackRateValue, 100);
+        // }
+        
+        // max rate = 10 if near eclipse max
+        let nearEclipseMax = false;
+        if (this.eclipsePrediction) {
+          nearEclipseMax = Math.abs(this.eclipsePrediction.maxTime[0].getTime() - this.wwtCurrentTime.getTime()) < 120_000;
         }
-        return this.playbackRateValue;
+        // if the eclipse prediction isn't available fallback on the current fraction eclipsed
+        if (this.locationInTotality && (nearEclipseMax || this.currentFractionEclipsed > .99)) {
+          rate = Math.min(this.playbackRateValue, 10);
+        }
+        return rate;
       }
     },
     
@@ -2414,9 +2436,9 @@ export default defineComponent({
       }
       
       let forceTotality = false;
-      if (this.locationInTotality && this.selectedTime >= this.eclipseStart && this.selectedTime <= this.eclipseEnd) {
+      if (this.locationInTotality && this.wwtCurrentTime.getTime() >= this.eclipseStart && this.wwtCurrentTime.getTime() <= this.eclipseEnd) {
         if (this.currentFractionEclipsed < 1) {
-          console.log('forcing', this.toTimeString(this.dateTime, true, false), this.currentFractionEclipsed);
+          console.log('forcing', this.toTimeString(this.wwtCurrentTime, true, false), this.currentFractionEclipsed);
           this.currentFractionEclipsed = 1;
           forceTotality = true;
         }
@@ -3287,6 +3309,7 @@ export default defineComponent({
     },
 
     wwtCurrentTime(time: Date) {
+
       if (time.getTime() >= this.maxTime || time.getTime() < this.minTime) {
         if (this.playing) {
           this.playing = false;
