@@ -3190,8 +3190,11 @@ export default defineComponent({
     },
 
     inIntro(value: boolean) {
-      if (!value && !this.showSplashScreen && this.responseOptOut === null) {
-        this.showPrivacyDialog = true;
+      if (!value) {
+        this.playing = true;
+        if (!this.showSplashScreen && this.responseOptOut === null) {
+          this.showPrivacyDialog = true;
+        }
       }
     },
 
