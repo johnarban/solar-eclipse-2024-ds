@@ -1145,8 +1145,12 @@ export function recalculateForObserver(latDeg: number, latDir: 'N' | 'S', lonDeg
   console.log(result);
 }
 
-function dateAndtTimeToDate(date: string, time: string) {
+function dateAndtTimeToDate(date: string, time: string | null) {
+  console.log('converting date and time to date', date, time);
   // date is formatted as "YYYY-Mon-DD" and time is formatted as "HH:MM:SS" in UTC
+  if (time === '' || time === null) {
+    return null;
+  }
   const [year, month, day] = date.split('-');
   const [hour, minute, second] = time.split(':');
   const timestring = `${year} ${month} ${day} ${hour}:${minute}:${second} UTC`;
@@ -1154,41 +1158,20 @@ function dateAndtTimeToDate(date: string, time: string) {
   
 }
 
-function isDateType<T>(value: EclipseData<T>[] | EclipseData<Date>[]): value is EclipseData<Date>[] {
-  // return typeof value === 'object' && value instanceof Date;
-  for (let i = 0; i < value.length; i++) {
-    if (! (value[i].partialStart[0] instanceof Date)) {
-      return false;
-    }
-    if (! (value[i].centralStart[0] instanceof Date)) {
-      return false;
-    }
-    if (! (value[i].maxTime[0] instanceof Date)) {
-      return false;
-    }
-    if (! (value[i].centralEnd[0] instanceof Date)) {
-      return false;
-    }
-    if (! (value[i].partialEnd[0] instanceof Date)) {
-      return false;
-    }
-  }
-  return true;
+function convertEclipseData(value: EclipseData<string>): EclipseData<Date> {
+  const out = {...value} as EclipseData<Date>;
+  out.partialStart[0] = dateAndtTimeToDate(value.date, value.partialStart[0] ?? '');
+  out.centralStart[0] = dateAndtTimeToDate(value.date, value.centralStart[0] ?? '');
+  out.maxTime[0] = dateAndtTimeToDate(value.date, value.maxTime[0] ?? '');
+  out.centralEnd[0] = dateAndtTimeToDate(value.date, value.centralEnd[0] ?? '');
+  out.partialEnd[0] = dateAndtTimeToDate(value.date, value.partialEnd[0] ?? '');
+  return out;
 }
 
+
 // function to convert EclipseData<string> to EclipseData<Date>
-function convertEclipseData(value: EclipseData<string>[]): EclipseData<Date>[] {
-  if (isDateType(value)) {
-    return value as EclipseData<Date>[];
-  }
-  return value.map((eclipse: EclipseData<string | Date>) => {
-    eclipse.partialStart[0] = dateAndtTimeToDate(eclipse.date, eclipse.partialStart[0] as string);
-    eclipse.centralStart[0] = dateAndtTimeToDate(eclipse.date, eclipse.centralStart[0] as string);
-    eclipse.maxTime[0] = dateAndtTimeToDate(eclipse.date, eclipse.maxTime[0] as string);
-    eclipse.centralEnd[0] = dateAndtTimeToDate(eclipse.date, eclipse.centralEnd[0] as string);
-    eclipse.partialEnd[0] = dateAndtTimeToDate(eclipse.date, eclipse.partialEnd[0] as string);
-    return eclipse as EclipseData<Date>;
-  });
+function convertEclipseDataList(value: EclipseData<string>[]): EclipseData<Date>[] {
+  return value.map(convertEclipseData);
 }
 
 export function recalculateForObserverUTC<B extends boolean>(latDeg: number, lonDeg: number, alt: number, convertDate: B): B extends true ? EclipseData<Date>[] : EclipseData<string>[];
@@ -1201,7 +1184,7 @@ export function recalculateForObserverUTC(latDeg: number, lonDeg: number, alt: n
   // partialStart, sunAltStart, centralTime, maxTime, centralEnd, partialEnd, sunAltEnd
   if (convertDate) {
     if (result.length > 0) {
-      return convertEclipseData(result) as EclipseData<Date>[];
+      return convertEclipseDataList(result);
     }
   }
   return result as EclipseData<string>[];

@@ -1815,9 +1815,9 @@ export default defineComponent({
       presetLocationsVisited,
       userSelectedLocationsVisited,
       eclipsePrediction: null as EclipseData<Date> | null,
-      eclipseStart: 0,
-      eclipseMid: 0,
-      eclipseEnd: 0,
+      eclipseStart: 0 as number | null,
+      eclipseMid: 0 as number | null,
+      eclipseEnd: 0 as number | null,
     };
   },
 
@@ -2200,8 +2200,8 @@ export default defineComponent({
     },
     
     inEclipse(): boolean | null {
-      if (this.eclipsePrediction) {
-        return this.selectedTime > this.eclipseStart && this.selectedTime < this.eclipseEnd;
+      if (this.eclipsePrediction && this.eclipseStart != null && this.eclipseEnd != null) {
+        return this.wwtCurrentTime.getTime() >= this.eclipseStart && this.wwtCurrentTime.getTime() <= this.eclipseEnd;
       } else {
         return null;
       }
@@ -2222,7 +2222,9 @@ export default defineComponent({
         // max rate = 10 if near eclipse max
         let nearEclipseMax = false;
         if (this.eclipsePrediction) {
-          nearEclipseMax = Math.abs(this.eclipsePrediction.maxTime[0].getTime() - this.wwtCurrentTime.getTime()) < 120_000;
+          if (this.eclipsePrediction.maxTime[0]) {
+            nearEclipseMax = Math.abs(this.eclipsePrediction.maxTime[0].getTime() - this.wwtCurrentTime.getTime()) < 120_000;
+          }
         }
         // if the eclipse prediction isn't available fallback on the current fraction eclipsed
         if (this.locationInTotality && (nearEclipseMax || this.currentFractionEclipsed > .99)) {
@@ -2436,7 +2438,7 @@ export default defineComponent({
       }
       
       let forceTotality = false;
-      if (this.locationInTotality && this.wwtCurrentTime.getTime() >= this.eclipseStart && this.wwtCurrentTime.getTime() <= this.eclipseEnd) {
+      if (this.locationInTotality && this.inEclipse) {
         if (this.currentFractionEclipsed < 1) {
           console.log('forcing', this.toTimeString(this.wwtCurrentTime, true, false), this.currentFractionEclipsed);
           this.currentFractionEclipsed = 1;
@@ -2669,8 +2671,12 @@ export default defineComponent({
       return `${hours != 0 ? hours : 12}:${minuteString} ${ampm}`;
     },
 
-    toTimeString(date: Date, seconds = false, utc = false) {
+    toTimeString(date: Date | null, seconds = false, utc = false) {
       // return this.toLocaleTimeString(date);
+      if (date === null) {
+        return "";
+      }
+      
       if (seconds) {
         return formatInTimeZone(date, utc ? 'UTC' : this.selectedTimezone, 'h:mm:ss aaa (zzz)');
       }
@@ -3181,8 +3187,29 @@ export default defineComponent({
     getEclipsePrediction() {
       const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100, true);
       this.eclipsePrediction = eclipsePrediction[0];
-      this.eclipseStart = this.eclipsePrediction.centralStart[0].getTime();
-      this.eclipseEnd = this.eclipsePrediction.centralEnd[0].getTime();
+      if (this.eclipsePrediction.centralStart[0]) {
+        this.eclipseStart = this.eclipsePrediction.centralStart[0].getTime();
+      } else if (this.eclipsePrediction.partialStart[0]) {
+        this.eclipseStart = this.eclipsePrediction.partialStart[0].getTime();
+      } else {
+        this.eclipseStart = null;
+      }
+      
+      if (this.eclipsePrediction.centralEnd[0]) {
+        this.eclipseEnd = this.eclipsePrediction.centralEnd[0].getTime();
+      } else if (this.eclipsePrediction.partialEnd[0]) {
+        this.eclipseEnd = this.eclipsePrediction.partialEnd[0].getTime();
+      } else {
+        this.eclipseEnd = null;
+      }
+      
+      // this means there is not eclipse at this location
+      if (this.eclipsePrediction.maxTime[0]) {
+        this.eclipseMid = this.eclipsePrediction.maxTime[0].getTime();
+      } else {
+        this.eclipseMid = null;
+      }
+      
     },
     
 
