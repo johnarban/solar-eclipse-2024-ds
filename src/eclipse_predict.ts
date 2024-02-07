@@ -49,6 +49,7 @@ TODO:
 */
 
 
+import { da } from "date-fns/locale";
 import { EclipseForm, Observer, SunBSR,BSRArray, EclipseData } from "./eclipse_types";
 import { SE2024 } from "./SE2024";
 export { EclipseForm, Observer, SunBSR,BSRArray, EclipseData, SE2024 };
@@ -1145,12 +1146,31 @@ export function recalculateForObserver(latDeg: number, latDir: 'N' | 'S', lonDeg
   console.log(result);
 }
 
+function dateAndtTimeToDate(date: string, time: string) {
+  // date is formatted as "YYYY-Mon-DD" and time is formatted as "HH:MM:SS" in UTC
+  const [year, month, day] = date.split('-');
+  const [hour, minute, second] = time.split(':');
+  const timestring = `${year} ${month} ${day} ${hour}:${minute}:${second} UTC`;
+  return new Date(Date.parse(timestring));
+  
+}
 
 export function recalculateForObserverUTC(latDeg: number, lonDeg: number, alt: number) {
   // use UTC timezone and correct longitude for the the West positive convention used in the code
   setObserver(latDeg, -lonDeg, alt, 0);
   const result = calculatefor(SE2024());
   console.log(result);
+  // parse the date and time to a Date object
+  // partialStart, sunAltStart, centralTime, maxTime, centralEnd, partialEnd, sunAltEnd
+  if (result.length > 0) {
+    result.forEach(eclipse => {
+      eclipse.partialStart[0] = dateAndtTimeToDate(eclipse.date, eclipse.partialStart[0] as string);
+      eclipse.centralTime[0] = dateAndtTimeToDate(eclipse.date, eclipse.centralTime[0] as string);
+      eclipse.maxTime[0] = dateAndtTimeToDate(eclipse.date, eclipse.maxTime[0] as string);
+      eclipse.centralEnd[0] = dateAndtTimeToDate(eclipse.date, eclipse.centralEnd[0] as string);
+      eclipse.partialEnd[0] = dateAndtTimeToDate(eclipse.date, eclipse.partialEnd[0] as string);
+    }); 
+  } 
   return result;
 }
 

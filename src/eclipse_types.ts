@@ -83,18 +83,19 @@ export type Timezone = number;
 
 export type SunBSR = 'b' | 's' | 'r' | null;
 export type BSRArray = [(number | string)?, SunBSR?];
+export type BSRTimeArray = [(number | string | Date)?, SunBSR?];
 
 export interface EclipseData {
   date: string;
   type: 'P' | 'A' | 'T' | "";
-  partialStart: BSRArray;
+  partialStart: BSRArray | BSRTimeArray;
   sunAltStart: BSRArray;
-  centralTime: BSRArray;
-  maxTime: BSRArray;
+  centralTime: BSRArray | BSRTimeArray;
+  maxTime: BSRArray | BSRTimeArray;
   maxAlt: BSRArray;
   maxAzi: number;
-  centralEnd: BSRArray;
-  partialEnd: BSRArray;
+  centralEnd: BSRArray | BSRTimeArray;
+  partialEnd: BSRArray | BSRTimeArray;
   sunAltEnd: BSRArray;
   magnitude: BSRArray;
   coverage: BSRArray;
