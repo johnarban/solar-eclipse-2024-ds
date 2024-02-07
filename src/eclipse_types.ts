@@ -82,23 +82,22 @@ export type Altitude = number;
 export type Timezone = number;
 
 export type SunBSR = 'b' | 's' | 'r' | null;
-export type BSRArray = [(number | string)?, SunBSR?];
-export type BSRTimeArray = [(number | string | Date)?, SunBSR?];
+export type BSRArray<T> = [T, SunBSR];
 
-export interface EclipseData {
+export interface EclipseData<TimeType> {
   date: string;
   type: 'P' | 'A' | 'T' | "";
-  partialStart: BSRArray | BSRTimeArray;
-  sunAltStart: BSRArray;
-  centralTime: BSRArray | BSRTimeArray;
-  maxTime: BSRArray | BSRTimeArray;
-  maxAlt: BSRArray;
+  partialStart: BSRArray<TimeType> ;
+  sunAltStart: BSRArray<number>;
+  centralStart: BSRArray<TimeType>;
+  maxTime: BSRArray<TimeType>;
+  maxAlt: BSRArray<number>;
   maxAzi: number;
-  centralEnd: BSRArray | BSRTimeArray;
-  partialEnd: BSRArray | BSRTimeArray;
-  sunAltEnd: BSRArray;
-  magnitude: BSRArray;
-  coverage: BSRArray;
+  centralEnd: BSRArray<TimeType>;
+  partialEnd: BSRArray<TimeType>;
+  sunAltEnd: BSRArray<number>;
+  magnitude: BSRArray<number>;
+  coverage: BSRArray<number>;
   duration: string;
 }
 

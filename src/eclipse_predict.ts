@@ -49,7 +49,6 @@ TODO:
 */
 
 
-import { da } from "date-fns/locale";
 import { EclipseForm, Observer, SunBSR,BSRArray, EclipseData } from "./eclipse_types";
 import { SE2024 } from "./SE2024";
 export { EclipseForm, Observer, SunBSR,BSRArray, EclipseData, SE2024 };
@@ -1028,24 +1027,24 @@ function getcoverage(): [number, SunBSR]{
 function calculatefor(el: number[]) {
   consoleDebug("calculatefor");
   
-  let results = [] as EclipseData[];
+  let results = [] as EclipseData<string>[];
 
   const emptyEclipse = {
     date: "",            // ("Calendar Date"));
-    type: "" as 'P' | 'A' | 'T' | "",            // ("Eclipse Type"));
-    partialStart: [] as BSRArray,    // ("Partial Eclipse Begins"));
-    sunAltStart: [] as BSRArray,     // ("Sun Alt"));
-    centralTime: [] as BSRArray,     // ("A or T Eclipse Begins"));
-    maxTime: [] as BSRArray,         // ("Maximum Eclipse"));
-    maxAlt: [] as BSRArray,          // ("Sun Alt"));
-    maxAzi: 0,          // ("Sun Azi"));
-    centralEnd: [] as BSRArray,      // ("A or T Eclipse Ends"));
-    partialEnd: [] as BSRArray,      // ("Partial Eclipse Ends"));
-    sunAltEnd: [] as BSRArray,       // ("Sun Alt"));
-    magnitude: [] as BSRArray,       // ("Eclipse Mag."));
-    coverage: [] as BSRArray,        // ("Eclipse Obscuration"));
-    duration: "",        // ("A or T Eclipse Duration"));
-  } as EclipseData;
+    type: "" as 'P' | 'A' | 'T' | "",               // ("Eclipse Type"));
+    partialStart: ['', null] as BSRArray<string>,   // ("Partial Eclipse Begins"));
+    sunAltStart: [0,null] as BSRArray<number>,      // ("Sun Alt"));
+    centralStart: ['',null] as BSRArray<string>,     // ("A or T Eclipse Begins"));
+    maxTime: ['',null] as BSRArray<string>,         // ("Maximum Eclipse"));
+    maxAlt: [0,null] as BSRArray<number>,           // ("Sun Alt"));
+    maxAzi: 0,                                      // ("Sun Azi"));
+    centralEnd: ['',null] as BSRArray<string>,      // ("A or T Eclipse Ends"));
+    partialEnd: ['',null] as BSRArray<string>,      // ("Partial Eclipse Ends"));
+    sunAltEnd: [0,null] as BSRArray<number>,        // ("Sun Alt"));
+    magnitude: [0,null] as BSRArray<number>,        // ("Eclipse Mag."));
+    coverage: [0,null] as BSRArray<number>,         // ("Eclipse Obscuration"));
+    duration: "",                                   // ("A or T Eclipse Duration"));
+  } as EclipseData<string>;
 
   for (let i = 0; i < el.length; i += 28) {
     const o = {...emptyEclipse};
@@ -1072,9 +1071,9 @@ function calculatefor(el: number[]) {
       }
       // Central eclipse time
       if (mid[39] > 1 && c2[40] != 4) {
-        o.centralTime = gettime(el, c2);
+        o.centralStart = gettime(el, c2);
       } else {
-        o.centralTime = ['', null];
+        o.centralStart = ['', null];
       }
 
       // Maximum eclipse time
@@ -1155,22 +1154,56 @@ function dateAndtTimeToDate(date: string, time: string) {
   
 }
 
-export function recalculateForObserverUTC(latDeg: number, lonDeg: number, alt: number) {
+function isDateType<T>(value: EclipseData<T>[] | EclipseData<Date>[]): value is EclipseData<Date>[] {
+  // return typeof value === 'object' && value instanceof Date;
+  for (let i = 0; i < value.length; i++) {
+    if (! (value[i].partialStart[0] instanceof Date)) {
+      return false;
+    }
+    if (! (value[i].centralStart[0] instanceof Date)) {
+      return false;
+    }
+    if (! (value[i].maxTime[0] instanceof Date)) {
+      return false;
+    }
+    if (! (value[i].centralEnd[0] instanceof Date)) {
+      return false;
+    }
+    if (! (value[i].partialEnd[0] instanceof Date)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// function to convert EclipseData<string> to EclipseData<Date>
+function convertEclipseData(value: EclipseData<string>[]): EclipseData<Date>[] {
+  if (isDateType(value)) {
+    return value as EclipseData<Date>[];
+  }
+  return value.map((eclipse: EclipseData<string | Date>) => {
+    eclipse.partialStart[0] = dateAndtTimeToDate(eclipse.date, eclipse.partialStart[0] as string);
+    eclipse.centralStart[0] = dateAndtTimeToDate(eclipse.date, eclipse.centralStart[0] as string);
+    eclipse.maxTime[0] = dateAndtTimeToDate(eclipse.date, eclipse.maxTime[0] as string);
+    eclipse.centralEnd[0] = dateAndtTimeToDate(eclipse.date, eclipse.centralEnd[0] as string);
+    eclipse.partialEnd[0] = dateAndtTimeToDate(eclipse.date, eclipse.partialEnd[0] as string);
+    return eclipse as EclipseData<Date>;
+  });
+}
+
+export function recalculateForObserverUTC<B extends boolean>(latDeg: number, lonDeg: number, alt: number, convertDate: B): B extends true ? EclipseData<Date>[] : EclipseData<string>[];
+export function recalculateForObserverUTC(latDeg: number, lonDeg: number, alt: number, convertDate: boolean = false): EclipseData<string>[] | EclipseData<Date>[] {
   // use UTC timezone and correct longitude for the the West positive convention used in the code
   setObserver(latDeg, -lonDeg, alt, 0);
   const result = calculatefor(SE2024());
   console.log(result);
   // parse the date and time to a Date object
   // partialStart, sunAltStart, centralTime, maxTime, centralEnd, partialEnd, sunAltEnd
-  if (result.length > 0) {
-    result.forEach(eclipse => {
-      eclipse.partialStart[0] = dateAndtTimeToDate(eclipse.date, eclipse.partialStart[0] as string);
-      eclipse.centralTime[0] = dateAndtTimeToDate(eclipse.date, eclipse.centralTime[0] as string);
-      eclipse.maxTime[0] = dateAndtTimeToDate(eclipse.date, eclipse.maxTime[0] as string);
-      eclipse.centralEnd[0] = dateAndtTimeToDate(eclipse.date, eclipse.centralEnd[0] as string);
-      eclipse.partialEnd[0] = dateAndtTimeToDate(eclipse.date, eclipse.partialEnd[0] as string);
-    }); 
-  } 
-  return result;
+  if (convertDate) {
+    if (result.length > 0) {
+      return convertEclipseData(result) as EclipseData<Date>[];
+    }
+  }
+  return result as EclipseData<string>[];
 }
 

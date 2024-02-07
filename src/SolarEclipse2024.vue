@@ -65,6 +65,21 @@
 
               <span class="description">
                 <div v-if="infoPage==1">
+                  <div v-if="eclipsePrediction !== null" style="font-size: 10px; line-height: 1;">
+                  In totality: {{ locationInTotality ? "Yes" : "No" }} <br>
+                  Current fraction: {{ currentFractionEclipsed }} <br>
+                  Magnitude: {{ eclipsePrediction.magnitude[0] }} <br>
+                  Coverage:  {{ eclipsePrediction.coverage[0] }} <br>
+                  Partial start: {{ toTimeString(eclipsePrediction.partialStart[0], true) }} <br>
+                  Central start: {{ toTimeString(eclipsePrediction.centralStart[0], true ) }} <br>
+                  Max time: {{ toTimeString(eclipsePrediction.maxTime[0], true) }} <br>
+                  Central end: {{ toTimeString(eclipsePrediction.centralEnd[0], true ) }} <br>
+                  Partial end: {{ toTimeString(eclipsePrediction.partialEnd[0], true) }} <br>
+                  Duration: {{ eclipsePrediction.duration }} <br>
+                  </div>
+                </div>
+                
+                <div v-if="infoPage==2">
                   <p v-if="!queryData">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
@@ -76,7 +91,7 @@
                   </p>
                 </div>
 
-                <div v-if="infoPage==2">
+                <div v-if="infoPage==3">
                   <p>
                     <strong><span class="highlighted bg-red">Red line</span></strong> + <span class="highlighted bg-grey text-black">Grey  band</span>: path of total eclipse on map
                   </p>
@@ -1799,7 +1814,9 @@ export default defineComponent({
 
       presetLocationsVisited,
       userSelectedLocationsVisited,
-      eclipsePrediction: [] as EclipseData[],
+      eclipsePrediction: null as EclipseData<Date> | null,
+      eclipseStart: 0,
+      eclipseEnd: 0,
     };
   },
 
@@ -2507,6 +2524,8 @@ export default defineComponent({
         }
 
       }
+      
+      
 
       // We made a translation into the moon's frame, so undo that
       for (let i = 0; i < points.length; i++) {
@@ -2530,6 +2549,14 @@ export default defineComponent({
       overlay.set_lineColor(color);
       locations.forEach(pt => overlay.addPoint(pt.ra, pt.dec));
       Annotation2.addAnnotation(overlay);
+      
+      if (this.locationInTotality && this.selectedTime >= this.eclipseStart && this.selectedTime <= this.eclipseEnd) {
+        if (this.currentFractionEclipsed < 1) {
+          console.log('forcing', this.toTimeString(this.dateTime, true, false), this.currentFractionEclipsed);
+          this.currentFractionEclipsed = 1;
+          return;
+        }
+      }
     },
 
 
@@ -2617,9 +2644,12 @@ export default defineComponent({
       return `${hours != 0 ? hours : 12}:${minuteString} ${ampm}`;
     },
 
-    toTimeString(date: Date) {
+    toTimeString(date: Date, seconds = false, utc = false) {
       // return this.toLocaleTimeString(date);
-      return formatInTimeZone(date, this.selectedTimezone, 'h:mm aaa (zzz)');
+      if (seconds) {
+        return formatInTimeZone(date, utc ? 'UTC' : this.selectedTimezone, 'h:mm:ss aaa (zzz)');
+      }
+      return formatInTimeZone(date, utc ? 'UTC' : this.selectedTimezone, 'h:mm aaa (zzz)');
     },
 
     closeSplashScreen() {
@@ -2937,6 +2967,8 @@ export default defineComponent({
         this.setTime(this.dateTime);
       }
       this.updateFrontAnnotations(this.dateTime);
+      // check if the time is within the range of the eclipse
+      // }
     },
 
     updateFrontAnnotations(when: Date | null = null) {
@@ -3122,9 +3154,10 @@ export default defineComponent({
     },
     
     getEclipsePrediction() {
-      
-      const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100);
-      this.eclipsePrediction = eclipsePrediction;
+      const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100, true);
+      this.eclipsePrediction = eclipsePrediction[0];
+      this.eclipseStart = this.eclipsePrediction.centralStart[0].getTime();
+      this.eclipseEnd = this.eclipsePrediction.centralEnd[0].getTime();
     },
     
 
@@ -3356,7 +3389,7 @@ export default defineComponent({
     
     currentFractionEclipsed(_frac: number) {
       // this.skyOpacity = 1 - frac;
-      this.updateFrontAnnotations();
+      // this.updateFrontAnnotations();
     },
 
     toggleTrackSun(val: boolean) {
