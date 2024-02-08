@@ -3442,6 +3442,7 @@ export default defineComponent({
     
     currentFractionEclipsed(_frac: number) {
       // this.skyOpacity = 1 - frac;
+      this.updateSkyOpacityForSunAlt(this.sunPosition.altRad);
       this.updateFrontAnnotations();
     },
 
