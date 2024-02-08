@@ -1805,10 +1805,10 @@ export default defineComponent({
           url: 'https://raw.githubusercontent.com/johnarban/wwt_interactives/main/images/center.json',
           style: {color: '#ff0000', weight: 2, opacity: 1, fillOpacity: 0}
         },
-        { // individual places
-          'geojson': _eclipsePathGeoJson as GeoJSON.FeatureCollection,
-          'style': {radius:3,fillColor: '#ccc', color:'#222', weight: 2, opacity: 1, fillOpacity: 1}
-        }
+        // { // individual places
+        //   'geojson': _eclipsePathGeoJson as GeoJSON.FeatureCollection,
+        //   'style': {radius:3,fillColor: '#ccc', color:'#222', weight: 2, opacity: 1, fillOpacity: 1}
+        // }
       ],
       
 
