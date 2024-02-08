@@ -1281,7 +1281,8 @@ import { v4 } from "uuid";
 import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 import pointInPolygon from 'point-in-polygon';
 
-import { recalculateForObserverUTC, EclipseData } from "./eclipse_predict";
+import { recalculateForObserverUTC } from "./eclipse_predict";
+import { EclipseData } from "./eclipse_types";
 
 
 type SheetType = "text" | "video" | null;

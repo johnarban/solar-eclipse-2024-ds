@@ -51,7 +51,7 @@ TODO:
 
 import { EclipseForm, Observer, SunBSR,BSRArray, EclipseData } from "./eclipse_types";
 import { SE2024 } from "./SE2024";
-export { EclipseForm, Observer, SunBSR,BSRArray, EclipseData, SE2024 };
+// export { EclipseForm, Observer, SunBSR,BSRArray, EclipseData, SE2024 };
 //
 // Observer constants -
 // (0) North Latitude (radians)
