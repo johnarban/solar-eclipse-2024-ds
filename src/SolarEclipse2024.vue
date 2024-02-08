@@ -3368,9 +3368,8 @@ export default defineComponent({
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
       this.wwtControl.renderOneFrame();
-      this.updateFrontAnnotations();
-
       this.getEclipsePrediction();
+      this.updateFrontAnnotations();
 
       
       if (this.trackingSun) {
