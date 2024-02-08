@@ -49,7 +49,7 @@ TODO:
 */
 
 
-import { EclipseForm, Observer, SunBSR,BSRArray, EclipseData } from "./eclipse_types";
+import { EclipseForm, Observer, SunBSR,BSRArray, EclipseData, NoEclipseData, PartialEclipseData, TotalAnnularEclipseData } from "./eclipse_types";
 import { SE2024 } from "./SE2024";
 // export { EclipseForm, Observer, SunBSR,BSRArray, EclipseData, SE2024 };
 //
@@ -1135,20 +1135,27 @@ function consoleDebug(...data: any[]) {
 
 // recalculate();
 
-
-export function recalculateForObserver(latDeg: number, latDir: 'N' | 'S', lonDeg: number, lonDir: 'E' | 'W', alt: number, tz: number, tzDir: 'W' | 'E') {
+// the reads in data using the convention of the original form, and returns strings for the time.
+export function recalculateForObserver(latDeg: number, latDir: 'N' | 'S', lonDeg: number, lonDir: 'E' | 'W', alt: number, tz: number = 0, tzDir: 'W' | 'E' = 'W') {
+  // warning: the code uses the West positive convention for longitude
+  // warning: the code does not account for daylight saving time. Use the appropriate timezone value (or 0 for UTC: default)
   const latSign = eclipseform.latx.options[latDir];
   const lonSign = eclipseform.lonx.options[lonDir];
   const tzSign = eclipseform.tzx.options[tzDir];
   setObserver(latSign * Math.abs(latDeg), lonSign * Math.abs(lonDeg), alt, tzSign * Math.abs(tz));
   const result = calculatefor(SE2024());
   console.log(result);
+  return result;
 }
 
-function dateAndtTimeToDate(date: string, time: string | null) {
-  console.log('converting date and time to date', date, time);
+/* ========================================================================== */
+// The following section of code provides more modern outputs for the dates 
+// and times using Date objects
+// ========================================================================== */
+
+function dateAndtTimeToDate(date: string | null, time: string | null) {
   // date is formatted as "YYYY-Mon-DD" and time is formatted as "HH:MM:SS" in UTC
-  if (time === '' || time === null) {
+  if (date === "" || time === "" || date === null || time === null) {
     return null;
   }
   const [year, month, day] = date.split('-');
@@ -1158,14 +1165,23 @@ function dateAndtTimeToDate(date: string, time: string | null) {
   
 }
 
+
 function convertEclipseData(value: EclipseData<string>): EclipseData<Date> {
-  const out = {...value} as EclipseData<Date>;
-  out.partialStart[0] = dateAndtTimeToDate(value.date, value.partialStart[0] ?? '');
-  out.centralStart[0] = dateAndtTimeToDate(value.date, value.centralStart[0] ?? '');
-  out.maxTime[0] = dateAndtTimeToDate(value.date, value.maxTime[0] ?? '');
-  out.centralEnd[0] = dateAndtTimeToDate(value.date, value.centralEnd[0] ?? '');
-  out.partialEnd[0] = dateAndtTimeToDate(value.date, value.partialEnd[0] ?? '');
-  return out;
+  // make the type broader so we can reassign some values
+  const out = {...value} as EclipseData<Date | string>;
+  
+  out.partialStart[0] = dateAndtTimeToDate(value.date, value.partialStart[0]);
+  out.centralStart[0] = dateAndtTimeToDate(value.date, value.centralStart[0]);
+  out.maxTime[0] = dateAndtTimeToDate(value.date, value.maxTime[0]);
+  out.centralEnd[0] = dateAndtTimeToDate(value.date, value.centralEnd[0]);
+  out.partialEnd[0] = dateAndtTimeToDate(value.date, value.partialEnd[0]);
+  if (value.type === 'P') {
+    return out as PartialEclipseData<Date>;
+  } else if (value.type === 'A' || value.type === 'T') {
+    return out as TotalAnnularEclipseData<Date>;
+  } else {
+    return out as NoEclipseData<Date>;
+  }
 }
 
 
@@ -1174,19 +1190,11 @@ function convertEclipseDataList(value: EclipseData<string>[]): EclipseData<Date>
   return value.map(convertEclipseData);
 }
 
-export function recalculateForObserverUTC<B extends boolean>(latDeg: number, lonDeg: number, alt: number, convertDate: B): B extends true ? EclipseData<Date>[] : EclipseData<string>[];
-export function recalculateForObserverUTC(latDeg: number, lonDeg: number, alt: number, convertDate: boolean = false): EclipseData<string>[] | EclipseData<Date>[] {
+
+export function recalculateForObserverUTC(latDeg: number, lonDeg: number, alt: number): EclipseData<Date>[] {
   // use UTC timezone and correct longitude for the the West positive convention used in the code
   setObserver(latDeg, -lonDeg, alt, 0);
   const result = calculatefor(SE2024());
   console.log(result);
-  // parse the date and time to a Date object
-  // partialStart, sunAltStart, centralTime, maxTime, centralEnd, partialEnd, sunAltEnd
-  if (convertDate) {
-    if (result.length > 0) {
-      return convertEclipseDataList(result);
-    }
-  }
-  return result as EclipseData<string>[];
+  return convertEclipseDataList(result) as EclipseData<Date>[];
 }
-

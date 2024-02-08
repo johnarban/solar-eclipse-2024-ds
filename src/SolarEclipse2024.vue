@@ -3186,7 +3186,7 @@ export default defineComponent({
     },
     
     getEclipsePrediction() {
-      const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100, true);
+      const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100);
       this.eclipsePrediction = eclipsePrediction[0];
       if (this.eclipsePrediction.centralStart[0]) {
         this.eclipseStart = this.eclipsePrediction.centralStart[0].getTime();
