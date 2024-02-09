@@ -1174,6 +1174,7 @@
             </icon-button>
           </div>
           <icon-button
+            v-if="false"
             id="set-time-now-button"
             @activate="() => {
               // selectedTime = times.reduce((a, b) => {
