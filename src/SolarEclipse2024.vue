@@ -2441,7 +2441,6 @@ export default defineComponent({
       let forceTotality = false;
       if (this.locationInTotality && this.inEclipse) {
         if (this.currentFractionEclipsed <= 1) {
-          console.log('forcing', this.toTimeString(this.wwtCurrentTime, true, false), this.currentFractionEclipsed);
           this.currentFractionEclipsed = 1;
           forceTotality = true;
         }
@@ -2455,16 +2454,13 @@ export default defineComponent({
       }
 
       const n = 50;
-      console.table({'forceTotality': forceTotality,  'currentFractionEclipsed': this.currentFractionEclipsed});
       // If the moon/sun is completely "inside" of the sun/moon
       if (moonInsideSun || sunInsideMoon || forceTotality) {
-        console.log('using circle');
         for (let i = 0; i <= n; i++) {
           const angle = (i / n) * 2 * Math.PI;
           points.push({ x: rMoonPx * Math.cos(angle), y: rMoonPx * Math.sin(angle) });
         }
       } else {
-        console.log('finding lens');
         let x1: number;
         let y1: number;
         let x2: number;
