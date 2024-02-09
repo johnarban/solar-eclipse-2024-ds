@@ -1129,8 +1129,9 @@
               id="reset"
               :fa-icon="'rotate'"
               @activate="() => {
-                    selectedTime = 1697292380000;
-                    playbackRate = 10;
+                    const _totalEclipseTimeUTC = new Date('2024-04-08T18:18:00Z');
+                    selectedTime = _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5;
+                    playbackRate = 100;
                     playing = false;
                     toggleTrackSun = true;
                   }"
@@ -1188,6 +1189,7 @@
             </icon-button>
           </div>
           <icon-button
+            v-if="false"
             id="set-time-now-button"
             @activate="() => {
               // selectedTime = times.reduce((a, b) => {
@@ -1546,7 +1548,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: false,
+      showSplashScreen: true, // ACTION NEEDED make sure this is true before deploying
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -2613,8 +2615,14 @@ export default defineComponent({
         if (!blueMoon) {
           filename = "moon-dark-gray-overlay.png";
         } else {
-          const skyOpacity = Math.max(Math.min(this.skyOpacity, 1), 0);
-          const opacityToUse = Math.round(skyOpacity * 2) * 50;
+          let opacityToUse = 100;
+          if (this.skyOpacity > 0.8) {
+            opacityToUse = 100;
+          } else if (this.skyOpacity <= 0.8 && this.skyOpacity >0.7) {
+            opacityToUse = 20;
+          } else {
+            opacityToUse = 10;
+          }
           filename = `moon-sky-blue-overlay-${opacityToUse}.png`;
         }
       }
