@@ -64,6 +64,21 @@
             <div class="instructions-text" v-if="learnerPath=='Location'">
 
               <span class="description">
+                <!-- <div v-if="infoPage==1">
+                  <div v-if="eclipsePrediction !== null" style="font-size: 10px; line-height: 1;">
+                  In totality: {{ locationInTotality ? "Yes" : "No" }} <br>
+                  Current fraction: {{ currentFractionEclipsed }} <br>
+                  Magnitude: {{ eclipsePrediction.magnitude[0] }} <br>
+                  Coverage:  {{ eclipsePrediction.coverage[0] }} <br>
+                  Partial start: {{ toTimeString(eclipsePrediction.partialStart[0], true) }} <br>
+                  <strong>Central start: {{ toTimeString(eclipsePrediction.centralStart[0], true ) }} <br>
+                  Max time: {{ toTimeString(eclipsePrediction.maxTime[0], true) }} <br>
+                  Central end: {{ toTimeString(eclipsePrediction.centralEnd[0], true ) }} </strong><br>
+                  Partial end: {{ toTimeString(eclipsePrediction.partialEnd[0], true) }} <br>
+                  Duration: {{ eclipsePrediction.duration }} <br>
+                  </div>
+                </div> -->
+                
                 <div v-if="infoPage==1">
                   <p v-if="!queryData">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
@@ -317,7 +332,7 @@
                     <details> 
                       <summary>How precise are location and timing predications in this Data Story?</summary>
                       <p>
-                        You may notice some discrepancies in the reported eclipse percentages or with eclipse start and end times compared with other predictions. For example, maximum eclipse percentages may display as &lt;100% near the inside edge of the eclipse path. This is caused by limitations in precision for the calculations used to display the locations and sizes of the Sun and Moon on your screen. Timing predictions in this Data Story should be accurate to within about a minute.
+                        You may notice some discrepancies in the reported eclipse percentages or with eclipse start and end times compared with other predictions. This is caused by limitations in precision for the calculations used to display the locations and sizes of the Sun and Moon on your screen. Totality timing predictions in this Data Story should be accurate to within about 15 seconds.
                       </p> 
                     </details>
                     
@@ -1136,7 +1151,7 @@
                 {{ playbackRate }}&times;
               </span>
               <span v-if="!playing">
-                Paused
+                ({{ playbackRate }}&times;) Paused
               </span>
             </div>
           </div>
@@ -1265,6 +1280,9 @@ import { v4 } from "uuid";
 
 import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
 import pointInPolygon from 'point-in-polygon';
+
+import { recalculateForObserverUTC } from "./eclipse_predict";
+import { EclipseData } from "./eclipse_types";
 
 
 type SheetType = "text" | "video" | null;
@@ -1528,7 +1546,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true,
+      showSplashScreen: false,
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -1789,14 +1807,18 @@ export default defineComponent({
           style: {color: '#ff0000', weight: 2, opacity: 1, fillOpacity: 0}
         },
         // { // individual places
-        //   'geojson': eclipsePathGeoJson as GeoJSON.FeatureCollection,
+        //   'geojson': _eclipsePathGeoJson as GeoJSON.FeatureCollection,
         //   'style': {radius:3,fillColor: '#ccc', color:'#222', weight: 2, opacity: 1, fillOpacity: 1}
         // }
       ],
       
 
       presetLocationsVisited,
-      userSelectedLocationsVisited
+      userSelectedLocationsVisited,
+      eclipsePrediction: null as EclipseData<Date> | null,
+      eclipseStart: 0 as number | null,
+      eclipseMid: 0 as number | null,
+      eclipseEnd: 0 as number | null,
     };
   },
 
@@ -1894,7 +1916,7 @@ export default defineComponent({
       this.startHorizonMode();
 
       this.trackSun().then(() => this.positionSet = true);
-
+      this.getEclipsePrediction();
       // this.setTimeforSunAlt(10); // 10 degrees above horizon
       
       // console.log("selected time", this.selectedTime);
@@ -2178,15 +2200,38 @@ export default defineComponent({
       return this.viewerMode === 'Horizon' ? this.horizonRate : this.scopeRate;
     },
     
+    inEclipse(): boolean | null {
+      if (this.eclipsePrediction && this.eclipseStart != null && this.eclipseEnd != null) {
+        return this.wwtCurrentTime.getTime() >= this.eclipseStart && this.wwtCurrentTime.getTime() <= this.eclipseEnd;
+      } else {
+        return null;
+      }
+    },
+    
     playbackRate: {
       set(value: number) {
         this.playbackRateValue = value;
       },
       get(): number {
-        if ((this.currentFractionEclipsed > .99) && (this.locationInTotality)) {
-          return Math.min(this.playbackRateValue, 10);
+        let rate = this.playbackRateValue;
+        
+        // max rate = 100 if eclipsed
+        // if (this.currentFractionEclipsed > .5) {
+        //   rate = Math.min(this.playbackRateValue, 100);
+        // }
+        
+        // max rate = 10 if near eclipse max
+        let nearEclipseMax = false;
+        if (this.eclipsePrediction) {
+          if (this.eclipsePrediction.maxTime[0]) {
+            nearEclipseMax = Math.abs(this.eclipsePrediction.maxTime[0].getTime() - this.wwtCurrentTime.getTime()) < 120_000;
+          }
         }
-        return this.playbackRateValue;
+        // if the eclipse prediction isn't available fallback on the current fraction eclipsed
+        if (this.locationInTotality && (nearEclipseMax || this.currentFractionEclipsed > .99)) {
+          rate = Math.min(this.playbackRateValue, 10);
+        }
+        return rate;
       }
     },
     
@@ -2392,7 +2437,16 @@ export default defineComponent({
           );
         fractionEclipsed = intersectionArea / sunArea;
       }
-      this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+      
+      let forceTotality = false;
+      if (this.locationInTotality && this.inEclipse) {
+        if (this.currentFractionEclipsed <= 1) {
+          this.currentFractionEclipsed = 1;
+          forceTotality = true;
+        }
+      } else {
+        this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+      }
 
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
       if (this.useRegularMoon) {
@@ -2400,15 +2454,13 @@ export default defineComponent({
       }
 
       const n = 50;
-      
       // If the moon/sun is completely "inside" of the sun/moon
-      if (moonInsideSun || sunInsideMoon) {
+      if (moonInsideSun || sunInsideMoon || forceTotality) {
         for (let i = 0; i <= n; i++) {
           const angle = (i / n) * 2 * Math.PI;
           points.push({ x: rMoonPx * Math.cos(angle), y: rMoonPx * Math.sin(angle) });
         }
       } else {
-
         let x1: number;
         let y1: number;
         let x2: number;
@@ -2504,6 +2556,8 @@ export default defineComponent({
         }
 
       }
+      
+      
 
       // We made a translation into the moon's frame, so undo that
       for (let i = 0; i < points.length; i++) {
@@ -2527,6 +2581,7 @@ export default defineComponent({
       overlay.set_lineColor(color);
       locations.forEach(pt => overlay.addPoint(pt.ra, pt.dec));
       Annotation2.addAnnotation(overlay);
+      
     },
 
 
@@ -2614,9 +2669,16 @@ export default defineComponent({
       return `${hours != 0 ? hours : 12}:${minuteString} ${ampm}`;
     },
 
-    toTimeString(date: Date) {
+    toTimeString(date: Date | null, seconds = false, utc = false) {
       // return this.toLocaleTimeString(date);
-      return formatInTimeZone(date, this.selectedTimezone, 'h:mm aaa (zzz)');
+      if (date === null) {
+        return "";
+      }
+      
+      if (seconds) {
+        return formatInTimeZone(date, utc ? 'UTC' : this.selectedTimezone, 'h:mm:ss aaa (zzz)');
+      }
+      return formatInTimeZone(date, utc ? 'UTC' : this.selectedTimezone, 'h:mm aaa (zzz)');
     },
 
     closeSplashScreen() {
@@ -2934,6 +2996,8 @@ export default defineComponent({
         this.setTime(this.dateTime);
       }
       this.updateFrontAnnotations(this.dateTime);
+      // check if the time is within the range of the eclipse
+      // }
     },
 
     updateFrontAnnotations(when: Date | null = null) {
@@ -3117,6 +3181,35 @@ export default defineComponent({
       }
       return cloudData[row][col];
     },
+    
+    getEclipsePrediction() {
+      const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100);
+      this.eclipsePrediction = eclipsePrediction[0];
+      if (this.eclipsePrediction.centralStart[0]) {
+        this.eclipseStart = this.eclipsePrediction.centralStart[0].getTime();
+      } else if (this.eclipsePrediction.partialStart[0]) {
+        this.eclipseStart = this.eclipsePrediction.partialStart[0].getTime();
+      } else {
+        this.eclipseStart = null;
+      }
+      
+      if (this.eclipsePrediction.centralEnd[0]) {
+        this.eclipseEnd = this.eclipsePrediction.centralEnd[0].getTime();
+      } else if (this.eclipsePrediction.partialEnd[0]) {
+        this.eclipseEnd = this.eclipsePrediction.partialEnd[0].getTime();
+      } else {
+        this.eclipseEnd = null;
+      }
+      
+      // this means there is not eclipse at this location
+      if (this.eclipsePrediction.maxTime[0]) {
+        this.eclipseMid = this.eclipsePrediction.maxTime[0].getTime();
+      } else {
+        this.eclipseMid = null;
+      }
+      
+    },
+    
 
     mapboxLocationText(location: MapBoxFeatureCollection): string {
       const relevantFeatures = location.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
@@ -3244,6 +3337,7 @@ export default defineComponent({
     },
 
     wwtCurrentTime(time: Date) {
+
       if (time.getTime() >= this.maxTime || time.getTime() < this.minTime) {
         if (this.playing) {
           this.playing = false;
@@ -3274,7 +3368,9 @@ export default defineComponent({
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
       this.wwtControl.renderOneFrame();
+      this.getEclipsePrediction();
       this.updateFrontAnnotations();
+
       
       if (this.trackingSun) {
         //this.centerSun();
@@ -3346,6 +3442,7 @@ export default defineComponent({
     
     currentFractionEclipsed(_frac: number) {
       // this.skyOpacity = 1 - frac;
+      this.updateSkyOpacityForSunAlt(this.sunPosition.altRad);
       this.updateFrontAnnotations();
     },
 
