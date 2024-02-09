@@ -23,7 +23,7 @@
       }"
     >
     <template v-if="!showGuidedContent" v-slot:button>
-      Learn & Explore <font-awesome-icon icon="chevron-down" class="bullet-icon"/>
+      Map & Weather <font-awesome-icon icon="chevron-down" class="bullet-icon"/>
     </template>
   </icon-button>
   </div>
@@ -4373,7 +4373,7 @@ video, #info-video {
       left: 0.5rem;
       @media (max-width: 599px) {
         left: 0.5rem;
-        top: 2.5rem;
+        top: .75rem;
       }
     }
   }
