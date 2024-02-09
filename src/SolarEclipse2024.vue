@@ -1362,7 +1362,13 @@ type HorizontalRad = {
   azRad: number;
 };
 
-let queryData: LocationDeg | null = null;
+type OptionalFieldsShallow<T> = {
+  [P in keyof T]?: T[P]
+};
+
+type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean }>;
+
+let queryData: QueryData = {};
 const USER_SELECTED = "User Selected" as const;
 const UUID_KEY = "eclipse-mini-uuid" as const;
 const OPT_OUT_KEY = "eclipse-mini-optout" as const;
@@ -1530,8 +1536,9 @@ export default defineComponent({
 
     const selections = window.localStorage.getItem(USER_SELECTED_LOCATIONS_KEY);
     const userSelectedLocationsVisited: [number, number][] = selections ? (this.parseJSONString(selections) ?? []) : [];
-    if (queryData) {
-      userSelectedLocationsVisited.push([queryData.latitudeDeg, queryData.longitudeDeg]);
+    const [latDeg, lonDeg] = [queryData.latitudeDeg, queryData.longitudeDeg];
+    if (latDeg !== undefined && lonDeg !== undefined) {
+      userSelectedLocationsVisited.push([latDeg, lonDeg]);
     }
 
     const presets = window.localStorage.getItem(PRESET_LOCATIONS_KEY);
@@ -1544,11 +1551,14 @@ export default defineComponent({
 
     const storedOptOut = window.localStorage.getItem(OPT_OUT_KEY);
     const responseOptOut = typeof storedOptOut === "string" ? storedOptOut === "true" : null;
+    const location: LocationRad = (latDeg !== undefined && lonDeg !== undefined) ?
+      { latitudeRad: D2R * latDeg, longitudeRad: D2R * lonDeg } :
+      { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true, // ACTION NEEDED make sure this is true before deploying
+      showSplashScreen: queryData.splash ?? true, // ACTION NEEDED make sure this is true before deploying
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -1573,13 +1583,7 @@ export default defineComponent({
       // "Greatest Eclipse"
       selectedTime:  _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5,
       selectedTimezone: "America/Mexico_City",
-      location: queryData ? {
-        latitudeRad: D2R * queryData.latitudeDeg,
-        longitudeRad: D2R * queryData.longitudeDeg
-      } : {
-        latitudeRad: D2R * 25.2866667,
-        longitudeRad: D2R * -104.1383333
-      } as LocationRad,
+      location,
       selectedLocation,
       selectedLocationText: "Nazas, DUR",
       locationErrorMessage: "",
@@ -1829,8 +1833,12 @@ export default defineComponent({
     const lat = parseFloat(searchParams.get("lat") ?? "");
     const lon = parseFloat(searchParams.get("lon") ?? "");
     if (lat && lon) {
-      queryData = { latitudeDeg: lat, longitudeDeg: lon };
+      queryData = {
+        latitudeDeg: lat, longitudeDeg: lon
+      };
     }
+    const splashQuery = searchParams.get("splash");
+    queryData.splash = splashQuery !== "false";
 
   },
 
@@ -1844,7 +1852,6 @@ export default defineComponent({
           longitudeDeg: R2D * pl.longitudeRad
         };
       });
-
   },
 
   mounted() {
