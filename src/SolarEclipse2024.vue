@@ -3706,7 +3706,7 @@ body {
   right: 0.5rem;
   width: calc(100% - 1rem);
   pointer-events: none;
-  align-items: center;
+  align-items: flex-end;
   gap: 5px;
   // outline: 1px solid lime;
 }
@@ -3760,7 +3760,6 @@ body {
   border: solid 1px var(--accent-color);
   display: flex;
   flex-direction: column;
-  align-self: flex-end;
   pointer-events: auto;
 
   .v-label {
@@ -4797,9 +4796,9 @@ video, #info-video {
 }
 
 #eclipse-percent-chip {
-  position: absolute;
-  right: 0.5rem;
-  top: calc(-1.5 * var(--default-line-height));
+  // position: absolute;
+  // right: 0.5rem;
+  // top: calc(-1.5 * var(--default-line-height));
 
   .v-chip.v-chip--density-default {
     height: var(--default-line-height);
