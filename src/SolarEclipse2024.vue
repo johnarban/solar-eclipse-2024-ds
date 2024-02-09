@@ -64,7 +64,7 @@
             <div class="instructions-text" v-if="learnerPath=='Location'">
 
               <span class="description">
-                <div v-if="infoPage==1">
+                <!-- <div v-if="infoPage==1">
                   <div v-if="eclipsePrediction !== null" style="font-size: 10px; line-height: 1;">
                   In totality: {{ locationInTotality ? "Yes" : "No" }} <br>
                   Current fraction: {{ currentFractionEclipsed }} <br>
@@ -77,9 +77,9 @@
                   Partial end: {{ toTimeString(eclipsePrediction.partialEnd[0], true) }} <br>
                   Duration: {{ eclipsePrediction.duration }} <br>
                   </div>
-                </div>
+                </div> -->
                 
-                <div v-if="infoPage==2">
+                <div v-if="infoPage==1">
                   <p v-if="!queryData">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
@@ -91,7 +91,7 @@
                   </p>
                 </div>
 
-                <div v-if="infoPage==3">
+                <div v-if="infoPage==2">
                   <p>
                     <strong><span class="highlighted bg-red">Red line</span></strong> + <span class="highlighted bg-grey text-black">Grey  band</span>: path of total eclipse on map
                   </p>
