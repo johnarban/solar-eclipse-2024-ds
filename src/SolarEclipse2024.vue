@@ -1151,7 +1151,7 @@
                 {{ playbackRate }}&times;
               </span>
               <span v-if="!playing">
-                ({{ playbackRate }}) Paused
+                ({{ playbackRate }}&times;) Paused
               </span>
             </div>
           </div>
