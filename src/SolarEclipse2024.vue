@@ -1065,68 +1065,91 @@
         </div>
       <div id="tools">
         <span class="tool-container">
-          <div id="speed-control">
-            <icon-button
-              id="play-pause-icon"
-              :fa-icon="!(playing) ? 'play' : 'pause'"
+          <div style="position: relative">
+            <div id="speed-control">
+              <icon-button
+                id="play-pause-icon"
+                :fa-icon="!(playing) ? 'play' : 'pause'"
+                @activate="() => {
+                  playing = !(playing);
+                }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="Play/Pause"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+              id="set-time-now-button"
               @activate="() => {
-                playing = !(playing);
+                // selectedTime = times.reduce((a, b) => {
+                //   return Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a;
+                // });
+                selectedTime = Date.now();
+                playbackRate=1;
+                playing = true;
+                console.log('to now')
               }"
               :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="Play/Pause"
+              tooltip-text="Go to current time"
               tooltip-location="top"
               tooltip-offset="5px"
-              faSize="1x"
               :show-tooltip="!mobile"
-            ></icon-button>
-            <icon-button
-              id="speed-down"
-              :fa-icon="'angle-double-down'"
-              @activate="() => {
-                    playbackRate = playbackRate / 10
-                    playing = true;
-                  }"
-              :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="10x slower"
-              tooltip-location="top"
-              tooltip-offset="5px"
-              faSize="1x"
-              :show-tooltip="!mobile"
-            ></icon-button>
-            <icon-button
-              id="speed-up"
-              :fa-icon="'angle-double-up'"
-              @activate="() => {
-                    playbackRate = playbackRate * 10;
-                    playing = true;
-                  }"
-              :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="10x faster"
-              tooltip-location="top"
-              tooltip-offset="5px"
-              faSize="1x"
-              :show-tooltip="!mobile"
-            ></icon-button>
-            <icon-button
-              id="reset"
-              :fa-icon="'rotate'"
-              @activate="() => {
-                    selectedTime = 1697292380000;
-                    playbackRate = 10;
-                    playing = false;
-                    toggleTrackSun = true;
-                  }"
-              :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="Reset"
-              tooltip-location="top"
-              tooltip-offset="5px"
-              faSize="1x"
-              :show-tooltip="!mobile"
-            ></icon-button>
+            >
+              <template v-slot:button>
+                Now
+              </template>
+            </icon-button>
+              <icon-button
+                id="speed-down"
+                :fa-icon="'angle-double-down'"
+                @activate="() => {
+                      playbackRate = playbackRate / 10
+                      playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="10x slower"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+                id="speed-up"
+                :fa-icon="'angle-double-up'"
+                @activate="() => {
+                      playbackRate = playbackRate * 10;
+                      playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="10x faster"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+                id="reset"
+                :fa-icon="'rotate'"
+                @activate="() => {
+                      selectedTime = 1697292380000;
+                      playbackRate = 10;
+                      playing = false;
+                      toggleTrackSun = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="Reset"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+            </div>
             <div id="speed-text">
               Time rate: 
               <span v-if="playbackRate===1 && playing">
@@ -1140,24 +1163,25 @@
               </span>
             </div>
           </div>
-          <v-slider
-            id="slider"
-            v-model='selectedTime'
-            :max="maxTime"
-            :min="minTime"
-            :color="accentColor"
-            :ripple="false"
-            hide-details
-            track-size="4px"
-            thumb-size="14px"
-            thumb-label="always"
-            :step="millisecondsPerInterval"
-            @mousedown="() => {playing = false;}"
-            >
-            <template v-slot:thumb-label="item">
-              {{ toTimeString(new Date(item.modelValue))  }}
-            </template>
-          </v-slider>
+          <div id="slider">
+            <v-slider
+              v-model='selectedTime'
+              :max="maxTime"
+              :min="minTime"
+              :color="accentColor"
+              :ripple="false"
+              hide-details
+              track-size="4px"
+              thumb-size="14px"
+              thumb-label="always"
+              :step="millisecondsPerInterval"
+              @mousedown="() => {playing = false;}"
+              >
+              <template v-slot:thumb-label="item">
+                {{ toTimeString(new Date(item.modelValue))  }}
+              </template>
+            </v-slider>
+          </div>
           <div id="change-optout">
             <icon-button
               md-icon="mdi-lock"
@@ -1172,27 +1196,6 @@
             >
             </icon-button>
           </div>
-          <icon-button
-            id="set-time-now-button"
-            @activate="() => {
-              // selectedTime = times.reduce((a, b) => {
-              //   return Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a;
-              // });
-              selectedTime = Date.now();
-              playbackRate=1;
-              playing = true;
-              console.log('to now')
-            }"
-            :color="accentColor"
-            tooltip-text="Go to current time"
-            tooltip-location="top"
-            tooltip-offset="5px"
-            :show-tooltip="!mobile"
-          >
-            <template v-slot:button>
-              Now
-            </template>
-          </icon-button>
         </span>      
       </div>
       <div id="body-logos" v-if= "!smallSize">
@@ -1528,7 +1531,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true,
+      showSplashScreen: false,
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -3413,6 +3416,7 @@ export default defineComponent({
 :root {
   --default-font-size: clamp(0.7rem, min(1.7vh, 1.7vw), 1.1rem);
   --default-line-height: clamp(1rem, min(2.2vh, 2.2vw), 1.6rem);
+  --time-content-max-width: 700px;
 }
 
 html {
@@ -3735,11 +3739,17 @@ body {
   align-items: center;
   gap: 5px;
   pointer-events: auto;
+  
+  @media (max-width: 500px) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
 
   div.icon-wrapper {
     padding: 5px 5px;
     min-width: 30px;
   }
+  
 }
 
 #controls {
@@ -4343,9 +4353,10 @@ video, #info-video {
 
 #slider {
   width: 100% !important;
-  margin-block: 30px;
   margin-left: 5px;
   margin-right: 0;
+  position: relative
+  
 }
 
 .v-container {
@@ -4767,24 +4778,23 @@ video, #info-video {
 
 #speed-text {
   position: absolute;
-
   background-color: rgba(0, 0, 0, 0.5);
   padding-inline: 0.4em;
   padding-block: 0.15em;
   border-radius: 0.3em;
+  font-size: .75rem;
+  text-wrap: nowrap;  
 
-  @media (max-width: 959px) {
-    bottom: -0.4rem;
-    left: 9.5rem;
+  left: calc(100% + 1rem);
+  top: 1.5rem;
+  
+  @media (max-width: 500px) {
+    position: relative;
+    top: 0.5rem;
+    left: 0.5rem;
+    display: inline;
   }
-  @media (min-width: 960px) {
-    bottom: 0.3rem;
-    left: 0.3rem;
-  }
-
-
-  font-size: var(--default-font-size)
-  }  
+}
 
 #eclipse-percent-chip {
   position: absolute;
@@ -4898,7 +4908,13 @@ video, #info-video {
 }
 
 #change-optout {
-
+  
+  @media (max-width: 500px) {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+  }
+  
   .icon-wrapper {
     margin: 0;
     padding-inline: 0;
