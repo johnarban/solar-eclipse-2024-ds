@@ -1114,8 +1114,9 @@
               id="reset"
               :fa-icon="'rotate'"
               @activate="() => {
-                    selectedTime = 1697292380000;
-                    playbackRate = 10;
+                    const _totalEclipseTimeUTC = new Date('2024-04-08T18:18:00Z');
+                    selectedTime = _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5;
+                    playbackRate = 100;
                     playing = false;
                     toggleTrackSun = true;
                   }"
