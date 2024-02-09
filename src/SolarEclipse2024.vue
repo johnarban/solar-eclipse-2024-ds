@@ -1528,7 +1528,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true,
+      showSplashScreen: true, // ACTION NEEDED make sure this is true before deploying
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -2558,8 +2558,14 @@ export default defineComponent({
         if (!blueMoon) {
           filename = "moon-dark-gray-overlay.png";
         } else {
-          const skyOpacity = Math.max(Math.min(this.skyOpacity, 1), 0);
-          const opacityToUse = Math.round(skyOpacity * 2) * 50;
+          let opacityToUse = 100;
+          if (this.skyOpacity > 0.8) {
+            opacityToUse = 100;
+          } else if (this.skyOpacity <= 0.8 && this.skyOpacity >0.7) {
+            opacityToUse = 20;
+          } else {
+            opacityToUse = 10;
+          }
           filename = `moon-sky-blue-overlay-${opacityToUse}.png`;
         }
       }
