@@ -604,7 +604,9 @@
       @pointerup="onPointerUp"
     ></WorldWideTelescope>
     <div id="test-content">
-      <playback-control />
+      <playback-control
+        @rate="playbackRate = $event"
+      />
     </div>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
