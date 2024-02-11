@@ -603,6 +603,9 @@
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
     ></WorldWideTelescope>
+    <div id="test-content">
+      <playback-control />
+    </div>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
         <icon-button
@@ -3483,6 +3486,16 @@ body {
   }
 }
 
+
+#test-content {
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  padding: 1em;
+  top: 5%;
+  left: 5%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
 
 
 #app {
