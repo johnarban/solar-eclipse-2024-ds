@@ -1536,9 +1536,15 @@ export default defineComponent({
 
     const selections = window.localStorage.getItem(USER_SELECTED_LOCATIONS_KEY);
     const userSelectedLocationsVisited: [number, number][] = selections ? (this.parseJSONString(selections) ?? []) : [];
-    const [latDeg, lonDeg] = [queryData.latitudeDeg, queryData.longitudeDeg];
-    if (latDeg !== undefined && lonDeg !== undefined) {
-      userSelectedLocationsVisited.push([latDeg, lonDeg]);
+    const [latitudeDeg, longitudeDeg] = [queryData.latitudeDeg, queryData.longitudeDeg];
+    
+    let initialMapOptions = initialView;
+    if (latitudeDeg !== undefined && longitudeDeg !== undefined) {
+      userSelectedLocationsVisited.push([latitudeDeg, longitudeDeg]);
+      initialMapOptions = {
+        initialLocation: { latitudeDeg, longitudeDeg },
+        initialZoom: 5
+      };
     }
 
     const presets = window.localStorage.getItem(PRESET_LOCATIONS_KEY);
@@ -1551,8 +1557,8 @@ export default defineComponent({
 
     const storedOptOut = window.localStorage.getItem(OPT_OUT_KEY);
     const responseOptOut = typeof storedOptOut === "string" ? storedOptOut === "true" : null;
-    const location: LocationRad = (latDeg !== undefined && lonDeg !== undefined) ?
-      { latitudeRad: D2R * latDeg, longitudeRad: D2R * lonDeg } :
+    const location: LocationRad = (latitudeDeg !== undefined && longitudeDeg !== undefined) ?
+      { latitudeRad: D2R * latitudeDeg, longitudeRad: D2R * longitudeDeg } :
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
       uuid,
@@ -1602,9 +1608,7 @@ export default defineComponent({
         ...initialView
       },
       
-      initialMapOptions: {
-        ...(queryData ? { ...queryData, initialZoom: 5 } : initialView)
-      },
+      initialMapOptions,
 
       userSelectedMapOptions: {
         // templateUrl: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png",
@@ -1741,7 +1745,7 @@ export default defineComponent({
         radius: 5
       },
 
-      learnerPath: (queryData ? "Clouds" : "Location") as LearnerPath,
+      learnerPath: "Location" as LearnerPath,
       
       playing: false,
       playingIntervalId: null as ReturnType<typeof setInterval> | null,
