@@ -83,11 +83,11 @@
                   <p v-if="!queryData">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
-                  <p v-if="queryData">
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" size="l" class="bullet-icon"/> to "watch" the eclipse from the location shared in your link.
+                  <p v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" size="lg" class="bullet-icon"/> to "watch" the eclipse from the location shared in your link.
                   </p>
                   <p>
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData">other</span> location and view the eclipse from there.
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">other</span> location and view the eclipse from there.
                   </p>
                 </div>
 
@@ -1859,6 +1859,9 @@ export default defineComponent({
   },
 
   mounted() {
+    if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
+      this.updateSelectedLocationText();
+    }
     this.waitForReady().then(async () => {
 
       this.backgroundImagesets = [...skyBackgroundImagesets];
@@ -3260,9 +3263,9 @@ export default defineComponent({
       return pieces.join(", ");
     },
 
-    async updateSelectedLocationText() {
+    async textForLocation(longitudeDeg: number, latitudeDeg: number): Promise<string> {
       const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.locationDeg.longitudeDeg},${this.locationDeg.latitudeDeg}.json?access_token=${accessToken}`;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitudeDeg},${latitudeDeg}.json?access_token=${accessToken}`;
       const mapBoxText = await fetch(url)
         .then(response => response.json())
         .then((result: MapBoxFeatureCollection) => {
@@ -3273,14 +3276,18 @@ export default defineComponent({
         })
         .catch((_err) => null);
       if (mapBoxText) {
-        this.selectedLocationText = mapBoxText;
+        return mapBoxText;
       } else {
         const ns = this.locationDeg.latitudeDeg >= 0 ? 'N' : 'S';
         const ew = this.locationDeg.longitudeDeg >= 0 ? 'E' : 'W';
         const lat = Math.abs(this.locationDeg.latitudeDeg).toFixed(3);
         const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
-        this.selectedLocationText = `${lat}° ${ns}, ${lon}° ${ew}`;
+        return `${lat}° ${ns}, ${lon}° ${ew}`;
       }
+    },
+
+    async updateSelectedLocationText() {
+      this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
     }
   },
 
