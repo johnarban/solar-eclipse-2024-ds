@@ -1097,6 +1097,7 @@
                 :show-tooltip="!mobile"
               ></icon-button>
               <icon-button
+              v-if="false"
               id="set-time-now-button"
               @activate="() => {
                 // selectedTime = times.reduce((a, b) => {
@@ -1212,27 +1213,6 @@
             >
             </icon-button>
           </div>
-          <icon-button
-            id="set-time-now-button"
-            @activate="() => {
-              // selectedTime = times.reduce((a, b) => {
-              //   return Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a;
-              // });
-              selectedTime = Date.now();
-              playbackRate=1;
-              playing = true;
-              console.log('to now')
-            }"
-            :color="accentColor"
-            tooltip-text="Go to current time"
-            tooltip-location="top"
-            tooltip-offset="5px"
-            :show-tooltip="!mobile"
-          >
-            <template v-slot:button>
-              Now
-            </template>
-          </icon-button>
         </span>      
       </div>
       <div id="body-logos" v-if= "!smallSize">
