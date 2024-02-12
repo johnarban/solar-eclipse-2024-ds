@@ -80,7 +80,7 @@
                 </div> -->
                 
                 <div v-if="infoPage==1">
-                  <p v-if="!queryData">
+                  <p v-if="queryData.latitudeDeg == undefined || queryData.longitudeDeg == undefined">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
                   <p v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">
