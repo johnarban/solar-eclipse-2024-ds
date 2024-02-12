@@ -1190,8 +1190,8 @@
               :color="accentColor"
               :ripple="false"
               hide-details
-              track-size="4px"
-              thumb-size="14px"
+              track-size="8px"
+              thumb-size="20px"
               thumb-label="always"
               :step="millisecondsPerInterval"
               @mousedown="() => {playing = false;}"
@@ -4410,11 +4410,9 @@ video, #info-video {
 }
 
 // Styling the slider
-
-
-.v-slider {
+#slider .v-slider {
   .v-slider-track {
-    --v-slider-track-size: 4px !important;
+    // --v-slider-track-size: 4px !important;
 
     .v-slider-track__background {
       background-color: #CCC !important;
