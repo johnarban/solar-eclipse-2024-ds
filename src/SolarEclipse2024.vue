@@ -81,10 +81,10 @@
                 
                 <div v-if="infoPage==1">
                   <p v-if="queryData.latitudeDeg == undefined || queryData.longitudeDeg == undefined">
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
+                    "Watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
                   <p v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" size="lg" class="bullet-icon"/> to "watch" the eclipse from the location shared in your link.
+                    "Watch" the eclipse from the location shared in your link, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
                   <p>
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">other</span> location and view the eclipse from there.
