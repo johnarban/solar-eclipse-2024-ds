@@ -4886,7 +4886,7 @@ video, #info-video {
   padding-inline: 0.4em;
   padding-block: 0.15em;
   border-radius: 0.3em;
-  font-size: .75rem;
+  font-size: calc(1 * var(--default-font-size));
   text-wrap: nowrap;  
 
   left: calc(100% + 1rem);
