@@ -4929,7 +4929,16 @@ video, #info-video {
     justify-content: flex-end;
     flex-wrap: column;
     gap:5px;
-
+    
+    @media (max-width: 500px) {
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    
+    @media (max-width: 250px) {
+      padding-top: 3.5em;
+    }
+    
     @media (max-width: 700px) {
       .v-chip.v-chip--density-default {
         height: var(--default-line-height);
