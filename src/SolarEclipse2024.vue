@@ -1222,7 +1222,7 @@
       </div>
     </div>
 
-
+<!--  -->
     <!-- Data collection opt-out dialog -->
     <v-dialog
       scrim="false"
@@ -5032,8 +5032,7 @@ video, #info-video {
   
   .icon-wrapper {
     margin: 0;
-    padding-inline: 0;
-    padding-block: 0;
+    padding: 0.15em;
     border: none;
     min-width: 0;
   }
