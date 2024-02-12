@@ -1001,15 +1001,7 @@
     </div>
     
     <div class="bottom-content">
-      <div id="eclipse-percent-chip">
-        <v-chip 
-          v-if="showEclipsePercentage"
-          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
-          variant="outlined"
-          elevation="2"
-          :text="percentEclipsedText"
-        > </v-chip>
-      </div>
+
       <div
         id="controls"
         class="control-icon-wrapper"
@@ -1065,7 +1057,17 @@
           </div>
         </transition-expand>
       </div>
-
+      
+      <div id="eclipse-percent-chip">
+        <v-chip 
+          v-if="showEclipsePercentage"
+          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
+          variant="outlined"
+          elevation="2"
+          :text="percentEclipsedText"
+        > </v-chip>
+      </div>
+      
       <div id="video-icon">
             <icon-button
             v-model="showVideoSheet"
