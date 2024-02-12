@@ -1006,15 +1006,7 @@
     </div>
     
     <div class="bottom-content">
-      <div id="eclipse-percent-chip">
-        <v-chip 
-          v-if="showEclipsePercentage"
-          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
-          variant="outlined"
-          elevation="2"
-          :text="percentEclipsedText"
-        > </v-chip>
-      </div>
+
       <div
         id="controls"
         class="control-icon-wrapper"
@@ -1070,7 +1062,17 @@
           </div>
         </transition-expand>
       </div>
-
+      
+      <div id="eclipse-percent-chip">
+        <v-chip 
+          v-if="showEclipsePercentage"
+          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
+          variant="outlined"
+          elevation="2"
+          :text="percentEclipsedText"
+        > </v-chip>
+      </div>
+      
       <div id="video-icon">
             <icon-button
             v-model="showVideoSheet"
@@ -1102,6 +1104,7 @@
                 :show-tooltip="!mobile"
               ></icon-button>
               <icon-button
+              v-if="false"
               id="set-time-now-button"
               @activate="() => {
                 // selectedTime = times.reduce((a, b) => {
@@ -1192,8 +1195,8 @@
               :color="accentColor"
               :ripple="false"
               hide-details
-              track-size="4px"
-              thumb-size="14px"
+              track-size="8px"
+              thumb-size="20px"
               thumb-label="always"
               :step="millisecondsPerInterval"
               @mousedown="() => {playing = false;}"
@@ -1217,27 +1220,6 @@
             >
             </icon-button>
           </div>
-          <icon-button
-            id="set-time-now-button"
-            @activate="() => {
-              // selectedTime = times.reduce((a, b) => {
-              //   return Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a;
-              // });
-              selectedTime = Date.now();
-              playbackRate=1;
-              playing = true;
-              console.log('to now')
-            }"
-            :color="accentColor"
-            tooltip-text="Go to current time"
-            tooltip-location="top"
-            tooltip-offset="5px"
-            :show-tooltip="!mobile"
-          >
-            <template v-slot:button>
-              Now
-            </template>
-          </icon-button>
         </span>      
       </div>
       <div id="body-logos" v-if= "!smallSize">
@@ -1245,7 +1227,7 @@
       </div>
     </div>
 
-
+<!--  -->
     <!-- Data collection opt-out dialog -->
     <v-dialog
       scrim="false"
@@ -4443,11 +4425,9 @@ video, #info-video {
 }
 
 // Styling the slider
-
-
-.v-slider {
+#slider .v-slider {
   .v-slider-track {
-    --v-slider-track-size: 4px !important;
+    // --v-slider-track-size: 4px !important;
 
     .v-slider-track__background {
       background-color: #CCC !important;
@@ -4921,7 +4901,7 @@ video, #info-video {
   padding-inline: 0.4em;
   padding-block: 0.15em;
   border-radius: 0.3em;
-  font-size: .75rem;
+  font-size: calc(1 * var(--default-font-size));
   text-wrap: nowrap;  
 
   left: calc(100% + 1rem);
@@ -4964,7 +4944,16 @@ video, #info-video {
     justify-content: flex-end;
     flex-wrap: column;
     gap:5px;
-
+    
+    @media (max-width: 500px) {
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    
+    @media (max-width: 250px) {
+      padding-top: 3.5em;
+    }
+    
     @media (max-width: 700px) {
       .v-chip.v-chip--density-default {
         height: var(--default-line-height);
@@ -5056,8 +5045,7 @@ video, #info-video {
   
   .icon-wrapper {
     margin: 0;
-    padding-inline: 0;
-    padding-block: 0;
+    padding: 0.15em;
     border: none;
     min-width: 0;
   }
