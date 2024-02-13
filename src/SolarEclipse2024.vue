@@ -1564,7 +1564,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: queryData.splash ?? true, // ACTION NEEDED make sure this is true before deploying
+      showSplashScreen: queryData.splash ?? true, 
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -1843,7 +1843,6 @@ export default defineComponent({
     }
     const splashQuery = searchParams.get("splash");
     queryData.splash = splashQuery !== "false";
-
   },
 
   created() {
@@ -1921,7 +1920,10 @@ export default defineComponent({
       this.updateMoonTexture(true);
 
       this.updateWWTLocation();
-      this.setClockSync(false); // set to false to pause
+      
+      this.setClockSync(!queryData.splash); // set to true if queryData.splash == false
+      this.playing = !queryData.splash;
+
       this.setClockRate(1); //
 
       this.playbackRate = 1;  //this.setplaybackRate('8 minutes per second'); // 500;
