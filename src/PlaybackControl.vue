@@ -1,13 +1,10 @@
 <template>
   <div id="enclosing-playback-container">
-    <div id="playback-slider-container" :class="[value === 0 ? 'special-thumb' : '']">
+    <div id="playback-slider-container">
       
-      <div class="tick-container">
+      <div id="tick-container">
         <div v-for="val in index" :key="val" v-bind="options(val)" class="tick">
           <span class="tick-label"> {{ valueToMark(val) }} </span>
-        </div>
-        <div v-for="val in index" :key="val" v-bind="options(val)" class="tick">
-          <div :class="['tick-mark',val === 0 ? 'big-mark' : '', 'elevation-20']"></div>
         </div>
       </div>
       
@@ -24,6 +21,8 @@
         thumb-color="blue"
         track-size="8"
         :step="step"
+        :show-ticks="useBuiltInTicks ? 'always' : false"
+        :ticks="useBuiltInTicks ? marks : undefined"
         >
       </v-slider>
     
@@ -49,9 +48,20 @@ export default defineComponent({
   components: {
     'v-slider': VSlider,
   },
+  
+  emits: ['update:modelValue'],
 
   props: {
     // Define the props here
+    modelValue: {
+      type: Number,
+      default: 0,
+    },
+    maxPower: {
+      type: Number,
+      default: 3,
+    },
+    
   },
 
   mounted() {
@@ -68,6 +78,34 @@ export default defineComponent({
         container.style.setProperty('--v-slider-height', `${height}px`);
       }
     }
+    
+    // create a resize observer for enclosing-playback-container
+    // that adjusts it's scale relative to a certain width
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const _entry of entries) {
+        
+        const track = document.querySelector('.v-slider-track') as HTMLElement;
+        const container = document.getElementById('enclosing-playback-container') as HTMLElement;
+        const tickContainer = document.querySelector('#tick-container') as HTMLElement;
+        const input = container.querySelector('.v-slider__container');
+        const psc = document.querySelector('#playback-slider-container') as HTMLElement;
+        if (track && container) {
+          container.style.setProperty('--track-width', `${track.clientWidth}px`);
+        }
+        if (tickContainer && input && psc) {
+          psc.style.setProperty('--v-slider-height', `${input.clientHeight}px`);
+        }
+        
+        // if container width is more than 300px use .normal-screen on psc
+        if (container.clientWidth <= 300) {
+          psc.classList.add('small-screen');
+        } else {
+          psc.classList.remove('small-screen');
+        }
+        
+      }
+    });
+    resizeObserver.observe(document.getElementById('enclosing-playback-container')!);
   },
 
 
@@ -77,11 +115,11 @@ export default defineComponent({
       // Define the data here
       data: ['a', 'b', 'c'],
       symlog: symLog,
-      values: symLog.sequence(3, false),
-      index: symLog.sequence(3),
+      values: symLog.sequence(this.maxPower, false),
+      index: symLog.sequence(this.maxPower),
       // eslint-disable-next-line vue/no-reserved-keys
-      value: 0,
-      myTicks: symmLinspace(1, 4, 0.1),
+      myTicks: symmLinspace(1, this.maxPower+1, 0.1),
+      useBuiltInTicks: true,
 
     };
   },
@@ -108,16 +146,28 @@ export default defineComponent({
     pause() {
       this.value = 0;
     }
+    
 
   },
 
   computed: {
+    // the model value
+    value: {
+      get() {
+        return symLog.toSymlogIndex(this.modelValue);
+      },
+      set(val: number) {
+        this.$emit('update:modelValue', Math.round(symLog.fromSymLogIndex(val)));
+      },
+    },
+    
     // Define the computed properties here
     marks(): Record<number, string> {
       const marks: Record<number, string> = {};
       this.index.forEach((value, i) => {
         marks[value] = value === 0 ? '' : this.values[i].toString();
       });
+
       return marks;
     },
 
@@ -138,7 +188,7 @@ export default defineComponent({
         this.value = 0;
       }
       
-      this.$emit('rate', symLog.fromSymLogIndex(val));
+      // this.$emit('rate', symLog.fromSymLogIndex(val));
 
       
     }
@@ -159,32 +209,78 @@ export default defineComponent({
   margin: 0.5rem;
   border-radius: 0.5rem;
   border: 1px solid white;
-  min-width: 350px;
-  background-color: pink;
+  min-width: 200px;
+  background-color: #272727;
+  --track-wdith: 0px; // get set by the resize observer to the actual track width
+  --tick-color: #ddd;
+  
 
   #playback-slider-container {
     position: relative;
-    padding-inline: 1rem;
+    padding-inline: 0.5rem;
     --v-slider-height: 32px;
-    --mark-size: min(6vw, 30px);
-    --big-size: calc(var(--mark-size) * 2);
-    --tick-font-size: 0.75em;
+    --tick-font-size: 0.7rem;
+    --psc-offset: calc(-1*var(--tick-font-size)/2);
 
-    height: calc(40px + 0.75em);
-
-    // doesn't do anything right now, but when 
-    // the value is 0, this css will be active
-    &.special-thumb {
-      .v-slider-thumb {
-        opacity: 1;
+    height: calc(var(--v-slider-height) + var(--tick-font-size));
+    transform: translateY(var(--psc-offset));
+    
+    .v-slider-track__tick-label {
+      display: none;
+    }
+    
+    .track-tick-size {
+      font-size: var(--v-slider-track-size);
+      --v-slider-tick-size: clamp(2em, calc(.075 * var(--track-width)), 4em); // scale with track size
+      border-radius: 50%;
+    }
+    
+    .pause-color {
+      --pause-color: rebeccaPurple !important;
+      background-color: var(--pause-color);
+      &.v-slider-track__tick--filled {
+        background-color: var(--pause-color);
       }
     }
+    
+    // the zero tick mark
+    .v-slider-track__tick[style="inset-inline-start: 50%;"] {
+      .track-tick-size();
+      width: calc(var(--v-slider-tick-size) * 2);
+      height: calc(var(--v-slider-tick-size) * 2);
+      transform: translate(-50%, -50%);
+      --pause-gap: 0.5rem;
+      .pause-color();
+      
+      
+      
+      &::before,
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 6px;
+        height: 50%;
+        background-color: white;
+        
+      }
 
+      &::before {
+        left: calc(50% - var(--pause-gap));
+      }
+
+      &::after {
+        left: calc(50% + var(--pause-gap));
+      }
+    }
+    
     // push the track to the back
     .v-slider-track * {
-      opacity: 1;
-      z-index: 0;
-    }
+        opacity: 1;
+        z-index: 0;
+      }
 
     .v-slider-thumb {
       z-index: 1;
@@ -194,9 +290,64 @@ export default defineComponent({
     .v-slider-track__fill {
       opacity: 0;
     }
+    
+    .v-slider-track__tick {
+      .track-tick-size();
+      
+      background-color: var(--tick-color);
+      
+      &.v-slider-track__tick--filled {
+        // margin-inline-start: calc(100% - var(--v-slider-tick-size) - 1px); // default
+        background-color: var(--tick-color);
+      }
+      
+      &.v-slider-track__tick--first {
+        // margin-inline-start: calc(var(--v-slider-tick-size) + 1px); // default
+        margin-inline-start: 0px;
+      }
+      
+      &.v-slider-track__tick--last {
+        // margin-inline-start: calc(100% - var(--v-slider-tick-size) - 1px); // default
+        margin-inline-start: 100%;
+      }
+    
+    }
+      
+    &.small-screen {
+      .v-slider-track__tick[style="inset-inline-start: 50%;"] {
+        width: calc(var(--v-slider-tick-size) * 4);
+        height: calc(var(--v-slider-tick-size) * 4);
+        .pause-color();
+        --pause-gap: 0.25rem;
+        &::before,
+        &::after {
+          width: 3px;
+        }
+        &::before {
+        left: calc(50% - var(--pause-gap));
+      }
+
+      &::after {
+        left: calc(50% + var(--pause-gap));
+      }
+      }
+      
+      .v-slider-track__tick {
+        --v-slider-tick-size: 1em;
+        background-color: #aaa;
+      }
+      
+    }
+      
+    
+  }
+  
+      
+      
+  
 
 
-    .tick-container {
+    #tick-container {
       --height: 0px;
       --position: calc(var(--v-slider-height) + var(--height));
       margin-inline: 8px;
@@ -215,48 +366,8 @@ export default defineComponent({
         color: white;
       }
 
-      .tick-mark {
-        --size: var(--mark-size);
-        --mark-offset: calc(-1 * var(--size) / 2 - var(--v-slider-height)/2);
-        width: var(--size);
-        height: var(--size);
-        border-radius: 50%;
-        transform: translateY(var(--mark-offset));
-        background-color: #ddd;
-        pointer-events: none;
-      }
-
-      .big-mark {
-        --size: calc(var(--mark-size) * 2);
-        background-color: #666;
-        pointer-events: auto;
-
-
-        // make a pause icon using the ::before and ::after pseudo-elements on the .v-slider-thumb
-        &::before,
-        &::after {
-          content: '';
-          position: absolute;
-          top: calc(var(--size) / 4);
-          width: 6px;
-          height: 50%;
-          background-color: white;
-        }
-
-        &::before {
-          left: calc(var(--size)/3);
-        }
-
-        &::after {
-          right: calc(var(--size)/3);
-        }
-
-      }
-
-
-
     }
   }
 
-}
+
 </style>
