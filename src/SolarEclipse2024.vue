@@ -80,14 +80,14 @@
                 </div> -->
                 
                 <div v-if="infoPage==1">
-                  <p v-if="!queryData">
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
+                  <p v-if="queryData.latitudeDeg == undefined || queryData.longitudeDeg == undefined">
+                    "Watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
-                  <p v-if="queryData">
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" size="l" class="bullet-icon"/> to "watch" the eclipse from the location shared in your link.
+                  <p v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">
+                    "Watch" the eclipse from the location shared in your link, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
                   <p>
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData">other</span> location and view the eclipse from there.
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">other</span> location and view the eclipse from there.
                   </p>
                 </div>
 
@@ -1367,7 +1367,13 @@ type HorizontalRad = {
   azRad: number;
 };
 
-let queryData: LocationDeg | null = null;
+type OptionalFieldsShallow<T> = {
+  [P in keyof T]?: T[P]
+};
+
+type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean }>;
+
+let queryData: QueryData = {};
 const USER_SELECTED = "User Selected" as const;
 const UUID_KEY = "eclipse-mini-uuid" as const;
 const OPT_OUT_KEY = "eclipse-mini-optout" as const;
@@ -1535,8 +1541,15 @@ export default defineComponent({
 
     const selections = window.localStorage.getItem(USER_SELECTED_LOCATIONS_KEY);
     const userSelectedLocationsVisited: [number, number][] = selections ? (this.parseJSONString(selections) ?? []) : [];
-    if (queryData) {
-      userSelectedLocationsVisited.push([queryData.latitudeDeg, queryData.longitudeDeg]);
+    const [latitudeDeg, longitudeDeg] = [queryData.latitudeDeg, queryData.longitudeDeg];
+    
+    let initialMapOptions = initialView;
+    if (latitudeDeg !== undefined && longitudeDeg !== undefined) {
+      userSelectedLocationsVisited.push([latitudeDeg, longitudeDeg]);
+      initialMapOptions = {
+        initialLocation: { latitudeDeg, longitudeDeg },
+        initialZoom: 5
+      };
     }
 
     const presets = window.localStorage.getItem(PRESET_LOCATIONS_KEY);
@@ -1549,11 +1562,14 @@ export default defineComponent({
 
     const storedOptOut = window.localStorage.getItem(OPT_OUT_KEY);
     const responseOptOut = typeof storedOptOut === "string" ? storedOptOut === "true" : null;
+    const location: LocationRad = (latitudeDeg !== undefined && longitudeDeg !== undefined) ?
+      { latitudeRad: D2R * latitudeDeg, longitudeRad: D2R * longitudeDeg } :
+      { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true,
+      showSplashScreen: queryData.splash ?? true, 
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -1578,13 +1594,7 @@ export default defineComponent({
       // "Greatest Eclipse"
       selectedTime:  _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5,
       selectedTimezone: "America/Mexico_City",
-      location: queryData ? {
-        latitudeRad: D2R * queryData.latitudeDeg,
-        longitudeRad: D2R * queryData.longitudeDeg
-      } : {
-        latitudeRad: D2R * 25.2866667,
-        longitudeRad: D2R * -104.1383333
-      } as LocationRad,
+      location,
       selectedLocation,
       selectedLocationText: "Nazas, DUR",
       locationErrorMessage: "",
@@ -1603,9 +1613,7 @@ export default defineComponent({
         ...initialView
       },
       
-      initialMapOptions: {
-        ...(queryData ? { ...queryData, initialZoom: 5 } : initialView)
-      },
+      initialMapOptions,
 
       userSelectedMapOptions: {
         // templateUrl: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png",
@@ -1742,7 +1750,7 @@ export default defineComponent({
         radius: 5
       },
 
-      learnerPath: (queryData ? "Clouds" : "Location") as LearnerPath,
+      learnerPath: "Location" as LearnerPath,
       
       playing: false,
       playingIntervalId: null as ReturnType<typeof setInterval> | null,
@@ -1834,9 +1842,12 @@ export default defineComponent({
     const lat = parseFloat(searchParams.get("lat") ?? "");
     const lon = parseFloat(searchParams.get("lon") ?? "");
     if (lat && lon) {
-      queryData = { latitudeDeg: lat, longitudeDeg: lon };
+      queryData = {
+        latitudeDeg: lat, longitudeDeg: lon
+      };
     }
-
+    const splashQuery = searchParams.get("splash");
+    queryData.splash = splashQuery !== "false";
   },
 
   created() {
@@ -1849,10 +1860,12 @@ export default defineComponent({
           longitudeDeg: R2D * pl.longitudeRad
         };
       });
-
   },
 
   mounted() {
+    if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
+      this.updateSelectedLocationText();
+    }
     this.waitForReady().then(async () => {
 
       this.backgroundImagesets = [...skyBackgroundImagesets];
@@ -1912,7 +1925,10 @@ export default defineComponent({
       this.updateMoonTexture(true);
 
       this.updateWWTLocation();
-      this.setClockSync(false); // set to false to pause
+      
+      this.setClockSync(!queryData.splash); // set to true if queryData.splash == false
+      this.playing = !queryData.splash;
+
       this.setClockRate(1); //
 
       this.playbackRate = 1;  //this.setplaybackRate('8 minutes per second'); // 500;
@@ -3254,9 +3270,9 @@ export default defineComponent({
       return pieces.join(", ");
     },
 
-    async updateSelectedLocationText() {
+    async textForLocation(longitudeDeg: number, latitudeDeg: number): Promise<string> {
       const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.locationDeg.longitudeDeg},${this.locationDeg.latitudeDeg}.json?access_token=${accessToken}`;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitudeDeg},${latitudeDeg}.json?access_token=${accessToken}`;
       const mapBoxText = await fetch(url)
         .then(response => response.json())
         .then((result: MapBoxFeatureCollection) => {
@@ -3267,14 +3283,18 @@ export default defineComponent({
         })
         .catch((_err) => null);
       if (mapBoxText) {
-        this.selectedLocationText = mapBoxText;
+        return mapBoxText;
       } else {
         const ns = this.locationDeg.latitudeDeg >= 0 ? 'N' : 'S';
         const ew = this.locationDeg.longitudeDeg >= 0 ? 'E' : 'W';
         const lat = Math.abs(this.locationDeg.latitudeDeg).toFixed(3);
         const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
-        this.selectedLocationText = `${lat}° ${ns}, ${lon}° ${ew}`;
+        return `${lat}° ${ns}, ${lon}° ${ew}`;
       }
+    },
+
+    async updateSelectedLocationText() {
+      this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
     }
   },
 
