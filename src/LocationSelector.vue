@@ -43,11 +43,23 @@ const defaultMapOptions: MapOptions = {
   className: 'map-tiles'
 };
 
+interface CloudData {
+  lat: number;
+  lon: number;
+  cloud_cover: number;
+}
+
 export default defineComponent({
 
   emits: ["place", "update:modelValue", "error"],
 
   props: {
+    cloudDataSource: {
+      type: Object as PropType<CloudData[]>,
+      required: true,
+    },
+    
+    
     activatorColor: {
       type: String,
       default: "#ffffff"
@@ -192,7 +204,27 @@ export default defineComponent({
         },
       });
     },
+    
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    parseResult(result: {'lat': number, 'lon': number, 'cloud_cover': number}[]) {
+      result.forEach((row: {'lat': number, 'lon': number, 'cloud_cover': number}) => {
+        const lat = row.lat;
+        const lon = row.lon;
+        const cloudCover = row.cloud_cover;
+        // check for nan
+        if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
+          return;
+        }
 
+        const rect = this.createRectangle(lat, lon, cloudCover);
+        if (rect) {
+          this.cloudCoverRectangles.addLayer(rect);
+        }
+      });
+      this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
+    },
+
+    
     createRectangle(lat: number, lon: number, cloudCover: number): L.Rectangle {
       const color = this.getColor(cloudCover);
       
@@ -430,6 +462,14 @@ export default defineComponent({
   },
 
   watch: {
+    cloudDataSource(val) {
+      // clear the old data
+      this.cloudCoverRectangles.remove();
+      // load the new data
+      this.parseResult(val);
+      
+    },
+    
     modelValue() {
       this.updateCircle();
       if (this.map && !this.map.getBounds().contains(this.latLng)) {

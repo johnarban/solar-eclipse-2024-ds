@@ -212,6 +212,7 @@
           <div v-if="!smAndUp || smAndUp" id="map-container" >
             <!-- :places="places" -->
             <location-selector
+              :cloud-data-source="cloudDataSource"
               :model-value="locationDeg"
               @update:modelValue="updateLocationFromMap"
               :initial-place="places.find(p => p.name === 'selectedLocation')"
@@ -1486,6 +1487,18 @@ let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
   return d.map((v) => +v);
 });
 
+import jackData from  "./assets/nino.csv";
+const ninoData  = csvParseRows(jackData, (d, _i) => {
+  
+  return {
+    'index': +d[0],
+    'lat': +d[1],
+    'lon': +d[2],
+    'mean': +d[3],
+    'median': +d[4]
+  };
+});
+
 // lon and lat are first col and row (dropping the first value)
 const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
 const minLon = Math.min(...cloudData[0].slice(1));
@@ -1583,6 +1596,8 @@ export default defineComponent({
       getMyLocation: true,
       myLocation: null as LocationDeg | null,
       geolocationPermission: '' as 'granted' | 'denied' | 'prompt',
+      
+      ninoData,
       
       showWWTGuideSheet: false,
       
@@ -1976,10 +1991,15 @@ export default defineComponent({
     }
     
     this.colorbarGradient();
+    console.log(this.getCloudCoverColumn('mean'));
   },
 
   computed: {
 
+    cloudDataSource() {
+      return this.getCloudCoverColumn('mean');
+    },
+    
     dateTime() {
       return new Date(this.selectedTime);
     },
@@ -2283,6 +2303,18 @@ export default defineComponent({
 
   methods: {
 
+    getCloudCoverColumn(name: string = 'mean') {
+      
+      return this.ninoData.map(d => {
+        let out: number = 0;
+        if (name === 'mean') {
+          out = d.mean;
+        } 
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        return {'lat':d.lat, 'lon':d.lon, 'cloud_cover':out};
+      });
+    },
+    
     onScroll() {
       const el = document.getElementById('guided-content-container');
 
