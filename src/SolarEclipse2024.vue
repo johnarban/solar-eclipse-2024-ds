@@ -23,7 +23,7 @@
       }"
     >
     <template v-if="!showGuidedContent" v-slot:button>
-      Learn & Explore <font-awesome-icon icon="chevron-down" class="bullet-icon"/>
+      Map & Weather <font-awesome-icon icon="chevron-down" class="bullet-icon"/>
     </template>
   </icon-button>
   </div>
@@ -1001,15 +1001,7 @@
     </div>
     
     <div class="bottom-content">
-      <div id="eclipse-percent-chip">
-        <v-chip 
-          v-if="showEclipsePercentage"
-          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
-          variant="outlined"
-          elevation="2"
-          :text="percentEclipsedText"
-        > </v-chip>
-      </div>
+
       <div
         id="controls"
         class="control-icon-wrapper"
@@ -1065,7 +1057,17 @@
           </div>
         </transition-expand>
       </div>
-
+      
+      <div id="eclipse-percent-chip">
+        <v-chip 
+          v-if="showEclipsePercentage"
+          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
+          variant="outlined"
+          elevation="2"
+          :text="percentEclipsedText"
+        > </v-chip>
+      </div>
+      
       <div id="video-icon">
             <icon-button
             v-model="showVideoSheet"
@@ -1080,69 +1082,93 @@
         </div>
       <div id="tools">
         <span class="tool-container">
-          <div id="speed-control">
-            <icon-button
-              id="play-pause-icon"
-              :fa-icon="!(playing) ? 'play' : 'pause'"
+          <div style="position: relative">
+            <div id="speed-control">
+              <icon-button
+                id="play-pause-icon"
+                :fa-icon="!(playing) ? 'play' : 'pause'"
+                @activate="() => {
+                  playing = !(playing);
+                }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="Play/Pause"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+              v-if="false"
+              id="set-time-now-button"
               @activate="() => {
-                playing = !(playing);
+                // selectedTime = times.reduce((a, b) => {
+                //   return Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a;
+                // });
+                selectedTime = Date.now();
+                playbackRate=1;
+                playing = true;
+                console.log('to now')
               }"
               :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="Play/Pause"
+              tooltip-text="Go to current time"
               tooltip-location="top"
               tooltip-offset="5px"
-              faSize="1x"
               :show-tooltip="!mobile"
-            ></icon-button>
-            <icon-button
-              id="speed-down"
-              :fa-icon="'angle-double-down'"
-              @activate="() => {
-                    playbackRate = playbackRate / 10
-                    playing = true;
-                  }"
-              :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="10x slower"
-              tooltip-location="top"
-              tooltip-offset="5px"
-              faSize="1x"
-              :show-tooltip="!mobile"
-            ></icon-button>
-            <icon-button
-              id="speed-up"
-              :fa-icon="'angle-double-up'"
-              @activate="() => {
-                    playbackRate = playbackRate * 10;
-                    playing = true;
-                  }"
-              :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="10x faster"
-              tooltip-location="top"
-              tooltip-offset="5px"
-              faSize="1x"
-              :show-tooltip="!mobile"
-            ></icon-button>
-            <icon-button
-              id="reset"
-              :fa-icon="'rotate'"
-              @activate="() => {
-                    const _totalEclipseTimeUTC = new Date('2024-04-08T18:18:00Z');
+            >
+              <template v-slot:button>
+                Now
+              </template>
+            </icon-button>
+              <icon-button
+                id="speed-down"
+                :fa-icon="'angle-double-down'"
+                @activate="() => {
+                      playbackRate = playbackRate / 10
+                      playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="10x slower"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+                id="speed-up"
+                :fa-icon="'angle-double-up'"
+                @activate="() => {
+                      playbackRate = playbackRate * 10;
+                      playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="10x faster"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+                id="reset"
+                :fa-icon="'rotate'"
+                @activate="() => {
+                      const _totalEclipseTimeUTC = new Date('2024-04-08T18:18:00Z');
                     selectedTime = _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5;
-                    playbackRate = 100;
-                    playing = false;
-                    toggleTrackSun = true;
-                  }"
-              :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="Reset"
-              tooltip-location="top"
-              tooltip-offset="5px"
-              faSize="1x"
-              :show-tooltip="!mobile"
-            ></icon-button>
+                      playbackRate = 100;
+                      playing = false;
+                      toggleTrackSun = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="Reset"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+            </div>
             <div id="speed-text">
               Time rate: 
               <span v-if="playbackRate===1 && playing">
@@ -1156,24 +1182,25 @@
               </span>
             </div>
           </div>
-          <v-slider
-            id="slider"
-            v-model='selectedTime'
-            :max="maxTime"
-            :min="minTime"
-            :color="accentColor"
-            :ripple="false"
-            hide-details
-            track-size="4px"
-            thumb-size="14px"
-            thumb-label="always"
-            :step="millisecondsPerInterval"
-            @mousedown="() => {playing = false;}"
-            >
-            <template v-slot:thumb-label="item">
-              {{ toTimeString(new Date(item.modelValue))  }}
-            </template>
-          </v-slider>
+          <div id="slider">
+            <v-slider
+              v-model='selectedTime'
+              :max="maxTime"
+              :min="minTime"
+              :color="accentColor"
+              :ripple="false"
+              hide-details
+              track-size="8px"
+              thumb-size="20px"
+              thumb-label="always"
+              :step="millisecondsPerInterval"
+              @mousedown="() => {playing = false;}"
+              >
+              <template v-slot:thumb-label="item">
+                {{ toTimeString(new Date(item.modelValue))  }}
+              </template>
+            </v-slider>
+          </div>
           <div id="change-optout">
             <icon-button
               md-icon="mdi-lock"
@@ -1188,28 +1215,6 @@
             >
             </icon-button>
           </div>
-          <icon-button
-            v-if="false"
-            id="set-time-now-button"
-            @activate="() => {
-              // selectedTime = times.reduce((a, b) => {
-              //   return Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a;
-              // });
-              selectedTime = Date.now();
-              playbackRate=1;
-              playing = true;
-              console.log('to now')
-            }"
-            :color="accentColor"
-            tooltip-text="Go to current time"
-            tooltip-location="top"
-            tooltip-offset="5px"
-            :show-tooltip="!mobile"
-          >
-            <template v-slot:button>
-              Now
-            </template>
-          </icon-button>
         </span>      
       </div>
       <div id="body-logos" v-if= "!smallSize">
@@ -1217,7 +1222,7 @@
       </div>
     </div>
 
-
+<!--  -->
     <!-- Data collection opt-out dialog -->
     <v-dialog
       scrim="false"
@@ -3538,6 +3543,7 @@ export default defineComponent({
 :root {
   --default-font-size: clamp(0.7rem, min(1.7vh, 1.7vw), 1.1rem);
   --default-line-height: clamp(1rem, min(2.2vh, 2.2vw), 1.6rem);
+  --time-content-max-width: 700px;
 }
 
 html {
@@ -3827,7 +3833,7 @@ body {
   right: 0.5rem;
   width: calc(100% - 1rem);
   pointer-events: none;
-  align-items: center;
+  align-items: flex-end;
   gap: 5px;
   // outline: 1px solid lime;
 }
@@ -3860,11 +3866,17 @@ body {
   align-items: center;
   gap: 5px;
   pointer-events: auto;
+  
+  @media (max-width: 500px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
   div.icon-wrapper {
     padding: 5px 5px;
     min-width: 30px;
   }
+  
 }
 
 #controls {
@@ -3875,7 +3887,6 @@ body {
   border: solid 1px var(--accent-color);
   display: flex;
   flex-direction: column;
-  align-self: flex-end;
   pointer-events: auto;
 
   .v-label {
@@ -4419,11 +4430,9 @@ video, #info-video {
 }
 
 // Styling the slider
-
-
-.v-slider {
+#slider .v-slider {
   .v-slider-track {
-    --v-slider-track-size: 4px !important;
+    // --v-slider-track-size: 4px !important;
 
     .v-slider-track__background {
       background-color: #CCC !important;
@@ -4468,9 +4477,10 @@ video, #info-video {
 
 #slider {
   width: 100% !important;
-  margin-block: 30px;
   margin-left: 5px;
   margin-right: 0;
+  position: relative
+  
 }
 
 .v-container {
@@ -4487,7 +4497,7 @@ video, #info-video {
       left: 0.5rem;
       @media (max-width: 599px) {
         left: 0.5rem;
-        top: 2.5rem;
+        top: .75rem;
       }
     }
   }
@@ -4892,29 +4902,28 @@ video, #info-video {
 
 #speed-text {
   position: absolute;
-
   background-color: rgba(0, 0, 0, 0.5);
   padding-inline: 0.4em;
   padding-block: 0.15em;
   border-radius: 0.3em;
+  font-size: calc(1 * var(--default-font-size));
+  text-wrap: nowrap;  
 
-  @media (max-width: 959px) {
-    bottom: -0.4rem;
-    left: 9.5rem;
+  left: calc(100% + 1rem);
+  top: 1.5rem;
+  
+  @media (max-width: 500px) {
+    position: relative;
+    top: 0.5rem;
+    left: 0.5rem;
+    display: inline;
   }
-  @media (min-width: 960px) {
-    bottom: 0.3rem;
-    left: 0.3rem;
-  }
-
-
-  font-size: var(--default-font-size)
-  }  
+}
 
 #eclipse-percent-chip {
-  position: absolute;
-  right: 0.5rem;
-  top: calc(-1.5 * var(--default-line-height));
+  // position: absolute;
+  // right: 0.5rem;
+  // top: calc(-1.5 * var(--default-line-height));
 
   .v-chip.v-chip--density-default {
     height: var(--default-line-height);
@@ -4940,7 +4949,16 @@ video, #info-video {
     justify-content: flex-end;
     flex-wrap: column;
     gap:5px;
-
+    
+    @media (max-width: 500px) {
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    
+    @media (max-width: 250px) {
+      padding-top: 3.5em;
+    }
+    
     @media (max-width: 700px) {
       .v-chip.v-chip--density-default {
         height: var(--default-line-height);
@@ -5023,11 +5041,16 @@ video, #info-video {
 }
 
 #change-optout {
-
+  
+  @media (max-width: 500px) {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+  }
+  
   .icon-wrapper {
     margin: 0;
-    padding-inline: 0;
-    padding-block: 0;
+    padding: 0.15em;
     border: none;
     min-width: 0;
   }
