@@ -14,7 +14,7 @@
         v-model="value"
         :max="index[index.length - 1]"
         :min="index[0]"
-        :thumb-size="20"
+        :thumb-size="16"
         color="white"
         track-color="white"
         track-fill-color="white"
@@ -128,7 +128,7 @@ export default defineComponent({
 
     // Define the methods here
     valueToMark(value: number): number | string {
-      if (value === 0) return '';
+      if (value === 0) return 'Pause';
       return symLog.fromSymLogIndex(value);
     },
 
@@ -210,8 +210,10 @@ export default defineComponent({
   border-radius: 0.5rem;
   border: 1px solid white;
   min-width: 200px;
+  max-width: 500px;
   background-color: #272727;
   --track-wdith: 0px; // get set by the resize observer to the actual track width
+  --min-tick-gap: 0.2rem;
   --tick-color: #ddd;
   
 
@@ -231,7 +233,8 @@ export default defineComponent({
     
     .track-tick-size {
       font-size: var(--v-slider-track-size);
-      --v-slider-tick-size: clamp(2em, calc(.075 * var(--track-width)), 4em); // scale with track size
+      --avail-space: calc((var(--track-width) - 18 * var(--min-tick-gap)) / 9);
+      --v-slider-tick-size: clamp(1em, var(--avail-space), 3em); // scale with track size
       border-radius: 50%;
     }
     
@@ -315,8 +318,8 @@ export default defineComponent({
       
     &.small-screen {
       .v-slider-track__tick[style="inset-inline-start: 50%;"] {
-        width: calc(var(--v-slider-tick-size) * 4);
-        height: calc(var(--v-slider-tick-size) * 4);
+        width: calc(var(--v-slider-tick-size) * 2.5);
+        height: calc(var(--v-slider-tick-size) * 2.5);
         .pause-color();
         --pause-gap: 0.25rem;
         &::before,
@@ -334,7 +337,6 @@ export default defineComponent({
       
       .v-slider-track__tick {
         --v-slider-tick-size: 1em;
-        background-color: #aaa;
       }
       
     }
