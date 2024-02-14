@@ -90,7 +90,8 @@ export default defineComponent({
         const input = container.querySelector('.v-slider__container');
         const psc = document.querySelector('#playback-slider-container') as HTMLElement;
         if (track && container) {
-          container.style.setProperty('--track-width', `${track.clientWidth}px`);
+          const s = track.scrollWidth;
+          container.style.setProperty('--track-width', `${s}px`);
         }
         if (tickContainer && input && psc) {
           psc.style.setProperty('--v-slider-height', `${input.clientHeight}px`);
@@ -118,7 +119,7 @@ export default defineComponent({
       values: symLog.sequence(this.maxPower, false),
       index: symLog.sequence(this.maxPower),
       // eslint-disable-next-line vue/no-reserved-keys
-      myTicks: symmLinspace(1, this.maxPower+1, 0.1),
+      myTicks: symmLinspace(1, Math.pow(10,this.maxPower), 2).map((val) => symLog.toSymlogIndex(val)),
       useBuiltInTicks: true,
 
     };
@@ -203,6 +204,8 @@ export default defineComponent({
 #enclosing-playback-container {
   // modify the Vuetify slifer properties
   // z-index: -1999;
+  display: inline-block;
+  width: 100%;
   padding-inline: 0.5rem;
   padding-block-end: 0.5rem;
   padding-block-start: 1.5rem;
@@ -215,6 +218,7 @@ export default defineComponent({
   --track-wdith: 0px; // get set by the resize observer to the actual track width
   --min-tick-gap: 0.2rem;
   --tick-color: #ddd;
+  
   
 
   #playback-slider-container {
@@ -361,6 +365,10 @@ export default defineComponent({
       .tick {
         position: absolute;
         transform: translateX(-50%);
+      }
+      
+      .tick[style="left: 50%;"] {
+        margin-top: 0.5em;
       }
 
       .tick-label {
