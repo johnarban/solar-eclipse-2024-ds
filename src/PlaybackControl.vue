@@ -1,5 +1,41 @@
 <template>
   <div id="enclosing-playback-container">
+    
+    <div id="playback-play-pause-button">
+      <icon-button
+        :md-icon="isPaused ? 'mdi-play' : 'mdi-pause'"
+        @activate="isPaused = !isPaused"
+        :color="color"
+        :focus-color="color"
+        tooltip-text="Play/Pause"
+        tooltip-location="top"
+        tooltip-offset="5px"
+        md-size="36"
+      ></icon-button>
+
+      <!-- create reverse button -->
+      <!-- <v-checkbox
+        v-model="reverseTime"
+        label="Reverse"
+        :color='color'
+        hide-details
+        >
+      </v-checkbox> -->
+      <div id="playback-reverse-time">
+      <icon-button
+        v-model="reverseTime"
+        md-icon="mdi-step-backward-2"
+        :color="color"
+        :focus-color="color"
+        tooltip-text="Play/Pause"
+        tooltip-location="top"
+        tooltip-offset="5px"
+        md-size="24"
+      >
+    </icon-button>
+    <span id="reverse-button-text">Reverse</span>
+  </div>
+    </div>
     <div id="playback-slider-container">
       
       <div id="tick-container">
@@ -49,22 +85,33 @@ export default defineComponent({
     'v-slider': VSlider,
   },
   
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'update:paused'],
 
   props: {
     // Define the props here
     modelValue: {
       type: Number,
-      default: 0,
+      default: 1,
     },
     maxPower: {
       type: Number,
       default: 3,
     },
+    paused: {
+      type: Boolean,
+      default: true,
+    },
+    
+    color: {
+      type: String,
+      default: 'white',
+    },
+    
     
   },
 
   mounted() {
+    this.value = this.symlog.toSymlogIndex(this.modelValue);
     // Do something when the component is mounted
     // get height of v-input_container
     const container = document.getElementById('playback-slider-container');
@@ -107,6 +154,7 @@ export default defineComponent({
       }
     });
     resizeObserver.observe(document.getElementById('enclosing-playback-container')!);
+    
   },
 
 
@@ -116,12 +164,12 @@ export default defineComponent({
       // Define the data here
       data: ['a', 'b', 'c'],
       symlog: symLog,
-      values: symLog.sequence(this.maxPower, false),
-      index: symLog.sequence(this.maxPower),
+      index: symLog.sequence(this.maxPower).filter(v => v > 0),
       // eslint-disable-next-line vue/no-reserved-keys
       myTicks: symmLinspace(1, Math.pow(10,this.maxPower), 2).map((val) => symLog.toSymlogIndex(val)),
       useBuiltInTicks: true,
-
+      reverseTime: false,
+      value: 1,
     };
   },
 
@@ -130,7 +178,8 @@ export default defineComponent({
     // Define the methods here
     valueToMark(value: number): number | string {
       if (value === 0) return 'Pause';
-      return symLog.fromSymLogIndex(value);
+      const pre = this.reverseTime ? -1 : 1;
+      return pre * symLog.fromSymLogIndex(value);
     },
 
     options(val: number) {
@@ -144,30 +193,28 @@ export default defineComponent({
       };
     },
 
-    pause() {
-      this.value = 0;
-    }
-    
-
   },
 
   computed: {
-    // the model value
-    value: {
+    isPaused: {
       get() {
-        return symLog.toSymlogIndex(this.modelValue);
+        console.log(this.paused);
+        return this.paused;
       },
-      set(val: number) {
-        this.$emit('update:modelValue', Math.round(symLog.fromSymLogIndex(val)));
-      },
+      set(val: boolean) {
+        console.log(val);
+        this.$emit('update:paused', val);
+      }
     },
     
     // Define the computed properties here
     marks(): Record<number, string> {
       const marks: Record<number, string> = {};
-      this.index.forEach((value, i) => {
-        marks[value] = value === 0 ? '' : this.values[i].toString();
+      this.index.forEach((value) => {
+        const pre = this.reverseTime ? -1 : 1;
+        marks[value] = value === 0 ? '' : (pre * symLog.fromSymLogIndex(value)).toString();
       });
+      
 
       return marks;
     },
@@ -185,14 +232,29 @@ export default defineComponent({
   watch: {
     // Define the watch properties here
     value(val: number) {
-      if (Math.abs(val) < 1 && this.step === 0.1) {
-        this.value = 0;
+      if (this.reverseTime) {
+        val = -symLog.fromSymLogIndex(val);
+      } else {
+        val = symLog.fromSymLogIndex(val);
       }
-      
-      // this.$emit('rate', symLog.fromSymLogIndex(val));
-
-      
-    }
+      this.$emit('update:modelValue', Math.round(val) );
+    },
+    
+    modelValue(val: number) {
+      this.reverseTime = val < 0;
+      this.value = Math.abs(symLog.toSymlogIndex(val));
+    },
+    
+    
+    reverseTime(rt: boolean) {
+      let val = 0;
+      if (rt) {
+        val = -symLog.fromSymLogIndex(this.value);
+      } else {
+        val = symLog.fromSymLogIndex(this.value);
+      }
+      this.$emit('update:modelValue', Math.round(val) );
+    },
   },
 });
 
@@ -204,12 +266,12 @@ export default defineComponent({
 #enclosing-playback-container {
   // modify the Vuetify slifer properties
   // z-index: -1999;
-  display: inline-block;
+  display: flex;
+  align-items: center;
   width: 100%;
   padding-inline: 0.5rem;
-  padding-block-end: 0.5rem;
-  padding-block-start: 1.5rem;
-  margin: 0.5rem;
+  padding-block-start: 0.5rem;
+  padding-block-end: 0.75rem;
   border-radius: 0.5rem;
   border: 1px solid white;
   min-width: 200px;
@@ -218,18 +280,42 @@ export default defineComponent({
   --track-wdith: 0px; // get set by the resize observer to the actual track width
   --min-tick-gap: 0.2rem;
   --tick-color: #ddd;
+  --tick-font-size: 0.7rem;
   
+  #playback-play-pause-button {
+    display: flex;
+    margin-inline-end: 0.5rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5em;
+    
+    #playback-reverse-time {
+      #reverse-button-text {
+        position: absolute;
+        font-size: var(--tick-font-size);
+      }
+      .icon-wrapper {
+        border-radius: 2em;
+      }
+    }
+
+  }
+  
+  #playback-slider-container {
+    flex-grow: 1;
+
+  }
   
 
   #playback-slider-container {
+    display: flex;
+    flex-direction: column;
     position: relative;
     padding-inline: 0.5rem;
     --v-slider-height: 32px;
-    --tick-font-size: 0.7rem;
     --psc-offset: calc(-1*var(--tick-font-size)/2);
 
     height: calc(var(--v-slider-height) + var(--tick-font-size));
-    transform: translateY(var(--psc-offset));
     
     .v-slider-track__tick-label {
       display: none;
@@ -259,6 +345,7 @@ export default defineComponent({
       --pause-gap: 0.5rem;
       .pause-color();
       
+      // create tringle play psueo element
       
       
       &::before,
