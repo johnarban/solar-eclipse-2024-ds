@@ -10,7 +10,7 @@
         tooltip-text="Play/Pause"
         tooltip-location="top"
         tooltip-offset="5px"
-        md-size="36"
+        md-size="24"
       ></icon-button>
 
       <!-- create reverse button -->
@@ -22,20 +22,21 @@
         >
       </v-checkbox> -->
       <div id="playback-reverse-time">
-      <icon-button
-        v-model="reverseTime"
-        md-icon="mdi-step-backward-2"
-        :color="color"
-        :focus-color="color"
-        tooltip-text="Play/Pause"
-        tooltip-location="top"
-        tooltip-offset="5px"
-        md-size="24"
-      >
-    </icon-button>
-    <span id="reverse-button-text">Reverse</span>
-  </div>
+        <icon-button
+          v-model="reverseTime"
+          md-icon="mdi-step-backward-2"
+          :color="color"
+          :focus-color="color"
+          tooltip-text="Play/Pause"
+          tooltip-location="top"
+          tooltip-offset="5px"
+          md-size="24"
+        >
+        </icon-button>
+        <span id="reverse-button-text">Reverse</span>
+      </div>
     </div>
+    
     <div id="playback-slider-container">
       
       <div id="tick-container">
@@ -61,9 +62,9 @@
         :ticks="useBuiltInTicks ? marks : undefined"
         >
       </v-slider>
+    </div>
+
     
-    
-  </div>
   </div>
 
   
@@ -106,6 +107,10 @@ export default defineComponent({
       type: String,
       default: 'white',
     },
+    smallScreen: {
+      type: Boolean,
+      default: false,
+    },
     
     
   },
@@ -145,11 +150,11 @@ export default defineComponent({
         }
         
         // if container width is more than 300px use .normal-screen on psc
-        if (container.clientWidth <= 300) {
-          psc.classList.add('small-screen');
-        } else {
-          psc.classList.remove('small-screen');
-        }
+        // if (container.clientWidth <= 300) {
+        //   psc.classList.add('small-screen');
+        // } else {
+        //   psc.classList.remove('small-screen');
+        // }
         
       }
     });
@@ -290,6 +295,7 @@ export default defineComponent({
     gap: 0.5em;
     
     #playback-reverse-time {
+      position: relative;
       #reverse-button-text {
         position: absolute;
         font-size: var(--tick-font-size);
@@ -303,7 +309,33 @@ export default defineComponent({
   
   #playback-slider-container {
     flex-grow: 1;
-
+  }
+  
+  @media (max-width: 500px) {
+    display: grid;
+    justify-items: stretch;
+    padding-inline: 0.25rem;
+    padding-block-start: 0.25rem;
+    padding-block-end: 0.2rem;
+    
+    #playback-play-pause-button {
+      margin-inline: auto;
+      margin-block-end: 0.5em;
+    }
+    
+    .icon-wrapper {
+      min-width: 50px;
+      width: 70px;
+      padding: 0;
+    }
+    
+    #reverse-button-text {
+        position: absolute;
+        font-size: var(--tick-font-size);
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    
   }
   
 
@@ -407,7 +439,7 @@ export default defineComponent({
     
     }
       
-    &.small-screen {
+    @media (max-width: 500px){
       .v-slider-track__tick[style="inset-inline-start: 50%;"] {
         width: calc(var(--v-slider-tick-size) * 2.5);
         height: calc(var(--v-slider-tick-size) * 2.5);
@@ -427,7 +459,7 @@ export default defineComponent({
       }
       
       .v-slider-track__tick {
-        --v-slider-tick-size: 1em;
+        --v-slider-tick-size: 2em;
       }
       
     }
@@ -448,6 +480,11 @@ export default defineComponent({
       height: var(--height);
       transform: translateY(var(--position));
       z-index: 1;
+      
+      @media (max-width: 500px) {
+        --position: calc(var(--v-slider-height) - 0.5em);
+        transform: translateY(--position);
+      }
 
       .tick {
         position: absolute;
