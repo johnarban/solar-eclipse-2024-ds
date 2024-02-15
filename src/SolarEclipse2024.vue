@@ -1476,34 +1476,37 @@ const _eclipsePathGeoJson = {
 
 
 /** PARSE CLOUD COVERAGE DATA **/
-import cloudCover from "./assets/cloud_cover.csv";
+// import cloudCover from "./assets/cloud_cover.csv";
 import { csvParseRows } from "d3-dsv";
 
 // the first row is the longitude values
 // the first column is the latitude values
 // the data lies in the interior of the matrix
-let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
-  // loop over the row and convert each value to a number ("+v")
-  return d.map((v) => +v);
-});
+// let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
+// loop over the row and convert each value to a number ("+v")
+// return d.map((v) => +v);
+// });
 
-import jackData from  "./assets/nino.csv";
+import jackData from  "./assets/nino_reformat.csv";
 const ninoData  = csvParseRows(jackData, (d, _i) => {
   
   return {
-    'index': +d[0],
-    'lat': +d[1],
-    'lon': +d[2],
-    'mean': +d[3],
-    'median': +d[4]
+    'lat': +d[0],
+    'lon': +d[1],
+    'mean': +d[2],
+    'median': +d[3],
+    'mode': +d[4],
+    'min': +d[5],
+    'max': +d[6]
   };
 });
 
 // lon and lat are first col and row (dropping the first value)
-const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
-const minLon = Math.min(...cloudData[0].slice(1));
+// const minLat = Math.min(...ninoData.map(d => d.lat).slice(1));
+// Access the lon property in each object of ninoData
+// const minLon = Math.min(...ninoData.map(d => d.lon).slice(1));
 // get just the inner data grid
-cloudData = cloudData.slice(1).map(row => row.slice(1));
+// jackData = jackData.slice(1).map(row => row.slice(1));
 
 console.log("cloud cover data loaded");
 
@@ -2025,7 +2028,16 @@ export default defineComponent({
       if (this.locationDeg) {
         const lat = this.locationDeg.latitudeDeg;
         const lon = this.locationDeg.longitudeDeg;
-        return this.getCloudCover(lat, lon);
+        
+        // Find the data point in ninoData with the closest latitude and longitude
+        const closestDataPoint = ninoData.reduce((closest, current) => {
+          const distClosest = Math.abs(closest.lat - lat) + Math.abs(closest.lon - lon);
+          const distCurrent = Math.abs(current.lat - lat) + Math.abs(current.lon - lon);
+          return distCurrent < distClosest ? current : closest;
+        });
+
+        // Return the mean cloud cover from the closest data point
+        return closestDataPoint.mean;
       } else {
         return null;
       }
@@ -3233,15 +3245,15 @@ export default defineComponent({
       }
     },
     
-    getCloudCover(lat: number, lon: number): number | null {
-      // convert lat/lon to row/col
-      const row = Math.floor(lat + 0.5 - minLat);
-      const col = Math.floor(lon + 0.5 - minLon);
-      if (row < 0 || row >= cloudData.length || col < 0 || col >= cloudData[0].length) {
-        return null;
-      }
-      return cloudData[row][col];
-    },
+    //    getCloudCover(lat: number, lon: number): number | null {
+    //      // convert lat/lon to row/col
+    //      const row = Math.floor(lat + 0.5 - minLat);
+    //      const col = Math.floor(lon + 0.5 - minLon);
+    //      if (row < 0 || row >= cloudData.length || col < 0 || col >= cloudData[0].length) {
+    //        return null;
+    //      }
+    //      return cloudData[row][col];
+    //    },
     
     getEclipsePrediction() {
       const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100);

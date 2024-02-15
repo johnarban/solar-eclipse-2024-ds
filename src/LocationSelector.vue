@@ -170,9 +170,10 @@ export default defineComponent({
   methods: {
 
     async loadCloudCover(): Promise<void> {
-      return fetch('https://raw.githubusercontent.com/johnarban/solar-eclipse-2024-ds/use-median-cloud-cover/src/assets/one_deg_median_cc.csv')
+      return fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/nino.csv')
         .then(response => response.text())
         .then(csvData => {
+          console.log('CSV data loaded successfully:', csvData);
           this.parseData(csvData);
         })
         .catch(error => {
@@ -181,17 +182,21 @@ export default defineComponent({
     },
 
     parseData(csvData: string) {
+      console.log('Parsing CSV data...');
       Papa.parse(csvData, {
         header: true,
         dynamicTyping: true,
         complete: (result) => {
+          console.log('Parsing complete. Result:', result);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           result.data.forEach((row: any) => {
-            const lat = parseFloat(row.lat);
-            const lon = parseFloat(row.lon);
-            const cloudCover = parseFloat(row.cloudCover);
-            // check for nan
+            console.log('Processing row:', row);
+            const lat = parseFloat(row.latitude);
+            const lon = parseFloat(row.longitude);
+            const cloudCover = parseFloat(row.mean_cloud_cover);
+            // check for NaN
             if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
+              console.warn('Invalid data found in row:', row);
               return;
             }
 
@@ -200,7 +205,9 @@ export default defineComponent({
               this.cloudCoverRectangles.addLayer(rect);
             }
           });
-          this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
+          console.log('Adding cloud cover rectangles to map...');
+          this.cloudCoverRectangles.addTo(this.map as Map);
+          console.log('Cloud cover rectangles added successfully.');
         },
       });
     },
