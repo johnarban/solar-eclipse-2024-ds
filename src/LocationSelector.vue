@@ -46,7 +46,7 @@ const defaultMapOptions: MapOptions = {
 interface CloudData {
   lat: number;
   lon: number;
-  cloud_cover: number;
+  cloudCover: number;
 }
 
 export default defineComponent({
@@ -189,7 +189,7 @@ export default defineComponent({
           result.data.forEach((row: any) => {
             const lat = parseFloat(row.lat);
             const lon = parseFloat(row.lon);
-            const cloudCover = parseFloat(row.cloud_cover);
+            const cloudCover = parseFloat(row.cloudCover);
             // check for nan
             if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
               return;
@@ -206,11 +206,11 @@ export default defineComponent({
     },
     
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    parseResult(result: {'lat': number, 'lon': number, 'cloud_cover': number}[]) {
-      result.forEach((row: {'lat': number, 'lon': number, 'cloud_cover': number}) => {
+    parseResult(result: {'lat': number, 'lon': number, 'cloudCover': number}[]) {
+      result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}) => {
         const lat = row.lat;
         const lon = row.lon;
-        const cloudCover = row.cloud_cover;
+        const cloudCover = row.cloudCover;
         // check for nan
         if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
           return;
@@ -229,8 +229,8 @@ export default defineComponent({
       const color = this.getColor(cloudCover);
       
       return L.rectangle([
-        [lat + 0.5, lon - 0.5],
-        [lat - 0.5, lon + 0.5],
+        [lat + 0.25, lon - 0.25],
+        [lat - 0.25, lon + 0.25],
       ], {
         stroke: true,
         color: color,

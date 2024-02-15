@@ -2311,7 +2311,7 @@ export default defineComponent({
           out = d.mean;
         } 
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        return {'lat':d.lat, 'lon':d.lon, 'cloud_cover':out};
+        return {'lat':d.lat, 'lon':d.lon, 'cloudCover':out};
       });
     },
     
