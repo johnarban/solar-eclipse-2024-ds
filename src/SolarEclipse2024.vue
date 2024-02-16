@@ -618,11 +618,6 @@
       @pointerdown="onPointerDown"
       @pointerup="onPointerUp"
     ></WorldWideTelescope>
-    <div id="test-content">
-      <playback-control
-        @rate="playbackRate = $event"
-      />
-    </div>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
         <icon-button
@@ -1090,6 +1085,21 @@
           <div style="position: relative">
             <div id="speed-control">
               <icon-button
+                id="reverse-speed"
+                :fa-icon="'angles-left'"
+                @activate="() => {
+                      decreasePlaybackRate();
+                      // playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="Reverse"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
                 id="play-pause-icon"
                 :fa-icon="!(playing) ? 'play' : 'pause'"
                 @activate="() => {
@@ -1098,6 +1108,21 @@
                 :color="accentColor"
                 :focus-color="accentColor"
                 tooltip-text="Play/Pause"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+                id="forward-speed"
+                :fa-icon="'angles-right'"
+                @activate="() => {
+                      increasePlaybackRate();
+                      // playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="Forward"
                 tooltip-location="top"
                 tooltip-offset="5px"
                 faSize="1x"
@@ -1126,6 +1151,7 @@
               </template>
             </icon-button>
               <icon-button
+                v-if="false"
                 id="speed-down"
                 :fa-icon="'angle-double-down'"
                 @activate="() => {
@@ -1141,6 +1167,7 @@
                 :show-tooltip="!mobile"
               ></icon-button>
               <icon-button
+                v-if="false"
                 id="speed-up"
                 :fa-icon="'angle-double-up'"
                 @activate="() => {
@@ -1167,12 +1194,78 @@
                     }"
                 :color="accentColor"
                 :focus-color="accentColor"
+                border="none"
                 tooltip-text="Reset"
                 tooltip-location="top"
                 tooltip-offset="5px"
                 faSize="1x"
                 :show-tooltip="!mobile"
               ></icon-button>
+                    
+              <v-dialog 
+                v-if="!xSmallSize" 
+                v-model="playbackVisible" 
+                :scrim="false"
+                location="top"
+                offset="40"
+                location-strategy="connected"
+                >
+                <template v-slot:activator="{ props }">
+                  <icon-button
+                    id="speed-control-icon"
+                    @activate="() => {
+                      playbackVisible = !playbackVisible;
+                    }"
+                    :fa-icon="'gauge-simple-high'"
+                    :color="accentColor"
+                    :focus-color="accentColor"
+                    tooltip-text="Time Controls"
+                    tooltip-location="top"
+                    tooltip-offset="5px"
+                    faSize="1x"
+                    :show-tooltip="!mobile"
+                    v-bind="props"
+                  ></icon-button>
+                </template>
+                    <playback-control
+                    class="desktop-playback-control"
+                      v-if="playbackVisible"
+                      v-model="playbackRate"
+                      :paused="!playing"
+                      @update:paused="playing = !$event"
+                      :max-power="3"
+                      :color="accentColor"
+                      :inline="false"
+                    /> 
+              </v-dialog>
+      
+
+                  <div v-if="xSmallSize" id="inline-speed-control">
+                  <icon-button
+                    id="speed-control-icon"
+                    @activate="() => {
+                      playbackVisible = !playbackVisible;
+                    }"
+                    :fa-icon="'gauge-simple-high'"
+                    :color="accentColor"
+                    :focus-color="accentColor"
+                    tooltip-text="Time Controls"
+                    tooltip-location="top"
+                    tooltip-offset="5px"
+                    faSize="1x"
+                    :show-tooltip="!mobile"
+                  ></icon-button>
+
+                    <playback-control
+                      class="mobile-playback-control"
+                      v-if="playbackVisible"
+                      v-model="playbackRate"
+                      :max-power="3"
+                      :color="accentColor"
+                      :inline="xSmallSize"
+                    /> 
+
+                  </div>
             </div>
             <div id="speed-text">
               Time rate: 
@@ -1558,7 +1651,7 @@ export default defineComponent({
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true,
+      showSplashScreen: false,
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -1797,6 +1890,7 @@ export default defineComponent({
       moonTexture: 'moon-sky-blue-overlay.png' as MoonImageFile,
 
       playbackRateValue: 1,
+      playbackVisible: false,
       
       horizonRate: 100, 
       scopeRate: 100, 
@@ -3280,7 +3374,33 @@ export default defineComponent({
         const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
         this.selectedLocationText = `${lat}° ${ns}, ${lon}° ${ew}`;
       }
-    }
+    },
+    
+    decreasePlaybackRate() {
+      const sign = Math.sign(this.playbackRate);
+      if (sign > 0 ) {
+        this.playbackRate = -Math.min(this.playbackRate,100);
+        return;
+      }
+      const abs = Math.abs(this.playbackRate);
+      let ezrate = Math.floor(Math.log10(abs));
+      ezrate -= sign * 1;
+      this.playbackRate = sign * Math.pow(10, Math.abs(ezrate));
+    },
+    
+    increasePlaybackRate() {
+      if (Math.sign(this.playbackRate) < 0 ) {
+        this.playbackRate = -Math.max(this.playbackRate,-100);
+        return;
+      }
+      const sign = Math.sign(this.playbackRate);
+      const abs = Math.abs(this.playbackRate);
+      let ezrate = Math.floor(Math.log10(abs));
+      ezrate += sign * 1;
+      this.playbackRate = sign * Math.pow(10, Math.abs(ezrate));
+    },
+    
+    
   },
 
   watch: {
@@ -3500,15 +3620,15 @@ export default defineComponent({
     
     playbackRate(val: number) {
       
-      if (val > 11_000) {
+      if (Math.abs(val) > 2100) {
         console.warn('playbackRate too high, setting to maxPlaybackRate');
-        this.playbackRate = 10_000;
+        this.playbackRate = Math.sign(val) * 2000;
       }
 
-      if (val < .1) {
-        console.warn('playbackRate too low, setting to minPlaybackRate');
-        this.playbackRate = .1;
-      }
+      // if (val < .1) {
+      //   console.warn('playbackRate too low, setting to minPlaybackRate');
+      //   this.playbackRate = .1;
+      // }
       
       this.setClockRate(val);
     },
@@ -3598,7 +3718,7 @@ body {
 
 #test-content {
   position: absolute;
-  width: 60%;
+  width: 50%;
   height: 60%;
   padding: 1em;
   top: 5%;
@@ -3862,7 +3982,7 @@ body {
   gap: 5px;
   pointer-events: auto;
   
-  @media (max-width: 500px) {
+  @media (max-width: 600px) {
     flex-direction: column;
     align-items: stretch;
   }
@@ -4884,8 +5004,13 @@ video, #info-video {
 #speed-control {
   display: flex;
   flex-direction: row;
+  align-items: flex-end;
   gap: 5px;
   margin-left: 10px;
+  
+  @media (max-width: 330px) {
+    justify-content: center;
+  }
 
   .icon-wrapper {
     padding-inline: calc(0.3 * var(--default-line-height));
@@ -4893,6 +5018,27 @@ video, #info-video {
     border: 2px solid var(--accent-color);
   }
 
+}
+
+#enclosing-playback-container.desktop-playback-control {
+  scale: 0.75;
+  --tick-font-size: 1rem;
+  // transform: translateY(calc(-50% - 1rem));
+  padding-bottom: 1rem;
+  
+}
+
+#inline-speed-control {
+  display: flex; 
+  flex-grow:1; 
+  align-items: 
+  flex-end; 
+  position: relative; 
+  gap: 5px;
+  
+  @media (max-width: 330px) {
+    display: none;
+  }
 }
 
 #speed-text {
@@ -4907,7 +5053,7 @@ video, #info-video {
   left: calc(100% + 1rem);
   top: 1.5rem;
   
-  @media (max-width: 500px) {
+  @media (max-width: 600px) {
     position: relative;
     top: 0.5rem;
     left: 0.5rem;
@@ -4945,7 +5091,7 @@ video, #info-video {
     flex-wrap: column;
     gap:5px;
     
-    @media (max-width: 500px) {
+    @media (max-width: 600px) {
       flex-direction: column;
       align-items: flex-end;
     }
@@ -5037,9 +5183,9 @@ video, #info-video {
 
 #change-optout {
   
-  @media (max-width: 500px) {
+  @media (max-width: 600px) {
     position: absolute;
-    bottom: 0.5rem;
+    bottom: -0.5rem ;
     right: 0.5rem;
   }
   
