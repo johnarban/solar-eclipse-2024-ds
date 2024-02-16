@@ -1234,6 +1234,7 @@
                       :paused="!playing"
                       @update:paused="playing = !$event"
                       :max-power="3"
+                      :max="Math.log10(5000) + 1"
                       :color="accentColor"
                       :inline="false"
                     /> 
@@ -5040,7 +5041,8 @@ video, #info-video {
   scale: 0.75;
   --tick-font-size: 1rem;
   // transform: translateY(calc(-50% - 1rem));
-  padding-bottom: 1rem;
+  padding-bottom: 1.5rem;
+  padding-right: 1rem;
   
 }
 

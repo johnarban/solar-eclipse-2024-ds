@@ -306,7 +306,7 @@ export default defineComponent({
   border-radius: 0.5rem;
   border: 1px solid white;
   // min-width: 200px;
-  max-width: 500px;
+  max-width: 510px;
   background-color: #272727;
   --track-wdith: 0px; // get set by the resize observer to the actual track width
   --min-tick-gap: 0.2rem;
@@ -339,6 +339,7 @@ export default defineComponent({
       #reverse-button-text {
         position: absolute;
         font-size: var(--tick-font-size);
+        left: -25%;
       }
       .icon-wrapper {
         border-radius: 2em;
