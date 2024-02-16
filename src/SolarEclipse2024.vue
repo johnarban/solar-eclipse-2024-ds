@@ -1261,6 +1261,7 @@
                       v-if="playbackVisible"
                       v-model="playbackRate"
                       :max-power="3"
+                      :max="Math.log10(5000) + 1"
                       :color="accentColor"
                       :inline="xSmallSize"
                     /> 
@@ -2320,11 +2321,6 @@ export default defineComponent({
       },
       get(): number {
         let rate = this.playbackRateValue;
-        
-        // max rate = 100 if eclipsed
-        // if (this.currentFractionEclipsed > .5) {
-        //   rate = Math.min(this.playbackRateValue, 100);
-        // }
         
         // max rate = 10 if near eclipse max
         let nearEclipseMax = false;
@@ -3620,9 +3616,9 @@ export default defineComponent({
     
     playbackRate(val: number) {
       
-      if (Math.abs(val) > 2100) {
+      if (Math.abs(val) > 11_000) {
         console.warn('playbackRate too high, setting to maxPlaybackRate');
-        this.playbackRate = Math.sign(val) * 2000;
+        this.playbackRate = Math.sign(val) * 10_000;
       }
 
       // if (val < .1) {
@@ -5008,7 +5004,7 @@ video, #info-video {
   gap: 5px;
   margin-left: 10px;
   
-  @media (max-width: 330px) {
+  @media (max-width: 370px) {
     justify-content: center;
   }
 
@@ -5036,7 +5032,7 @@ video, #info-video {
   position: relative; 
   gap: 5px;
   
-  @media (max-width: 330px) {
+  @media (max-width: 370px) {
     display: none;
   }
 }

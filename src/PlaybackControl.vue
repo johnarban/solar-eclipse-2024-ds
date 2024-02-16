@@ -1,7 +1,7 @@
 <template>
-  <div id="enclosing-playback-container">
+  <div id="enclosing-playback-container" :style="cssVars">
     
-    <div id="playback-play-pause-button">
+    <div v-if="!inline" id="playback-play-pause-button">
       <icon-button
         :md-icon="isPaused ? 'mdi-play' : 'mdi-pause'"
         @activate="isPaused = !isPaused"
@@ -13,15 +13,7 @@
         md-size="24"
       ></icon-button>
 
-      <!-- create reverse button -->
-      <!-- <v-checkbox
-        v-model="reverseTime"
-        label="Reverse"
-        :color='color'
-        hide-details
-        >
-      </v-checkbox> -->
-      <div id="playback-reverse-time">
+      <div v-if="!inline" id="playback-reverse-time">
         <icon-button
           v-model="reverseTime"
           md-icon="mdi-step-backward-2"
@@ -49,8 +41,8 @@
         ref="slider"
         hide-details
         v-model="value"
-        :max="index[index.length - 1]"
-        :min="index[0]"
+        :max="max ?? index[index.length - 1]"
+        :min="min ?? index[0]"
         :thumb-size="16"
         color="white"
         track-color="white"
@@ -103,6 +95,16 @@ export default defineComponent({
       default: true,
     },
     
+    max: {
+      type: Number,
+      default: null,
+    },
+    
+    min: {
+      type: Number,
+      default: null,
+    },
+    
     color: {
       type: String,
       default: 'white',
@@ -110,6 +112,11 @@ export default defineComponent({
     smallScreen: {
       type: Boolean,
       default: false,
+    },
+    
+    inline: {
+      type: Boolean,
+      default: true,
     },
     
     
@@ -149,6 +156,12 @@ export default defineComponent({
           psc.style.setProperty('--v-slider-height', `${input.clientHeight}px`);
         }
         
+        if (this.inline && container) {
+          container.classList.add('inset');
+        } else {
+          container.classList.remove('inset');
+        }
+        
         // if container width is more than 300px use .normal-screen on psc
         // if (container.clientWidth <= 300) {
         //   psc.classList.add('small-screen');
@@ -184,12 +197,12 @@ export default defineComponent({
     valueToMark(value: number): number | string {
       if (value === 0) return 'Pause';
       const pre = this.reverseTime ? -1 : 1;
-      return pre * symLog.fromSymLogIndex(value);
+      return (pre * symLog.fromSymLogIndex(value)).toString() + 'x';
     },
 
     options(val: number) {
-      const min = this.index[0];
-      const max = this.index[this.index.length - 1];
+      const min = this.min ?? this.index[0];
+      const max = this.max ?? this.index[this.index.length - 1];
       const pos = (val - min) / (max - min) * 100;
       return {
         style: {
@@ -201,6 +214,13 @@ export default defineComponent({
   },
 
   computed: {
+    
+    cssVars() {
+      return {
+        '--color': this.color,
+      };
+    },
+    
     isPaused: {
       get() {
         console.log(this.paused);
@@ -250,6 +270,10 @@ export default defineComponent({
       this.value = Math.abs(symLog.toSymlogIndex(val));
     },
     
+    paused(val: boolean) {
+      console.log('paused changed to', val);
+    },
+    
     
     reverseTime(rt: boolean) {
       let val = 0;
@@ -268,10 +292,12 @@ export default defineComponent({
 <style lang="less">
 // Define the styles here
 
+
 #enclosing-playback-container {
   // modify the Vuetify slifer properties
   // z-index: -1999;
   display: flex;
+  flex-grow: 1;
   align-items: center;
   width: 100%;
   padding-inline: 0.5rem;
@@ -279,13 +305,27 @@ export default defineComponent({
   padding-block-end: 0.75rem;
   border-radius: 0.5rem;
   border: 1px solid white;
-  min-width: 200px;
+  // min-width: 200px;
   max-width: 500px;
   background-color: #272727;
   --track-wdith: 0px; // get set by the resize observer to the actual track width
   --min-tick-gap: 0.2rem;
   --tick-color: #ddd;
+  --track-color: white;
   --tick-font-size: 0.7rem;
+  
+  &.inset {
+    padding: 0;
+    padding-block-end: 0.5em;
+    background-color: black;
+    
+    border: 2px solid var(--color);
+    transform: translateY(25%);
+    
+    #playback-slider-container {
+      
+    }
+  }
   
   #playback-play-pause-button {
     display: flex;
@@ -349,9 +389,14 @@ export default defineComponent({
 
     height: calc(var(--v-slider-height) + var(--tick-font-size));
     
+    .v-slider-track__ticks {
+      border-radius: calc(var(--v-slider-height) / 2);
+    }
+    
     .v-slider-track__tick-label {
       display: none;
     }
+    
     
     .track-tick-size {
       font-size: var(--v-slider-track-size);
@@ -405,11 +450,10 @@ export default defineComponent({
     // push the track to the back
     .v-slider-track * {
         opacity: 1;
-        z-index: 0;
+        background-color: var(--track-color);
       }
 
     .v-slider-thumb {
-      z-index: 1;
     }
 
     // show no progress fill
@@ -465,6 +509,10 @@ export default defineComponent({
     }
       
     
+  }
+  
+  .icon-wrapper {
+    pointer-events: auto;
   }
   
       
