@@ -1093,7 +1093,7 @@
                     }"
                 :color="accentColor"
                 :focus-color="accentColor"
-                tooltip-text="Reverse"
+                :tooltip-text="playbackRate < 0 ? 'Reverse Faster' : 'Reverse'"
                 tooltip-location="top"
                 tooltip-offset="5px"
                 faSize="1x"
@@ -1122,7 +1122,7 @@
                     }"
                 :color="accentColor"
                 :focus-color="accentColor"
-                tooltip-text="Forward"
+                :tooltip-text="playbackRate > 0 ? 'Faster' : 'Forward'"
                 tooltip-location="top"
                 tooltip-offset="5px"
                 faSize="1x"
@@ -2334,7 +2334,7 @@ export default defineComponent({
     
     playbackRate: {
       set(value: number) {
-        this.playbackRateValue = value;
+        this.playbackRateValue = Math.sign(value) * Math.min(Math.abs(value), 5000);
       },
       get(): number {
         let rate = this.playbackRateValue;
