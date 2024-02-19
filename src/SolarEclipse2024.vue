@@ -1241,7 +1241,7 @@
               </v-dialog>
       
 
-                  <div v-if="xSmallSize" id="inline-speed-control">
+                <div v-if="xSmallSize" id="inline-speed-control">
                   <icon-button
                     id="speed-control-icon"
                     @activate="() => {
@@ -1264,10 +1264,14 @@
                       :max-power="3"
                       :max="Math.log10(5000) + 1"
                       :color="accentColor"
-                      :inline="xSmallSize"
+                      :inline="true"
+                      inline-button
+                      @close="() => {
+                        playbackVisible = false;
+                      }"
                     /> 
 
-                  </div>
+                </div>
             </div>
             <div id="speed-text">
               Time rate: 
@@ -5038,24 +5042,40 @@ video, #info-video {
 }
 
 #enclosing-playback-container.desktop-playback-control {
-  scale: 0.75;
-  --tick-font-size: 1rem;
+  --tick-font-size: 12px;
   // transform: translateY(calc(-50% - 1rem));
-  padding-bottom: 1.5rem;
-  padding-right: 1rem;
   
 }
 
 #inline-speed-control {
   display: flex; 
   flex-grow:1; 
-  align-items: 
-  flex-end; 
+  align-items: flex-end; 
   position: relative; 
   gap: 5px;
   
+  
+  // when the screen is small enough we want to hide the buttons in inline mode
+  @media (min-width: 369px) {
+    #enclosing-playback-container > #playback-play-pause-button {
+      display: none;
+    }
+    
+    #enclosing-playback-container > #playback-close-button {
+      display: none;
+    }
+  }
+  // when small enough we want to cover the controls
   @media (max-width: 370px) {
-    display: none;
+    // position: absolute;
+    flex-grow: 0;
+    #enclosing-playback-container.mobile-playback-control {
+      position: fixed;
+      width: calc(90% - 1rem);
+      left: 50%;
+      --off: calc(50% - 5px);
+      transform: translateX(-50%) translateY(var(--off)) !important;
+    }
   }
 }
 
@@ -5073,7 +5093,7 @@ video, #info-video {
   
   @media (max-width: 600px) {
     position: relative;
-    top: 0.5rem;
+    top: 3rem;
     left: 0.5rem;
     display: inline;
   }

@@ -1,7 +1,12 @@
 <template>
   <div id="enclosing-playback-container" :style="cssVars">
     
-    <div v-if="!inline" id="playback-play-pause-button">
+    <!-- add a close box -->
+    <div v-if="inline && inlineButton" id="playback-close-button" @click="$emit('close')">
+        <v-icon :color="color" size="18">mdi-close</v-icon>
+    </div>
+    
+    <div v-if="!inline || inlineButton" id="playback-play-pause-button">
       <icon-button
         :md-icon="isPaused ? 'mdi-play' : 'mdi-pause'"
         @activate="isPaused = !isPaused"
@@ -10,10 +15,10 @@
         tooltip-text="Play/Pause"
         tooltip-location="top"
         tooltip-offset="5px"
-        md-size="24"
+        md-size="18"
       ></icon-button>
 
-      <div v-if="!inline" id="playback-reverse-time">
+      <div v-if="!inline || inlineButton" id="playback-reverse-time">
         <icon-button
           @activate="reverseTime = !reverseTime"
           :md-icon="reverseTime ? 'mdi-step-forward-2' : 'mdi-step-backward-2'"
@@ -22,7 +27,7 @@
           tooltip-text="Play/Pause"
           tooltip-location="top"
           tooltip-offset="5px"
-          md-size="24"
+          md-size="18"
         >
         </icon-button>
         <span id="reverse-button-text">{{ reverseTime ? 'Forward' : 'Reverse' }}</span>
@@ -78,7 +83,7 @@ export default defineComponent({
     'v-slider': VSlider,
   },
   
-  emits: ['update:modelValue', 'update:paused'],
+  emits: ['update:modelValue', 'update:paused', 'close'],
 
   props: {
     // Define the props here
@@ -117,6 +122,10 @@ export default defineComponent({
     inline: {
       type: Boolean,
       default: true,
+    },
+    inlineButton: {
+      type: Boolean,
+      default: false,
     },
     
     
@@ -300,31 +309,68 @@ export default defineComponent({
   flex-grow: 1;
   align-items: center;
   width: 100%;
-  padding-inline: 0.5rem;
-  padding-block-start: 0.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.25rem;
+  padding-block-start: 0.25rem;
   padding-block-end: 0.75rem;
   border-radius: 0.5rem;
   border: 1px solid white;
   // min-width: 200px;
   max-width: 510px;
   background-color: #272727;
+  font-size: 0.7rem;
   --track-wdith: 0px; // get set by the resize observer to the actual track width
   --min-tick-gap: 0.2rem;
   --tick-color: #ddd;
   --track-color: white;
-  --tick-font-size: 0.7rem;
+  --tick-font-size: 1em;
+  
+  // no close button normally
+  #playback-close-button {
+    display: none;
+  }
   
   &.inset {
     padding: 0;
+    padding-inline-start: 0.25rem;
     padding-block-end: 0.5em;
     background-color: black;
     
     border: 2px solid var(--color);
     transform: translateY(25%);
     
+    --tick-font-size: clamp(10px, 1.5vw, 1em);
+    
+    i.v-icon {
+      font-size: clamp(1vw, 1em, 18px) !important;
+      width: 1em !important;
+      height: 1em !important;
+    }
+    
     #playback-slider-container {
       
+      padding-inline-start: 0.5rem;
     }
+    
+    #playback-close-button {
+      position: absolute;
+      right: 0;
+      top: 0;
+      transform: translate(125%, 0);
+      
+      border-radius: 50%;
+      padding: 2px;
+
+      pointer-events: auto;
+      
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color);
+      background-color: black;
+      color: var(--color);
+    }
+    
   }
   
   #playback-play-pause-button {
@@ -352,44 +398,17 @@ export default defineComponent({
     flex-grow: 1;
   }
   
-  @media (max-width: 500px) {
-    display: grid;
-    justify-items: stretch;
-    padding-inline: 0.25rem;
-    padding-block-start: 0.25rem;
-    padding-block-end: 0.2rem;
-    
-    #playback-play-pause-button {
-      margin-inline: auto;
-      margin-block-end: 0.5em;
-    }
-    
-    .icon-wrapper {
-      min-width: 50px;
-      width: 70px;
-      padding: 0;
-    }
-    
-    #reverse-button-text {
-        position: absolute;
-        font-size: var(--tick-font-size);
-        left: 50%;
-        transform: translateX(-50%);
-      }
-    
-  }
-  
 
   #playback-slider-container {
     display: flex;
     flex-direction: column;
     position: relative;
-    padding-inline: 0.5rem;
+    padding-left: 0.5rem;
     --v-slider-height: 32px;
     --psc-offset: calc(-1*var(--tick-font-size)/2);
 
     height: calc(var(--v-slider-height) + var(--tick-font-size));
-    
+        
     .v-slider-track__ticks {
       border-radius: calc(var(--v-slider-height) / 2);
     }
