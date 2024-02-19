@@ -15,8 +15,8 @@
 
       <div v-if="!inline" id="playback-reverse-time">
         <icon-button
-          v-model="reverseTime"
-          md-icon="mdi-step-backward-2"
+          @activate="reverseTime = !reverseTime"
+          :md-icon="reverseTime ? 'mdi-step-forward-2' : 'mdi-step-backward-2'"
           :color="color"
           :focus-color="color"
           tooltip-text="Play/Pause"
@@ -25,7 +25,7 @@
           md-size="24"
         >
         </icon-button>
-        <span id="reverse-button-text">Reverse</span>
+        <span id="reverse-button-text">{{ reverseTime ? 'Forward' : 'Reverse' }}</span>
       </div>
     </div>
     
