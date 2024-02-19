@@ -1,5 +1,13 @@
 <template>
-  <div class="map-container"></div>
+  <div class="map-container">
+    <select v-model="selectedCloudCoverVariable">
+      <option value="median">Median Cloud Cover</option>
+      <option value="mean">Mean Cloud Cover</option>
+      <option value="mode">Mode Cloud Cover</option>
+      <option value="min">Minimum Cloud Cover</option>
+      <option value="max">Maximum Cloud Cover</option>
+    </select>
+  </div>
 </template>
 
 <script lang="ts">
@@ -163,7 +171,8 @@ export default defineComponent({
       selectedPlaceCircle: null as L.CircleMarker | null,
       cloudCoverRectangles: L.layerGroup(),
       map: null as Map | null,
-      basemap: null as L.TileLayer | null
+      basemap: null as L.TileLayer | null,
+      selectedCloudCoverVariable: 'median'
     };
   },
 
@@ -193,13 +202,36 @@ export default defineComponent({
             console.log('Processing row:', row);
             const lat = parseFloat(row.latitude);
             const lon = parseFloat(row.longitude);
-            const cloudCover = parseFloat(row.mean_cloud_cover);
-            // check for NaN
-            if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
-              console.warn('Invalid data found in row:', row);
-              return;
+            const meanCloudCover = parseFloat(row.mean_cloud_cover);
+            console.log('mean cloud cover data loaded successfully');
+            const medianCloudCover = parseFloat(row.median_cloud_cover);
+            console.log('median cloud cover data loaded successfully');
+            const modeCloudCover = parseFloat(row.mode_cloud_cover);
+            console.log('mode cloud cover data loaded successfully');
+            const minCloudCover = parseFloat(row.min_cloud_cover);
+            console.log('min cloud cover data loaded successfully');
+            const maxCloudCover = parseFloat(row.max_cloud_cover);
+            console.log('max cloud cover data loaded successfully');
+            let cloudCover: number;
+            switch (this.selectedCloudCoverVariable) {
+            case 'median':
+              cloudCover = medianCloudCover;
+              break;
+            case 'mean':
+              cloudCover = meanCloudCover;
+              break;
+            case 'mode':
+              cloudCover = modeCloudCover;
+              break;
+            case 'min':
+              cloudCover = minCloudCover;
+              break;
+            case 'max':
+              cloudCover = maxCloudCover;
+              break;
+            default:
+              cloudCover = medianCloudCover;
             }
-
             const rect = this.createRectangle(lat, lon, cloudCover);
             if (rect) {
               this.cloudCoverRectangles.addLayer(rect);
