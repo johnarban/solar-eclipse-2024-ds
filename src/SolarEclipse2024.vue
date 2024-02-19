@@ -1216,7 +1216,7 @@
                     @activate="() => {
                       playbackVisible = !playbackVisible;
                     }"
-                    :fa-icon="'gauge-simple-high'"
+                    :fa-icon="'gauge-high'"
                     :color="accentColor"
                     :focus-color="accentColor"
                     tooltip-text="Time Controls"

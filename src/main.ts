@@ -58,7 +58,7 @@ import {
   faCircleChevronDown,
   faStreetView,
   faCloudSun,
-  faGaugeSimpleHigh,
+  faGaugeHigh,
   faAnglesLeft,
   faAnglesRight,
 
@@ -90,7 +90,7 @@ library.add(faRotate);
 library.add(faCircleChevronDown);
 library.add(faStreetView);
 library.add(faCloudSun);
-library.add(faGaugeSimpleHigh);
+library.add(faGaugeHigh);
 library.add(faAnglesLeft);
 library.add(faAnglesRight);
 
