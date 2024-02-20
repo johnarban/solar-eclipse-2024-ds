@@ -943,6 +943,15 @@
         </div>
       </div>
     </v-dialog>
+    
+  <div 
+    id="temporary-note-to-user"
+    :class="[playing && nearTotality && playbackRate == 10 ? 'note-visible' : '']"
+    >
+    <div>
+      Time Slowed for Eclipse
+    </div>
+  </div>
   
   <div id="top-wwt-content">
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
@@ -1914,6 +1923,7 @@ export default defineComponent({
 
       playbackRateValue: 1,
       forceRate: false,
+      oldPlaybackRate: 1,
       playbackVisible: false,
       
       horizonRate: 100, 
@@ -3521,11 +3531,17 @@ export default defineComponent({
       return;
     },
     
-    nearTotality(near: boolean) {
+    nearTotality(near: boolean, oldNear: boolean) {
       if (near) {
+        this.oldPlaybackRate = this.playbackRate;
         this.playbackRate = Math.min(this.playbackRate, 10);
       }
+      
+      if (oldNear && !near) {
+        this.playbackRate = this.oldPlaybackRate;
+      }
     },
+
 
     wwtCurrentTime(time: Date) {
       
@@ -3787,6 +3803,27 @@ body {
   top: 5%;
   left: 5%;
   background-color: rgba(0, 0, 0, 0.5);
+}
+
+// should appear and then disappear 5 seconds later
+// gray background, white text
+#temporary-note-to-user {
+  background-color: #9c9c9c7e;
+  font-weight: bold;
+  color: #fff;
+  position: absolute;
+  top: 1em;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: calc(1.5 * var(--default-font-size));
+  padding: 1em;
+  border-radius: 1em;
+  opacity: 0;
+  transition: opacity 2s linear;
+  
+  &.note-visible {
+    opacity: 1;
+  }
 }
 
 
