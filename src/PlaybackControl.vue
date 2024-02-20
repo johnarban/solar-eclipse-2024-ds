@@ -154,21 +154,24 @@ export default defineComponent({
         
         const track = document.querySelector('.v-slider-track') as HTMLElement;
         const container = document.getElementById('enclosing-playback-container') as HTMLElement;
-        const tickContainer = document.querySelector('#tick-container') as HTMLElement;
-        const input = container.querySelector('.v-slider__container');
-        const psc = document.querySelector('#playback-slider-container') as HTMLElement;
-        if (track && container) {
-          const s = track.scrollWidth;
-          container.style.setProperty('--track-width', `${s}px`);
-        }
-        if (tickContainer && input && psc) {
-          psc.style.setProperty('--v-slider-height', `${input.clientHeight}px`);
-        }
+        if (container) {
+          const input = container.querySelector('.v-slider__container');
+          const tickContainer = document.querySelector('#tick-container') as HTMLElement;
         
-        if (this.inline && container) {
-          container.classList.add('inset');
-        } else {
-          container.classList.remove('inset');
+          const psc = document.querySelector('#playback-slider-container') as HTMLElement;
+          if (track && container) {
+            const s = track.scrollWidth;
+            container.style.setProperty('--track-width', `${s}px`);
+          }
+          if (tickContainer && input && psc) {
+            psc.style.setProperty('--v-slider-height', `${input.clientHeight}px`);
+          }
+          
+          if (this.inline && container) {
+            container.classList.add('inset');
+          } else {
+            container.classList.remove('inset');
+          }
         }
         
         // if container width is more than 300px use .normal-screen on psc
@@ -304,7 +307,7 @@ export default defineComponent({
 
 #enclosing-playback-container {
   // modify the Vuetify slifer properties
-  // z-index: -1999;
+  contain: content;
   display: flex;
   flex-grow: 1;
   align-items: center;
@@ -547,7 +550,6 @@ export default defineComponent({
       position: relative;
       height: var(--height);
       transform: translateY(var(--position));
-      z-index: 1;
       
       @media (max-width: 500px) {
         --position: calc(var(--v-slider-height) - 0.5em);

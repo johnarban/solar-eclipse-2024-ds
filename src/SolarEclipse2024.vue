@@ -1191,6 +1191,7 @@
                       playbackRate = 100;
                       playing = false;
                       toggleTrackSun = true;
+                      forceRate = false;
                     }"
                 :color="accentColor"
                 :focus-color="accentColor"
@@ -1230,7 +1231,11 @@
                     <playback-control
                     class="desktop-playback-control"
                       v-if="playbackVisible"
-                      v-model="playbackRate"
+                      :model-value="playbackRateValue"
+                      @update:modelValue="(value: number) => {
+                        playbackRate = value;
+                        forceRate = nearTotality;
+                      }"
                       :paused="!playing"
                       @update:paused="playing = !$event"
                       :max-power="3"
@@ -1260,7 +1265,11 @@
                     <playback-control
                       class="mobile-playback-control"
                       v-if="playbackVisible"
-                      v-model="playbackRate"
+                      :model-value="playbackRateValue"
+                      @update:modelValue="(value: number) => {
+                        playbackRate = value;
+                        forceRate = nearTotality;
+                      }"
                       :max-power="3"
                       :max="Math.log10(5000) + 1"
                       :color="accentColor"
@@ -1904,6 +1913,7 @@ export default defineComponent({
       moonTexture: 'moon-sky-blue-overlay.png' as MoonImageFile,
 
       playbackRateValue: 1,
+      forceRate: false,
       playbackVisible: false,
       
       horizonRate: 100, 
@@ -2336,25 +2346,39 @@ export default defineComponent({
       }
     },
     
+    // before during or after the eclipse
+    eclipsePhase(): 'before' | 'during' | 'after' | null {
+      if (this.eclipsePrediction && this.eclipseStart != null && this.eclipseEnd != null) {
+        if (this.wwtCurrentTime.getTime() < this.eclipseStart) {
+          return 'before';
+        } else if (this.wwtCurrentTime.getTime() > this.eclipseEnd) {
+          return 'after';
+        } else {
+          return 'during';
+        }
+      } else {
+        return null;
+      }
+    },
+    
+    nearTotality(): boolean {
+      let nearEclipseMax = false;
+      if (this.eclipsePrediction) {
+        if (this.eclipsePrediction.maxTime[0]) {
+          nearEclipseMax = Math.abs(this.eclipsePrediction.maxTime[0].getTime() - this.wwtCurrentTime.getTime()) < 120_000;
+        }
+      }
+
+      // if the eclipse prediction isn't available fallback on the current fraction eclipsed
+      return this.locationInTotality && (nearEclipseMax || this.currentFractionEclipsed > .99);
+    },
+    
     playbackRate: {
       set(value: number) {
         this.playbackRateValue = Math.sign(value) * Math.min(Math.abs(value), 5000);
       },
       get(): number {
-        let rate = this.playbackRateValue;
-        
-        // max rate = 10 if near eclipse max
-        let nearEclipseMax = false;
-        if (this.eclipsePrediction) {
-          if (this.eclipsePrediction.maxTime[0]) {
-            nearEclipseMax = Math.abs(this.eclipsePrediction.maxTime[0].getTime() - this.wwtCurrentTime.getTime()) < 120_000;
-          }
-        }
-        // if the eclipse prediction isn't available fallback on the current fraction eclipsed
-        if (this.locationInTotality && (nearEclipseMax || this.currentFractionEclipsed > .99)) {
-          rate = Math.min(this.playbackRateValue, 10);
-        }
-        return rate;
+        return this.playbackRateValue;        
       }
     },
     
@@ -3394,6 +3418,7 @@ export default defineComponent({
     },
     
     decreasePlaybackRate() {
+      this.forceRate = this.nearTotality;
       const sign = Math.sign(this.playbackRate);
       if (sign > 0 ) {
         this.playbackRate = -Math.min(this.playbackRate,100);
@@ -3406,6 +3431,7 @@ export default defineComponent({
     },
     
     increasePlaybackRate() {
+      this.forceRate = this.nearTotality;
       if (Math.sign(this.playbackRate) < 0 ) {
         this.playbackRate = -Math.max(this.playbackRate,-100);
         return;
@@ -3494,16 +3520,23 @@ export default defineComponent({
     selectedTime(_time: number) {
       return;
     },
+    
+    nearTotality(near: boolean) {
+      if (near) {
+        this.playbackRate = Math.min(this.playbackRate, 10);
+      }
+    },
 
     wwtCurrentTime(time: Date) {
+      
+      if (this.forceRate && !this.nearTotality && (this.eclipsePhase === 'after')) {
+        this.forceRate = false;
+      }
 
       if (time.getTime() >= this.maxTime || time.getTime() < this.minTime) {
         if (this.playing) {
           this.playing = false;
           this.selectedTime = this.minTime;
-          // setTimeout(() => {
-          //   this.playing = true;
-          // }, 1000);
         }
         
         return;
@@ -3645,7 +3678,7 @@ export default defineComponent({
         console.warn('playbackRate too high, setting to maxPlaybackRate');
         this.playbackRate = Math.sign(val) * 10_000;
       }
-
+      
       // if (val < .1) {
       //   console.warn('playbackRate too low, setting to minPlaybackRate');
       //   this.playbackRate = .1;
@@ -3653,6 +3686,15 @@ export default defineComponent({
       
       this.setClockRate(val);
     },
+    
+    // eclipsePhase(val: 'before' | 'during' | 'after' | null) {
+    //   if (this.forceRate) {
+    //     if (val === 'before' || val === 'after') {
+    //       this.forceRate = false;
+    //     }
+    //   }
+      
+    // }
 
   },
 });
