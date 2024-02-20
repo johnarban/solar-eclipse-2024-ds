@@ -1,12 +1,5 @@
 <template>
   <div class="map-container">
-    <select v-model="selectedCloudCoverVariable">
-      <option value="median">Median Cloud Cover</option>
-      <option value="mean">Mean Cloud Cover</option>
-      <option value="mode">Mode Cloud Cover</option>
-      <option value="min">Minimum Cloud Cover</option>
-      <option value="max">Maximum Cloud Cover</option>
-    </select>
   </div>
 </template>
 
@@ -57,15 +50,38 @@ interface CloudData {
   cloudCover: number;
 }
 
+type CloudVariable = 'mean' | 'median' | 'mode' | 'min' | 'max' | null;
+interface CloudCSV {
+  lat: number;
+  lon: number;
+  mean: number;
+  median: number;
+  mode: number;
+  min: number;
+  max: number;
+}
+// ,latitude,longitude,mean_cloud_cover,median_cloud_cover,mode_cloud_cover,min_cloud_cover,max_cloud_cover
+interface CSVRow {
+  latitude: number;
+  longitude: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  mean_cloud_cover: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  median_cloud_cover: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  mode_cloud_cover: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  min_cloud_cover: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  max_cloud_cover: number;
+
+}
+
 export default defineComponent({
 
   emits: ["place", "update:modelValue", "error"],
 
   props: {
-    cloudDataSource: {
-      type: Object as PropType<CloudData[]>,
-      required: true,
-    },
     
     
     activatorColor: {
@@ -147,6 +163,11 @@ export default defineComponent({
     geoJsonFiles: {
       type: Array as PropType<GeoJSONProp[]>,
       default: () => []
+    },
+    
+    selectedCloudCoverVariable: {
+      type: String as PropType<CloudVariable>,
+      default: null
     }
   },
 
@@ -158,7 +179,6 @@ export default defineComponent({
       this.getLocation(true);
     }
     this.setup(true);
-
   },
 
   data() {
@@ -172,7 +192,13 @@ export default defineComponent({
       cloudCoverRectangles: L.layerGroup(),
       map: null as Map | null,
       basemap: null as L.TileLayer | null,
-      selectedCloudCoverVariable: 'median'
+      cloudData: {
+        mean: [],
+        median: [],
+        mode: [],
+        min: [],
+        max: []
+      } as Record<string, CloudData[]>
     };
   },
 
@@ -197,55 +223,52 @@ export default defineComponent({
         dynamicTyping: true,
         complete: (result) => {
           console.log('Parsing complete. Result:', result);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          result.data.forEach((row: any) => {
-            console.log('Processing row:', row);
-            const lat = parseFloat(row.latitude);
-            const lon = parseFloat(row.longitude);
-            const meanCloudCover = parseFloat(row.mean_cloud_cover);
-            console.log('mean cloud cover data loaded successfully');
-            const medianCloudCover = parseFloat(row.median_cloud_cover);
-            console.log('median cloud cover data loaded successfully');
-            const modeCloudCover = parseFloat(row.mode_cloud_cover);
-            console.log('mode cloud cover data loaded successfully');
-            const minCloudCover = parseFloat(row.min_cloud_cover);
-            console.log('min cloud cover data loaded successfully');
-            const maxCloudCover = parseFloat(row.max_cloud_cover);
-            console.log('max cloud cover data loaded successfully');
-            let cloudCover: number;
-            switch (this.selectedCloudCoverVariable) {
-            case 'median':
-              cloudCover = medianCloudCover;
-              break;
-            case 'mean':
-              cloudCover = meanCloudCover;
-              break;
-            case 'mode':
-              cloudCover = modeCloudCover;
-              break;
-            case 'min':
-              cloudCover = minCloudCover;
-              break;
-            case 'max':
-              cloudCover = maxCloudCover;
-              break;
-            default:
-              cloudCover = medianCloudCover;
+          console.log('Data:', result);
+          
+          // parse the result data in the format we want
+          const csv = (result.data as CSVRow[]).map((row: CSVRow) => {
+            // check if row is empty
+            if (Object.keys(row).length === 1) {
+              return; // returns undefined
             }
-            const rect = this.createRectangle(lat, lon, cloudCover);
-            if (rect) {
-              this.cloudCoverRectangles.addLayer(rect);
-            }
+            
+            const lat = +row.latitude;
+            const lon = +row.longitude;
+            const meanCloudCover = +row.mean_cloud_cover;
+            const medianCloudCover = +row.median_cloud_cover;
+            const modeCloudCover = +row.mode_cloud_cover;
+            const minCloudCover = +row.min_cloud_cover;
+            const maxCloudCover = +row.max_cloud_cover;
+            
+            return {
+              lat: lat,
+              lon: lon,
+              mean: meanCloudCover,
+              median: medianCloudCover,
+              mode: modeCloudCover,
+              min: minCloudCover,
+              max: maxCloudCover
+            } as CloudCSV;
+            
           });
-          console.log('Adding cloud cover rectangles to map...');
-          this.cloudCoverRectangles.addTo(this.map as Map);
-          console.log('Cloud cover rectangles added successfully.');
+          
+          // basically, take an arrow of objects and create an Object with arrays
+          csv.reduce((acc: Record<string, CloudData[]>, row: CloudCSV | undefined) => {
+            if (row === undefined) { return acc; }
+            acc['mean'].push({ lat: row.lat, lon: row.lon, cloudCover: row.mean });
+            acc['median'].push({ lat: row.lat, lon: row.lon, cloudCover: row.median });
+            acc['mode'].push({ lat: row.lat, lon: row.lon, cloudCover: row.mode });
+            acc['min'].push({ lat: row.lat, lon: row.lon, cloudCover: row.min });
+            acc['max'].push({ lat: row.lat, lon: row.lon, cloudCover: row.max });
+            return acc;
+          }, this.cloudData);
         },
       });
     },
     
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    parseResult(result: {'lat': number, 'lon': number, 'cloudCover': number}[]) {
+    parseResult(result: CloudData[]) {
+      console.log('adding to map');
       result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}) => {
         const lat = row.lat;
         const lon = row.lon;
@@ -261,6 +284,7 @@ export default defineComponent({
         }
       });
       this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
+      console.log('added to map', this.cloudCoverRectangles);
     },
 
     
@@ -482,8 +506,8 @@ export default defineComponent({
     },
 
     updateCloudCover(value: boolean) {
-      if (value) {
-        this.cloudCoverRectangles.addTo(this.map as Map);
+      if (value && this.cloudData != null) {
+        this.parseResult(this.cloudData[this.selectedCloudCoverVariable ?? 'median']);
       } else {
         this.cloudCoverRectangles.remove();
       }
@@ -501,12 +525,15 @@ export default defineComponent({
   },
 
   watch: {
-    cloudDataSource(val) {
-      // clear the old data
+
+    
+    selectedCloudCoverVariable(val) {
+      console.log('Selected cloud cover variable:', val);
+      // remove the current cloud cover rectangles
       this.cloudCoverRectangles.remove();
-      // load the new data
-      this.parseResult(val);
-      
+      if (val !== null && this.cloudData !== null) {
+        this.updateCloudCover(this.cloudCover);
+      }
     },
     
     modelValue() {

@@ -142,7 +142,13 @@
                   <div>
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
-                    />
+                    /><select v-model="selectedCloudCoverVariable">
+                        <option value="median">Median Cloud Cover</option>
+                        <option value="mean">Mean Cloud Cover</option>
+                        <option value="mode">Mode Cloud Cover</option>
+                        <option value="min">Minimum Cloud Cover</option>
+                        <option value="max">Maximum Cloud Cover</option>
+                      </select>
                   </div>
                 </div>
               </span>
@@ -223,6 +229,7 @@
               :cloud-cover="learnerPath === 'Clouds'"
               class="leaflet-map"
               :geo-json-files="geojson"
+              :selected-cloud-cover-variable="selectedCloudCoverVariable"
             ></location-selector>
             <!-- the colorbar is generated using colorbarGradient() to make a serieis of divs -->
               <div v-show="learnerPath === 'Clouds'"  id="colorbar"></div>
@@ -1844,6 +1851,7 @@ export default defineComponent({
         //   'style': {radius:3,fillColor: '#ccc', color:'#222', weight: 2, opacity: 1, fillOpacity: 1}
         // }
       ],
+      selectedCloudCoverVariable: 'median',
       
 
       presetLocationsVisited,
