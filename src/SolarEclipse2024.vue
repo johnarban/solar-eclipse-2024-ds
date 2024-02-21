@@ -1160,38 +1160,6 @@
               </template>
             </icon-button>
               <icon-button
-                v-if="false"
-                id="speed-down"
-                :fa-icon="'angle-double-down'"
-                @activate="() => {
-                      playbackRate = playbackRate / 10
-                      playing = true;
-                    }"
-                :color="accentColor"
-                :focus-color="accentColor"
-                tooltip-text="10x slower"
-                tooltip-location="top"
-                tooltip-offset="5px"
-                faSize="1x"
-                :show-tooltip="!mobile"
-              ></icon-button>
-              <icon-button
-                v-if="false"
-                id="speed-up"
-                :fa-icon="'angle-double-up'"
-                @activate="() => {
-                      playbackRate = playbackRate * 10;
-                      playing = true;
-                    }"
-                :color="accentColor"
-                :focus-color="accentColor"
-                tooltip-text="10x faster"
-                tooltip-location="top"
-                tooltip-offset="5px"
-                faSize="1x"
-                :show-tooltip="!mobile"
-              ></icon-button>
-              <icon-button
                 id="reset"
                 :fa-icon="'rotate'"
                 @activate="() => {
@@ -1206,7 +1174,7 @@
                 :focus-color="accentColor"
                 border="none"
                 tooltip-text="Reset"
-                tooltip-location="top"
+                tooltip-location="bottom"
                 tooltip-offset="5px"
                 faSize="1x"
                 :show-tooltip="!mobile"
@@ -5122,7 +5090,7 @@ video, #info-video {
 
 #enclosing-playback-container.desktop-playback-control {
   --tick-font-size: 12px;
-  // transform: translateY(calc(-50% - 1rem));
+  margin-bottom: calc(2.5rem + 5px);
   
 }
 
