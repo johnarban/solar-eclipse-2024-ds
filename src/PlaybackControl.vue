@@ -307,7 +307,7 @@ export default defineComponent({
 
 #enclosing-playback-container {
   // modify the Vuetify slifer properties
-  contain: content;
+  contain: layout;
   display: flex;
   flex-grow: 1;
   align-items: center;
