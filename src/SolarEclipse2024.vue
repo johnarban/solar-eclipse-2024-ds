@@ -1261,7 +1261,7 @@
                     @activate="() => {
                       playbackVisible = !playbackVisible;
                     }"
-                    :fa-icon="'gauge-high'"
+                    :fa-icon="playbackVisible ? 'times' : 'gauge-high'"
                     :color="accentColor"
                     :focus-color="accentColor"
                     tooltip-text="Time Controls"
