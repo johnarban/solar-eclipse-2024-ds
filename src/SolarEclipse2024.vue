@@ -143,11 +143,11 @@
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
                     /><select v-model="selectedCloudCoverVariable">
-                        <option value="median">Median Cloud Cover</option>
-                        <option value="mean">Mean Cloud Cover</option>
-                        <option value="mode">Mode Cloud Cover</option>
-                        <option value="min">Minimum Cloud Cover</option>
-                        <option value="max">Maximum Cloud Cover</option>
+                        <option value="median_cloud_cover">Median Cloud Cover</option>
+                        <option value="mean_cloud_cover">Mean Cloud Cover</option>
+                        <option value="mode_cloud_cover">Mode Cloud Cover</option>
+                        <option value="min_cloud_cover">Minimum Cloud Cover</option>
+                        <option value="max_cloud_cover">Maximum Cloud Cover</option>
                       </select>
                   </div>
                 </div>
@@ -1299,6 +1299,103 @@ import pointInPolygon from 'point-in-polygon';
 import { recalculateForObserverUTC } from "./eclipse_predict";
 import { EclipseData } from "./eclipse_types";
 
+import { ref } from 'vue';
+import Papa from 'papaparse';
+
+interface CloudCSV {
+  lat: number;
+  lon: number;
+  mean: number;
+  median: number;
+  mode: number;
+  min: number;
+  max: number;
+}
+
+interface CloudCoverData {
+  [key: string]: { lat: number; lon: number; cloudCover: number }[];
+}
+
+interface CloudData {
+  cloudCoverData: {
+    lat: number;
+    lon: number;
+    cloudCover: number;
+  }[];
+}
+
+
+// Define reactive variables
+const cloudCoverData = ref<CloudCoverData>({
+  mean: [],
+  median: [],
+  mode: [],
+  min: [],
+  max: [],
+});
+
+async function loadCloudCover() {
+  try {
+    const response = await fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/nino.csv');
+    const csvData = await response.text();
+    console.log('CSV data loaded successfully:', csvData);
+    parseData(csvData);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
+function parseData(csvData: string) {
+  console.log('Parsing CSV data...');
+  Papa.parse(csvData, {
+    header: true,
+    dynamicTyping: true,
+    complete: (result) => {
+      console.log('Parsing complete. Result:', result);
+      console.log('Data:', result);
+
+      // Print the first few rows
+      const firstFewRows = (result.data as CloudCSV[]).slice(0, 5); // Adjust the number of rows to print as needed
+      console.log('First few rows:', firstFewRows);
+
+      // parse the result data in the format we want
+      const csv = firstFewRows.map((row: CloudCSV) => {
+        // check if row is empty
+        if (Object.keys(row).length === 1) {
+          return; // returns undefined
+        }
+
+        const { lat, lon, mean, median, mode, min, max } = row;
+
+        return { lat, lon, mean, median, mode, min, max };
+      });
+
+      // Group the data by the respective keys
+      const newCloudCoverData: CloudCoverData = {
+        mean: [],
+        median: [],
+        mode: [],
+        min: [],
+        max: [],
+      };
+
+      csv.forEach((entry) => {
+        if (entry) {
+          newCloudCoverData.mean.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.mean });
+          newCloudCoverData.median.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.median });
+          newCloudCoverData.mode.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.mode });
+          newCloudCoverData.min.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.min });
+          newCloudCoverData.max.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.max });
+        }
+      });
+
+      // Now cloudCoverData contains the grouped data
+      cloudCoverData.value = newCloudCoverData;
+    },
+  });
+}
+
+loadCloudCover();
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn";
@@ -1483,7 +1580,7 @@ const _eclipsePathGeoJson = {
 
 
 /** PARSE CLOUD COVERAGE DATA **/
-// import cloudCover from "./assets/cloud_cover.csv";
+//import cloudCover from "./assets/cloud_cover.csv";
 import { csvParseRows } from "d3-dsv";
 
 // the first row is the longitude values
@@ -1509,13 +1606,13 @@ const ninoData  = csvParseRows(jackData, (d, _i) => {
 });
 
 // lon and lat are first col and row (dropping the first value)
-// const minLat = Math.min(...ninoData.map(d => d.lat).slice(1));
+//const minLat = Math.min(...ninoData.map(d => d.lat).slice(1));
 // Access the lon property in each object of ninoData
-// const minLon = Math.min(...ninoData.map(d => d.lon).slice(1));
+//const minLon = Math.min(...ninoData.map(d => d.lon).slice(1));
 // get just the inner data grid
-// jackData = jackData.slice(1).map(row => row.slice(1));
+// const jackData = jackData.slice(1).map(row => row.slice(1));
 
-console.log("cloud cover data loaded");
+//console.log("cloud cover data loaded");
 
 /* READ IN Eclipse Umbra */
 import eclipseUmbra from "./assets/upath_hi.json";
@@ -1543,7 +1640,7 @@ export default defineComponent({
   },
   data() {
     const _totalEclipseTimeUTC = new Date("2024-04-08T18:18:00Z");
-
+    const selectedCloudCoverVariable: string = 'median_cloud_cover'; // Define selectedCloudCoverVariable
     const sunPlace = new Place();
     sunPlace.set_names(["Sun"]);
     sunPlace.set_classification(Classification.solarSystem);   
@@ -1589,6 +1686,9 @@ export default defineComponent({
       { latitudeRad: D2R * latitudeDeg, longitudeRad: D2R * longitudeDeg } :
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
+      selectedCloudCoverVariable,
+      cloudCoverData: {} as CloudCoverData,
+      
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
@@ -1851,7 +1951,6 @@ export default defineComponent({
         //   'style': {radius:3,fillColor: '#ccc', color:'#222', weight: 2, opacity: 1, fillOpacity: 1}
         // }
       ],
-      selectedCloudCoverVariable: 'median',
       
 
       presetLocationsVisited,
@@ -1892,6 +1991,7 @@ export default defineComponent({
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.updateSelectedLocationText();
     }
+    this.loadCloudCover();
     this.waitForReady().then(async () => {
 
       this.backgroundImagesets = [...skyBackgroundImagesets];
@@ -2006,6 +2106,16 @@ export default defineComponent({
   },
 
   computed: {
+
+    selectedCloudCoverData(this: { cloudCoverData: CloudData['cloudCoverData']; selectedCloudCoverVariable: keyof CloudData['cloudCoverData'] }) {
+      if (this.cloudCoverData != null && this.selectedCloudCoverVariable in this.cloudCoverData) {
+        return this.cloudCoverData[this.selectedCloudCoverVariable];
+      } else {
+        return null;
+      }
+    },
+
+
 
     cloudDataSource() {
       return this.getCloudCoverColumn('mean');
@@ -2322,6 +2432,64 @@ export default defineComponent({
   },
 
   methods: {
+
+    async loadCloudCover(): Promise<void> {
+      return fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/nino.csv')
+        .then(response => response.text())
+        .then(csvData => {
+          console.log('CSV data loaded successfully:', csvData);
+          this.parseData(csvData);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+    },
+
+    parseData(csvData: string) {
+      console.log('Parsing CSV data...');
+      Papa.parse(csvData, {
+        header: true,
+        dynamicTyping: true,
+        complete: (result) => {
+          console.log('Parsing complete. Result:', result);
+          console.log('Data:', result);
+
+          // parse the result data in the format we want
+          const csv = (result.data as CloudCSV[]).map((row: CloudCSV) => {
+            // check if row is empty
+            if (Object.keys(row).length === 1) {
+              return; // returns undefined
+            }
+
+            const { lat, lon, mean, median, mode, min, max } = row;
+
+            return { lat, lon, mean, median, mode, min, max };
+          });
+
+          // Group the data by the respective keys
+          const cloudCoverData: CloudCoverData = {
+            mean: [],
+            median: [],
+            mode: [],
+            min: [],
+            max: [],
+          };
+
+          csv.forEach((entry) => {
+            if (entry) {
+              cloudCoverData.mean.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.mean });
+              cloudCoverData.median.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.median });
+              cloudCoverData.mode.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.mode });
+              cloudCoverData.min.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.min });
+              cloudCoverData.max.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.max });
+            }
+          });
+
+          // Now cloudCoverData contains the grouped data
+          this.cloudCoverData = cloudCoverData;
+        },
+      });
+    },
 
     getCloudCoverColumn(name: string = 'mean') {
       
