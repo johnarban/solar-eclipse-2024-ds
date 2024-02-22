@@ -143,11 +143,11 @@
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
                     /><select v-model="selectedCloudCoverVariable">
-                        <option value="median_cloud_cover">Median Cloud Cover</option>
-                        <option value="mean_cloud_cover">Mean Cloud Cover</option>
-                        <option value="mode_cloud_cover">Mode Cloud Cover</option>
-                        <option value="min_cloud_cover">Minimum Cloud Cover</option>
-                        <option value="max_cloud_cover">Maximum Cloud Cover</option>
+                        <option value="median">Median Cloud Cover</option>
+                        <option value="mean">Mean Cloud Cover</option>
+                        <option value="mode">Mode Cloud Cover</option>
+                        <option value="min">Minimum Cloud Cover</option>
+                        <option value="max">Maximum Cloud Cover</option>
                       </select>
                   </div>
                 </div>
