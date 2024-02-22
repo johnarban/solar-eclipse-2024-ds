@@ -137,8 +137,8 @@ export default defineComponent({
       default: () => []
     },
     
-    selectedCloudCoverVariable: {
-      type: String as PropType<CloudVariable>,
+    selectedCloudCover: {
+      type:  Array as PropType<CloudData[]>,
       default: null
     }
   },
@@ -171,6 +171,9 @@ export default defineComponent({
     
     // eslint-disable-next-line @typescript-eslint/naming-convention
     parseResult(result: CloudData[]) {
+      if (this.cloudCoverRectangles === null) {
+        return;
+      }
       console.log('adding to map');
       result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}) => {
         const lat = row.lat;
@@ -305,7 +308,6 @@ export default defineComponent({
 
       this.updateCloudCover(this.showCloudCover);
         this.bringLocationAndPathToFront();
-      });
 
       this.placeCircles = this.places.map(place => this.circleForPlace(place));
       this.placeCircles.forEach((circle, index) => {
@@ -428,6 +430,8 @@ export default defineComponent({
 
   watch: {
 
+    selectedCloudCover(val: CloudData[] | null) {
+      if (val !== null) {
         this.updateCloudCover(this.showCloudCover);
         this.bringLocationAndPathToFront();
       }
