@@ -2383,6 +2383,7 @@ export default defineComponent({
     parseData(csvData: string) {
       console.log('Parsing CSV data...');
       Papa.parse(csvData, {
+        worker: true, // put it on a worker thread so it uses fewer of the resources
         header: true,
         dynamicTyping: true,
         complete: (result: Papa.ParseResult<CloudCSVRow>) => {
