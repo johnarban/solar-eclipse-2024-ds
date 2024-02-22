@@ -1299,7 +1299,6 @@ import pointInPolygon from 'point-in-polygon';
 import { recalculateForObserverUTC } from "./eclipse_predict";
 import { EclipseData } from "./eclipse_types";
 
-import { ref } from 'vue';
 import Papa from 'papaparse';
 
 interface CloudCSV {
@@ -1321,81 +1320,7 @@ interface CloudData {
     lat: number;
     lon: number;
     cloudCover: number;
-  }[];
-}
 
-
-// Define reactive variables
-const cloudCoverData = ref<CloudCoverData>({
-  mean: [],
-  median: [],
-  mode: [],
-  min: [],
-  max: [],
-});
-
-async function loadCloudCover() {
-  try {
-    const response = await fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/nino.csv');
-    const csvData = await response.text();
-    console.log('CSV data loaded successfully:', csvData);
-    parseData(csvData);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-}
-
-function parseData(csvData: string) {
-  console.log('Parsing CSV data...');
-  Papa.parse(csvData, {
-    header: true,
-    dynamicTyping: true,
-    complete: (result) => {
-      console.log('Parsing complete. Result:', result);
-      console.log('Data:', result);
-
-      // Print the first few rows
-      const firstFewRows = (result.data as CloudCSV[]).slice(0, 5); // Adjust the number of rows to print as needed
-      console.log('First few rows:', firstFewRows);
-
-      // parse the result data in the format we want
-      const csv = firstFewRows.map((row: CloudCSV) => {
-        // check if row is empty
-        if (Object.keys(row).length === 1) {
-          return; // returns undefined
-        }
-
-        const { lat, lon, mean, median, mode, min, max } = row;
-
-        return { lat, lon, mean, median, mode, min, max };
-      });
-
-      // Group the data by the respective keys
-      const newCloudCoverData: CloudCoverData = {
-        mean: [],
-        median: [],
-        mode: [],
-        min: [],
-        max: [],
-      };
-
-      csv.forEach((entry) => {
-        if (entry) {
-          newCloudCoverData.mean.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.mean });
-          newCloudCoverData.median.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.median });
-          newCloudCoverData.mode.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.mode });
-          newCloudCoverData.min.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.min });
-          newCloudCoverData.max.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.max });
-        }
-      });
-
-      // Now cloudCoverData contains the grouped data
-      cloudCoverData.value = newCloudCoverData;
-    },
-  });
-}
-
-loadCloudCover();
 
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn";
@@ -2102,7 +2027,6 @@ export default defineComponent({
     }
     
     this.colorbarGradient();
-    console.log(this.getCloudCoverColumn('mean'));
   },
 
   computed: {
@@ -2437,7 +2361,6 @@ export default defineComponent({
       return fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/nino.csv')
         .then(response => response.text())
         .then(csvData => {
-          console.log('CSV data loaded successfully:', csvData);
           this.parseData(csvData);
         })
         .catch(error => {

@@ -8,7 +8,6 @@ import L, { LeafletMouseEvent, Map, TileLayerOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { notify } from "@kyvg/vue3-notification";
 import { defineComponent, PropType } from "vue";
-import Papa from 'papaparse';
 
 export interface LocationDeg {
   longitudeDeg: number;
@@ -48,33 +47,6 @@ interface CloudData {
   lat: number;
   lon: number;
   cloudCover: number;
-}
-
-type CloudVariable = 'mean' | 'median' | 'mode' | 'min' | 'max' | null;
-interface CloudCSV {
-  lat: number;
-  lon: number;
-  mean: number;
-  median: number;
-  mode: number;
-  min: number;
-  max: number;
-}
-// ,latitude,longitude,mean_cloud_cover,median_cloud_cover,mode_cloud_cover,min_cloud_cover,max_cloud_cover
-interface CSVRow {
-  latitude: number;
-  longitude: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  mean_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  median_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  mode_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  min_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  max_cloud_cover: number;
-
 }
 
 export default defineComponent({
@@ -192,79 +164,10 @@ export default defineComponent({
       cloudCoverRectangles: L.layerGroup(),
       map: null as Map | null,
       basemap: null as L.TileLayer | null,
-      cloudData: {
-        mean: [],
-        median: [],
-        mode: [],
-        min: [],
-        max: []
-      } as Record<string, CloudData[]>
     };
   },
 
   methods: {
-
-    async loadCloudCover(): Promise<void> {
-      return fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/nino.csv')
-        .then(response => response.text())
-        .then(csvData => {
-          console.log('CSV data loaded successfully:', csvData);
-          this.parseData(csvData);
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-        });
-    },
-
-    parseData(csvData: string) {
-      console.log('Parsing CSV data...');
-      Papa.parse(csvData, {
-        header: true,
-        dynamicTyping: true,
-        complete: (result) => {
-          console.log('Parsing complete. Result:', result);
-          console.log('Data:', result);
-          
-          // parse the result data in the format we want
-          const csv = (result.data as CSVRow[]).map((row: CSVRow) => {
-            // check if row is empty
-            if (Object.keys(row).length === 1) {
-              return; // returns undefined
-            }
-            
-            const lat = +row.latitude;
-            const lon = +row.longitude;
-            const meanCloudCover = +row.mean_cloud_cover;
-            const medianCloudCover = +row.median_cloud_cover;
-            const modeCloudCover = +row.mode_cloud_cover;
-            const minCloudCover = +row.min_cloud_cover;
-            const maxCloudCover = +row.max_cloud_cover;
-            
-            return {
-              lat: lat,
-              lon: lon,
-              mean: meanCloudCover,
-              median: medianCloudCover,
-              mode: modeCloudCover,
-              min: minCloudCover,
-              max: maxCloudCover
-            } as CloudCSV;
-            
-          });
-          
-          // basically, take an arrow of objects and create an Object with arrays
-          csv.reduce((acc: Record<string, CloudData[]>, row: CloudCSV | undefined) => {
-            if (row === undefined) { return acc; }
-            acc['mean'].push({ lat: row.lat, lon: row.lon, cloudCover: row.mean });
-            acc['median'].push({ lat: row.lat, lon: row.lon, cloudCover: row.median });
-            acc['mode'].push({ lat: row.lat, lon: row.lon, cloudCover: row.mode });
-            acc['min'].push({ lat: row.lat, lon: row.lon, cloudCover: row.min });
-            acc['max'].push({ lat: row.lat, lon: row.lon, cloudCover: row.max });
-            return acc;
-          }, this.cloudData);
-        },
-      });
-    },
     
     // eslint-disable-next-line @typescript-eslint/naming-convention
     parseResult(result: CloudData[]) {
