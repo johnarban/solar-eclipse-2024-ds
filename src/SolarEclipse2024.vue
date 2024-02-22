@@ -218,7 +218,6 @@
           <div v-if="!smAndUp || smAndUp" id="map-container" >
             <!-- :places="places" -->
             <location-selector
-              :cloud-data-source="cloudDataSource"
               :model-value="locationDeg"
               @update:modelValue="updateLocationFromMap"
               :initial-place="places.find(p => p.name === 'selectedLocation')"
@@ -226,10 +225,10 @@
               :detect-location="false"
               :map-options="(learnerPath === 'Clouds') ? userSelectedMapOptions : initialMapOptions"
               :selected-circle-options="selectedCircleOptions"
-              :cloud-cover="learnerPath === 'Clouds'"
+              :show-cloud-cover="learnerPath === 'Clouds' && cloudCoverData !== null"
               class="leaflet-map"
               :geo-json-files="geojson"
-              :selected-cloud-cover-variable="selectedCloudCoverVariable"
+              :selected-cloud-cover="selectedCloudCoverData"
             ></location-selector>
             <!-- the colorbar is generated using colorbarGradient() to make a serieis of divs -->
               <div v-show="learnerPath === 'Clouds'"  id="colorbar"></div>
