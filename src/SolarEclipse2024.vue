@@ -1576,7 +1576,7 @@ export default defineComponent({
   },
   data() {
     const _totalEclipseTimeUTC = new Date("2024-04-08T18:18:00Z");
-    const selectedCloudCoverVariable: string = 'median_cloud_cover'; // Define selectedCloudCoverVariable
+    
     const sunPlace = new Place();
     sunPlace.set_names(["Sun"]);
     sunPlace.set_classification(Classification.solarSystem);   
@@ -1622,7 +1622,7 @@ export default defineComponent({
       { latitudeRad: D2R * latitudeDeg, longitudeRad: D2R * longitudeDeg } :
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
-      selectedCloudCoverVariable,
+      selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
       cloudCoverData: {} as CloudCoverData,
       
       uuid,
