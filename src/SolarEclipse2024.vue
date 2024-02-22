@@ -1174,7 +1174,7 @@
                 :focus-color="accentColor"
                 border="none"
                 tooltip-text="Reset"
-                tooltip-location="bottom"
+                tooltip-location="top"
                 tooltip-offset="5px"
                 faSize="1x"
                 :show-tooltip="!mobile"
@@ -1216,7 +1216,7 @@
                       :paused="!playing"
                       @update:paused="playing = !$event"
                       :max-power="3"
-                      :max="Math.log10(5000) + 1"
+                      :max="Math.log10(1000) + 1"
                       :color="accentColor"
                       :inline="false"
                     /> 
@@ -1248,7 +1248,7 @@
                         forceRate = nearTotality;
                       }"
                       :max-power="3"
-                      :max="Math.log10(5000) + 1"
+                      :max="Math.log10(1000) + 1"
                       :color="accentColor"
                       :inline="true"
                       inline-button
@@ -5091,7 +5091,12 @@ video, #info-video {
 #enclosing-playback-container.desktop-playback-control {
   --tick-font-size: 12px;
   margin-bottom: calc(2.5rem + 5px);
+  padding-right: 1rem;
   
+}
+
+#enclosing-playback-container.inset.mobile-playback-control {
+  padding-right: 1rem;
 }
 
 #inline-speed-control {
