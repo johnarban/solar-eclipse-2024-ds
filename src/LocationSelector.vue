@@ -60,7 +60,7 @@ export default defineComponent({
       type: String,
       default: "#ffffff"
     },
-    cloudCover: {
+    showCloudCover: {
       type: Boolean,
       default: false
     },
@@ -303,8 +303,7 @@ export default defineComponent({
       this.basemap = L.tileLayer(options.templateUrl, options);
       this.basemap.addTo(map);
 
-      this.loadCloudCover().then(() => {
-        this.updateCloudCover(this.cloudCover);
+      this.updateCloudCover(this.showCloudCover);
         this.bringLocationAndPathToFront();
       });
 
@@ -429,13 +428,8 @@ export default defineComponent({
 
   watch: {
 
-    
-    selectedCloudCoverVariable(val) {
-      console.log('Selected cloud cover variable:', val);
-      // remove the current cloud cover rectangles
-      this.cloudCoverRectangles.remove();
-      if (val !== null && this.cloudData !== null) {
-        this.updateCloudCover(this.cloudCover);
+        this.updateCloudCover(this.showCloudCover);
+        this.bringLocationAndPathToFront();
       }
     },
     
@@ -456,7 +450,7 @@ export default defineComponent({
     },
     
     
-    cloudCover(value: boolean) {
+    showCloudCover(value: boolean) {
       this.updateCloudCover(value);
       this.bringLocationAndPathToFront();
     },
