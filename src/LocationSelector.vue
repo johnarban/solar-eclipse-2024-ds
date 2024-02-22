@@ -189,6 +189,7 @@ export default defineComponent({
           this.cloudCoverRectangles.addLayer(rect);
         }
       });
+      // perhaps we should check if it is already added to the map. if it is, why remove it? 
       this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
       console.log('added to map', this.cloudCoverRectangles);
     },
@@ -307,7 +308,7 @@ export default defineComponent({
       this.basemap.addTo(map);
 
       this.updateCloudCover(this.showCloudCover);
-        this.bringLocationAndPathToFront();
+      this.bringLocationAndPathToFront();
 
       this.placeCircles = this.places.map(place => this.circleForPlace(place));
       this.placeCircles.forEach((circle, index) => {
@@ -410,10 +411,10 @@ export default defineComponent({
     },
 
     updateCloudCover(value: boolean) {
-      if (value && this.cloudData != null) {
-        this.parseResult(this.cloudData[this.selectedCloudCoverVariable ?? 'median']);
-      } else {
-        this.cloudCoverRectangles.remove();
+      if (value && this.selectedCloudCover != null) {
+        this.cloudCoverRectangles.remove(); // do we need to remove it from the map? but how do we make sure it's not already on the map?
+        this.cloudCoverRectangles.clearLayers(); // clear the rectangles is what we want
+        this.parseResult(this.selectedCloudCover);
       }
     }
 
