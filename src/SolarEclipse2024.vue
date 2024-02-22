@@ -1301,25 +1301,36 @@ import { EclipseData } from "./eclipse_types";
 
 import Papa from 'papaparse';
 
-interface CloudCSV {
-  lat: number;
-  lon: number;
-  mean: number;
-  median: number;
-  mode: number;
-  min: number;
-  max: number;
+
+
+
+// ,latitude,longitude,mean_cloud_cover,median_cloud_cover,mode_cloud_cover,min_cloud_cover,max_cloud_cover
+interface CloudCSVRow {
+  latitude: number;
+  longitude: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  mean_cloud_cover: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  median_cloud_cover: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  mode_cloud_cover: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  min_cloud_cover: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  max_cloud_cover: number;
 }
 
-interface CloudCoverData {
-  [key: string]: { lat: number; lon: number; cloudCover: number }[];
-}
 
 interface CloudData {
-  cloudCoverData: {
     lat: number;
     lon: number;
     cloudCover: number;
+}
+
+interface CloudCoverData {
+  [key: string]: CloudData[];
+}
+
 
 
 type SheetType = "text" | "video" | null;
