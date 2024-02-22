@@ -1623,7 +1623,7 @@ export default defineComponent({
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
       selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
-      cloudCoverData: {} as CloudCoverData,
+      cloudCoverData:   null as CloudCoverData | null,
       
       uuid,
       responseOptOut: responseOptOut as boolean | null,
