@@ -1321,9 +1321,9 @@ interface CloudCSVRow {
 
 
 interface CloudData {
-    lat: number;
-    lon: number;
-    cloudCover: number;
+  lat: number;
+  lon: number;
+  cloudCover: number;
 }
 
 interface CloudCoverData {
@@ -2393,27 +2393,27 @@ export default defineComponent({
 
     convertCSV(result: Papa.ParseResult<CloudCSVRow>) {
 
-          // parse the result data in the format we want
+      // parse the result data in the format we want
       const csv = (result.data as CloudCSVRow[]).map((row: CloudCSVRow) => {
-            // check if row is empty
-            if (Object.keys(row).length === 1) {
-              return; // returns undefined
-            }
+        // check if row is empty
+        if (Object.keys(row).length === 1) {
+          return; // returns undefined
+        }
 
         return row;
-          });
+      });
 
-          // Group the data by the respective keys
-          const cloudCoverData: CloudCoverData = {
-            mean: [],
-            median: [],
-            mode: [],
-            min: [],
-            max: [],
-          };
+      // Group the data by the respective keys
+      const cloudCoverData: CloudCoverData = {
+        mean: [],
+        median: [],
+        mode: [],
+        min: [],
+        max: [],
+      };
 
-          csv.forEach((entry) => {
-            if (entry) {
+      csv.forEach((entry) => {
+        if (entry) {
           cloudCoverData.mean.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.mean_cloud_cover });
           cloudCoverData.median.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.median_cloud_cover });
           cloudCoverData.mode.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.mode_cloud_cover });
@@ -2421,7 +2421,7 @@ export default defineComponent({
           cloudCoverData.max.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.max_cloud_cover });
         }
       });
-          this.cloudCoverData = cloudCoverData;
+      this.cloudCoverData = cloudCoverData;
     },
 
     getCloudCoverColumn(name: string = 'mean') {
