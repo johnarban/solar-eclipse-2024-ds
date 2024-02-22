@@ -2412,15 +2412,13 @@ export default defineComponent({
 
           csv.forEach((entry) => {
             if (entry) {
-              cloudCoverData.mean.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.mean });
-              cloudCoverData.median.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.median });
-              cloudCoverData.mode.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.mode });
-              cloudCoverData.min.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.min });
-              cloudCoverData.max.push({ lat: entry.lat, lon: entry.lon, cloudCover: entry.max });
-            }
-          });
-
-          // Now cloudCoverData contains the grouped data
+          cloudCoverData.mean.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.mean_cloud_cover });
+          cloudCoverData.median.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.median_cloud_cover });
+          cloudCoverData.mode.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.mode_cloud_cover });
+          cloudCoverData.min.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.min_cloud_cover });
+          cloudCoverData.max.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.max_cloud_cover });
+        }
+      });
           this.cloudCoverData = cloudCoverData;
         },
       });
