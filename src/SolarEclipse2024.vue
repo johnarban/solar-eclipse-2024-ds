@@ -2031,10 +2031,11 @@ export default defineComponent({
 
   computed: {
 
-    selectedCloudCoverData(this: { cloudCoverData: CloudData['cloudCoverData']; selectedCloudCoverVariable: keyof CloudData['cloudCoverData'] }) {
-      if (this.cloudCoverData != null && this.selectedCloudCoverVariable in this.cloudCoverData) {
+    selectedCloudCoverData(): CloudData[] | null {
+      if (this.cloudCoverData != null) {
         return this.cloudCoverData[this.selectedCloudCoverVariable];
       } else {
+        console.log('selectedCloudCoverData: cloud cover data not loaded');
         return null;
       }
     },
