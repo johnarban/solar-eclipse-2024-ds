@@ -2385,9 +2385,13 @@ export default defineComponent({
       Papa.parse(csvData, {
         header: true,
         dynamicTyping: true,
-        complete: (result) => {
-          console.log('Parsing complete. Result:', result);
-          console.log('Data:', result);
+        complete: (result: Papa.ParseResult<CloudCSVRow>) => {
+          this.convertCSV(result);
+        }
+      });
+    },
+
+    convertCSV(result: Papa.ParseResult<CloudCSVRow>) {
 
           // parse the result data in the format we want
       const csv = (result.data as CloudCSVRow[]).map((row: CloudCSVRow) => {
@@ -2418,8 +2422,6 @@ export default defineComponent({
         }
       });
           this.cloudCoverData = cloudCoverData;
-        },
-      });
     },
 
     getCloudCoverColumn(name: string = 'mean') {
