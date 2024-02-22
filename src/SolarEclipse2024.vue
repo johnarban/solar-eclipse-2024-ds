@@ -2396,9 +2396,7 @@ export default defineComponent({
               return; // returns undefined
             }
 
-            const { lat, lon, mean, median, mode, min, max } = row;
-
-            return { lat, lon, mean, median, mode, min, max };
+        return row;
           });
 
           // Group the data by the respective keys
