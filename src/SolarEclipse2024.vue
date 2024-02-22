@@ -949,6 +949,15 @@
         </div>
       </div>
     </v-dialog>
+    
+  <div 
+    id="temporary-note-to-user"
+    :class="[playing && nearTotality && playbackRate == 10 ? 'note-visible' : '']"
+    >
+    <div>
+      Time Slowed for Eclipse
+    </div>
+  </div>
   
   <div id="top-wwt-content">
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
@@ -1091,6 +1100,21 @@
           <div style="position: relative">
             <div id="speed-control">
               <icon-button
+                id="reverse-speed"
+                :fa-icon="'angles-left'"
+                @activate="() => {
+                      decreasePlaybackRate();
+                      // playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                :tooltip-text="playbackRate < 0 ? 'Reverse Faster' : 'Reverse'"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
                 id="play-pause-icon"
                 :fa-icon="!(playing) ? 'play' : 'pause'"
                 @activate="() => {
@@ -1099,6 +1123,21 @@
                 :color="accentColor"
                 :focus-color="accentColor"
                 tooltip-text="Play/Pause"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+                id="forward-speed"
+                :fa-icon="'angles-right'"
+                @activate="() => {
+                      increasePlaybackRate();
+                      // playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                :tooltip-text="playbackRate > 0 ? 'Faster' : 'Forward'"
                 tooltip-location="top"
                 tooltip-offset="5px"
                 faSize="1x"
@@ -1127,36 +1166,6 @@
               </template>
             </icon-button>
               <icon-button
-                id="speed-down"
-                :fa-icon="'angle-double-down'"
-                @activate="() => {
-                      playbackRate = playbackRate / 10
-                      playing = true;
-                    }"
-                :color="accentColor"
-                :focus-color="accentColor"
-                tooltip-text="10x slower"
-                tooltip-location="top"
-                tooltip-offset="5px"
-                faSize="1x"
-                :show-tooltip="!mobile"
-              ></icon-button>
-              <icon-button
-                id="speed-up"
-                :fa-icon="'angle-double-up'"
-                @activate="() => {
-                      playbackRate = playbackRate * 10;
-                      playing = true;
-                    }"
-                :color="accentColor"
-                :focus-color="accentColor"
-                tooltip-text="10x faster"
-                tooltip-location="top"
-                tooltip-offset="5px"
-                faSize="1x"
-                :show-tooltip="!mobile"
-              ></icon-button>
-              <icon-button
                 id="reset"
                 :fa-icon="'rotate'"
                 @activate="() => {
@@ -1165,15 +1174,96 @@
                       playbackRate = 100;
                       playing = false;
                       toggleTrackSun = true;
+                      forceRate = false;
                     }"
                 :color="accentColor"
                 :focus-color="accentColor"
+                border="none"
                 tooltip-text="Reset"
                 tooltip-location="top"
                 tooltip-offset="5px"
                 faSize="1x"
                 :show-tooltip="!mobile"
               ></icon-button>
+                    
+              <v-dialog 
+                v-if="!xSmallSize" 
+                v-model="playbackVisible" 
+                :scrim="false"
+                location="top"
+                offset="40"
+                location-strategy="connected"
+                >
+                <template v-slot:activator="{ props }">
+                  <icon-button
+                    id="speed-control-icon"
+                    @activate="() => {
+                      playbackVisible = !playbackVisible;
+                    }"
+                    :fa-icon="'gauge-high'"
+                    :color="accentColor"
+                    :focus-color="accentColor"
+                    tooltip-text="Time Controls"
+                    tooltip-location="top"
+                    tooltip-offset="5px"
+                    faSize="1x"
+                    :show-tooltip="!mobile"
+                    v-bind="props"
+                  ></icon-button>
+                </template>
+                    <playback-control
+                    class="desktop-playback-control"
+                      v-if="playbackVisible"
+                      :model-value="playbackRateValue"
+                      @update:modelValue="(value: number) => {
+                        playbackRate = value;
+                        forceRate = nearTotality;
+                      }"
+                      :paused="!playing"
+                      @update:paused="playing = !$event"
+                      :max-power="3"
+                      :max="Math.log10(1000) + 1"
+                      :color="accentColor"
+                      :inline="false"
+                    /> 
+              </v-dialog>
+      
+
+                <div v-if="xSmallSize" id="inline-speed-control">
+                  <icon-button
+                    id="speed-control-icon"
+                    @activate="() => {
+                      playbackVisible = !playbackVisible;
+                    }"
+                    :fa-icon="playbackVisible ? 'times' : 'gauge-high'"
+                    :color="accentColor"
+                    :focus-color="accentColor"
+                    tooltip-text="Time Controls"
+                    tooltip-location="top"
+                    tooltip-offset="5px"
+                    faSize="1x"
+                    :show-tooltip="!mobile"
+                  ></icon-button>
+
+                    <playback-control
+                      class="mobile-playback-control"
+                      v-if="playbackVisible"
+                      :model-value="playbackRateValue"
+                      @update:modelValue="(value: number) => {
+                        playbackRate = value;
+                        forceRate = nearTotality;
+                      }"
+                      :max-power="3"
+                      :max="Math.log10(1000) + 1"
+                      :color="accentColor"
+                      :inline="true"
+                      inline-button
+                      @close="() => {
+                        playbackVisible = false;
+                      }"
+                    /> 
+
+                </div>
             </div>
             <div id="speed-text">
               Time rate: 
@@ -1806,6 +1896,9 @@ export default defineComponent({
       moonTexture: 'moon-sky-blue-overlay.png' as MoonImageFile,
 
       playbackRateValue: 1,
+      forceRate: false,
+      oldPlaybackRate: 1,
+      playbackVisible: false,
       
       horizonRate: 100, 
       scopeRate: 100, 
@@ -2237,30 +2330,39 @@ export default defineComponent({
       }
     },
     
+    // before during or after the eclipse
+    eclipsePhase(): 'before' | 'during' | 'after' | null {
+      if (this.eclipsePrediction && this.eclipseStart != null && this.eclipseEnd != null) {
+        if (this.wwtCurrentTime.getTime() < this.eclipseStart) {
+          return 'before';
+        } else if (this.wwtCurrentTime.getTime() > this.eclipseEnd) {
+          return 'after';
+        } else {
+          return 'during';
+        }
+      } else {
+        return null;
+      }
+    },
+    
+    nearTotality(): boolean {
+      let nearEclipseMax = false;
+      if (this.eclipsePrediction) {
+        if (this.eclipsePrediction.maxTime[0]) {
+          nearEclipseMax = Math.abs(this.eclipsePrediction.maxTime[0].getTime() - this.wwtCurrentTime.getTime()) < 120_000;
+        }
+      }
+
+      // if the eclipse prediction isn't available fallback on the current fraction eclipsed
+      return this.locationInTotality && (nearEclipseMax || this.currentFractionEclipsed > .99);
+    },
+    
     playbackRate: {
       set(value: number) {
-        this.playbackRateValue = value;
+        this.playbackRateValue = Math.sign(value) * Math.min(Math.abs(value), 5000);
       },
       get(): number {
-        let rate = this.playbackRateValue;
-        
-        // max rate = 100 if eclipsed
-        // if (this.currentFractionEclipsed > .5) {
-        //   rate = Math.min(this.playbackRateValue, 100);
-        // }
-        
-        // max rate = 10 if near eclipse max
-        let nearEclipseMax = false;
-        if (this.eclipsePrediction) {
-          if (this.eclipsePrediction.maxTime[0]) {
-            nearEclipseMax = Math.abs(this.eclipsePrediction.maxTime[0].getTime() - this.wwtCurrentTime.getTime()) < 120_000;
-          }
-        }
-        // if the eclipse prediction isn't available fallback on the current fraction eclipsed
-        if (this.locationInTotality && (nearEclipseMax || this.currentFractionEclipsed > .99)) {
-          rate = Math.min(this.playbackRateValue, 10);
-        }
-        return rate;
+        return this.playbackRateValue;        
       }
     },
     
@@ -3298,6 +3400,34 @@ export default defineComponent({
         return `${lat}° ${ns}, ${lon}° ${ew}`;
       }
     },
+    
+    decreasePlaybackRate() {
+      this.forceRate = this.nearTotality;
+      const sign = Math.sign(this.playbackRate);
+      if (sign > 0 ) {
+        this.playbackRate = -Math.min(this.playbackRate,100);
+        return;
+      }
+      const abs = Math.abs(this.playbackRate);
+      let ezrate = Math.floor(Math.log10(abs));
+      ezrate -= sign * 1;
+      this.playbackRate = sign * Math.pow(10, Math.abs(ezrate));
+    },
+    
+    increasePlaybackRate() {
+      this.forceRate = this.nearTotality;
+      if (Math.sign(this.playbackRate) < 0 ) {
+        this.playbackRate = -Math.max(this.playbackRate,-100);
+        return;
+      }
+      const sign = Math.sign(this.playbackRate);
+      const abs = Math.abs(this.playbackRate);
+      let ezrate = Math.floor(Math.log10(abs));
+      ezrate += sign * 1;
+      this.playbackRate = sign * Math.pow(10, Math.abs(ezrate));
+    },
+    
+    
 
     async updateSelectedLocationText() {
       this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
@@ -3374,16 +3504,29 @@ export default defineComponent({
     selectedTime(_time: number) {
       return;
     },
+    
+    nearTotality(near: boolean, oldNear: boolean) {
+      if (near) {
+        this.oldPlaybackRate = this.playbackRate;
+        this.playbackRate = Math.min(this.playbackRate, 10);
+      }
+      
+      if (oldNear && !near) {
+        this.playbackRate = this.oldPlaybackRate;
+      }
+    },
+
 
     wwtCurrentTime(time: Date) {
+      
+      if (this.forceRate && !this.nearTotality && (this.eclipsePhase === 'after')) {
+        this.forceRate = false;
+      }
 
       if (time.getTime() >= this.maxTime || time.getTime() < this.minTime) {
         if (this.playing) {
           this.playing = false;
           this.selectedTime = this.minTime;
-          // setTimeout(() => {
-          //   this.playing = true;
-          // }, 1000);
         }
         
         return;
@@ -3521,18 +3664,27 @@ export default defineComponent({
     
     playbackRate(val: number) {
       
-      if (val > 11_000) {
+      if (Math.abs(val) > 11_000) {
         console.warn('playbackRate too high, setting to maxPlaybackRate');
-        this.playbackRate = 10_000;
+        this.playbackRate = Math.sign(val) * 10_000;
       }
-
-      if (val < .1) {
-        console.warn('playbackRate too low, setting to minPlaybackRate');
-        this.playbackRate = .1;
-      }
+      
+      // if (val < .1) {
+      //   console.warn('playbackRate too low, setting to minPlaybackRate');
+      //   this.playbackRate = .1;
+      // }
       
       this.setClockRate(val);
     },
+    
+    // eclipsePhase(val: 'before' | 'during' | 'after' | null) {
+    //   if (this.forceRate) {
+    //     if (val === 'before' || val === 'after') {
+    //       this.forceRate = false;
+    //     }
+    //   }
+      
+    // }
 
   },
 });
@@ -3616,6 +3768,37 @@ body {
   }
 }
 
+
+#test-content {
+  position: absolute;
+  width: 50%;
+  height: 60%;
+  padding: 1em;
+  top: 5%;
+  left: 5%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+// should appear and then disappear 5 seconds later
+// gray background, white text
+#temporary-note-to-user {
+  background-color: #9c9c9c7e;
+  font-weight: bold;
+  color: #fff;
+  position: absolute;
+  top: 1em;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: calc(1.5 * var(--default-font-size));
+  padding: 1em;
+  border-radius: 1em;
+  opacity: 0;
+  transition: opacity 2s linear;
+  
+  &.note-visible {
+    opacity: 1;
+  }
+}
 
 
 #app {
@@ -3873,7 +4056,7 @@ body {
   gap: 5px;
   pointer-events: auto;
   
-  @media (max-width: 500px) {
+  @media (max-width: 600px) {
     flex-direction: column;
     align-items: stretch;
   }
@@ -4895,8 +5078,13 @@ video, #info-video {
 #speed-control {
   display: flex;
   flex-direction: row;
+  align-items: flex-end;
   gap: 5px;
   margin-left: 10px;
+  
+  @media (max-width: 370px) {
+    justify-content: center;
+  }
 
   .icon-wrapper {
     padding-inline: calc(0.3 * var(--default-line-height));
@@ -4904,6 +5092,49 @@ video, #info-video {
     border: 2px solid var(--accent-color);
   }
 
+}
+
+#enclosing-playback-container.desktop-playback-control {
+  --tick-font-size: 12px;
+  margin-bottom: calc(2.5rem + 5px);
+  padding-right: 1rem;
+  
+}
+
+#enclosing-playback-container.inset.mobile-playback-control {
+  padding-right: 1rem;
+}
+
+#inline-speed-control {
+  display: flex; 
+  flex-grow:1; 
+  align-items: flex-end; 
+  position: relative; 
+  gap: 5px;
+  
+  
+  // when the screen is small enough we want to hide the buttons in inline mode
+  @media (min-width: 369px) {
+    #enclosing-playback-container > #playback-play-pause-button {
+      display: none;
+    }
+    
+    #enclosing-playback-container > #playback-close-button {
+      display: none;
+    }
+  }
+  // when small enough we want to cover the controls
+  @media (max-width: 370px) {
+    // position: absolute;
+    flex-grow: 0;
+    #enclosing-playback-container.mobile-playback-control {
+      position: fixed;
+      width: calc(90% - 1rem);
+      left: 50%;
+      --off: calc(50% - 5px);
+      transform: translateX(-50%) translateY(var(--off)) !important;
+    }
+  }
 }
 
 #speed-text {
@@ -4918,9 +5149,9 @@ video, #info-video {
   left: calc(100% + 1rem);
   top: 1.5rem;
   
-  @media (max-width: 500px) {
+  @media (max-width: 600px) {
     position: relative;
-    top: 0.5rem;
+    top: 3rem;
     left: 0.5rem;
     display: inline;
   }
@@ -4956,7 +5187,7 @@ video, #info-video {
     flex-wrap: column;
     gap:5px;
     
-    @media (max-width: 500px) {
+    @media (max-width: 600px) {
       flex-direction: column;
       align-items: flex-end;
     }
@@ -5048,9 +5279,9 @@ video, #info-video {
 
 #change-optout {
   
-  @media (max-width: 500px) {
+  @media (max-width: 600px) {
     position: absolute;
-    bottom: 0.5rem;
+    bottom: -0.5rem ;
     right: 0.5rem;
   }
   
