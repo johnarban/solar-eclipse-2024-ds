@@ -2390,7 +2390,7 @@ export default defineComponent({
           console.log('Data:', result);
 
           // parse the result data in the format we want
-          const csv = (result.data as CloudCSV[]).map((row: CloudCSV) => {
+      const csv = (result.data as CloudCSVRow[]).map((row: CloudCSVRow) => {
             // check if row is empty
             if (Object.keys(row).length === 1) {
               return; // returns undefined
