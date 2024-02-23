@@ -27,7 +27,8 @@
             ></v-select>
           </v-col>
         </v-row>
-        <v-row class="histogram-container">
+        <v-btn @click="randomData()">Random Data</v-btn>
+        <v-row class="ma-0 graph histogram-container">
           <bar-chart
             id="cloud-histogram"
             :histogram-data="cloudDataHistogram"
@@ -36,7 +37,15 @@
             :title="`Cloud Conditions for ${selectedYear}`"
             />
         </v-row>
-
+        
+        <v-row class="ma-0 bg-purple-lighten-5 graph line-graph-container">
+          <line-chart
+            :scatter-data="scatterData"
+            show-line
+            show-scatter
+            />
+        </v-row>
+        
       </v-card-text>
       <v-card-actions style="border-top: 1px solid white; margin-top: 10px;">
         <v-spacer></v-spacer>
@@ -49,13 +58,12 @@
 <script lang="ts"> // Options API
 import { defineComponent, PropType } from 'vue';
 import BarChart from './BarChart.vue';
+import LineChart from './LineChart.vue';
 
 type CityLocation = {
   longitudeDeg: number;
   latitudeDeg: number;
 };
-
-
 
 const cityBoston: CityLocation = {
   latitudeDeg: 42.3601,
@@ -65,8 +73,20 @@ const cityBoston: CityLocation = {
 function randomData(n: number): number[] {
   const data = Array.from({ length: n }, () => Math.round((Math.random() * 100)));
   const sum = data.reduce((a, b) => a + b, 0);
-  return data.map((d) => Math.round((d / sum) * 100));
+  return data.map((d) => Math.round((d / sum) * 140));
 }
+
+function randomArray(n: number) {
+  // create an array of n objects with x and y properties
+  return Array.from({ length: n }, () => (
+    { 
+      x: Math.random() * 100, 
+      y: Math.random() * 100 
+    }
+  ));
+}
+
+type ScatterData = { x: number;y: number;}[];
 
 // https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6
 const _colorMap = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'];
@@ -74,7 +94,10 @@ const _colorMap = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'];
 export default defineComponent({
   name: 'AdvancedWeatherView',
   
-  components: { 'bar-chart': BarChart },
+  components: { 
+    'bar-chart': BarChart,
+    'line-chart': LineChart,
+  },
   
   emits: ['update:modelValue','close'],
   
@@ -99,6 +122,7 @@ export default defineComponent({
       selectedYearRange: [2001, 2022],
       selectedStat: 'mean',
       cloudDataHistogram: randomData(6), // overcast, mostlyCloudy, partlyCloudy, fewClouds, clear
+      scatterData: randomArray(100) as ScatterData,
       // https://www.weather.gov/media/notification/dir/AFM_Specifications.pdf
       skyCoverCodes: ['Clear', 'Mostly Clear', 'Parly Cloudy', 'Mostly Cloudy', 'Considerably Cloudy', 'Overcast'],
       skyCoverCodeRanges: {
@@ -135,6 +159,11 @@ export default defineComponent({
     close() {
       this.showValue = false;
     },
+    
+    randomData() {
+      this.cloudDataHistogram = randomData(6);
+      this.scatterData = randomArray(100) as ScatterData;
+    }
   },
   
   watch: {
@@ -150,10 +179,13 @@ export default defineComponent({
 
 <style lang="less">
 
-.histogram-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.graph {
   height: 300px;
+  border: 2px solid red;
 }
+
+.line-graph-container {
+  border-color: blue;
+}
+
 </style>
