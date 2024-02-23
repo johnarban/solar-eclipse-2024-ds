@@ -8,7 +8,6 @@ import L, { LeafletMouseEvent, Map, TileLayerOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { notify } from "@kyvg/vue3-notification";
 import { defineComponent, PropType } from "vue";
-import Papa from 'papaparse';
 
 export interface LocationDeg {
   longitudeDeg: number;
@@ -50,33 +49,6 @@ interface CloudData {
   cloudCover: number;
 }
 
-type CloudVariable = 'mean' | 'median' | 'mode' | 'min' | 'max' | null;
-interface CloudCSV {
-  lat: number;
-  lon: number;
-  mean: number;
-  median: number;
-  mode: number;
-  min: number;
-  max: number;
-}
-// ,latitude,longitude,mean_cloud_cover,median_cloud_cover,mode_cloud_cover,min_cloud_cover,max_cloud_cover
-interface CSVRow {
-  latitude: number;
-  longitude: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  mean_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  median_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  mode_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  min_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  max_cloud_cover: number;
-
-}
-
 export default defineComponent({
 
   emits: ["place", "update:modelValue", "error"],
@@ -88,7 +60,7 @@ export default defineComponent({
       type: String,
       default: "#ffffff"
     },
-    cloudCover: {
+    showCloudCover: {
       type: Boolean,
       default: false
     },
@@ -165,8 +137,8 @@ export default defineComponent({
       default: () => []
     },
     
-    selectedCloudCoverVariable: {
-      type: String as PropType<CloudVariable>,
+    selectedCloudCover: {
+      type:  Array as PropType<CloudData[]>,
       default: null
     }
   },
@@ -192,82 +164,16 @@ export default defineComponent({
       cloudCoverRectangles: L.layerGroup(),
       map: null as Map | null,
       basemap: null as L.TileLayer | null,
-      cloudData: {
-        mean: [],
-        median: [],
-        mode: [],
-        min: [],
-        max: []
-      } as Record<string, CloudData[]>
     };
   },
 
   methods: {
-
-    async loadCloudCover(): Promise<void> {
-      return fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/nino.csv')
-        .then(response => response.text())
-        .then(csvData => {
-          console.log('CSV data loaded successfully:', csvData);
-          this.parseData(csvData);
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-        });
-    },
-
-    parseData(csvData: string) {
-      console.log('Parsing CSV data...');
-      Papa.parse(csvData, {
-        header: true,
-        dynamicTyping: true,
-        complete: (result) => {
-          console.log('Parsing complete. Result:', result);
-          console.log('Data:', result);
-          
-          // parse the result data in the format we want
-          const csv = (result.data as CSVRow[]).map((row: CSVRow) => {
-            // check if row is empty
-            if (Object.keys(row).length === 1) {
-              return; // returns undefined
-            }
-            
-            const lat = +row.latitude;
-            const lon = +row.longitude;
-            const meanCloudCover = +row.mean_cloud_cover;
-            const medianCloudCover = +row.median_cloud_cover;
-            const modeCloudCover = +row.mode_cloud_cover;
-            const minCloudCover = +row.min_cloud_cover;
-            const maxCloudCover = +row.max_cloud_cover;
-            
-            return {
-              lat: lat,
-              lon: lon,
-              mean: meanCloudCover,
-              median: medianCloudCover,
-              mode: modeCloudCover,
-              min: minCloudCover,
-              max: maxCloudCover
-            } as CloudCSV;
-            
-          });
-          
-          // basically, take an arrow of objects and create an Object with arrays
-          csv.reduce((acc: Record<string, CloudData[]>, row: CloudCSV | undefined) => {
-            if (row === undefined) { return acc; }
-            acc['mean'].push({ lat: row.lat, lon: row.lon, cloudCover: row.mean });
-            acc['median'].push({ lat: row.lat, lon: row.lon, cloudCover: row.median });
-            acc['mode'].push({ lat: row.lat, lon: row.lon, cloudCover: row.mode });
-            acc['min'].push({ lat: row.lat, lon: row.lon, cloudCover: row.min });
-            acc['max'].push({ lat: row.lat, lon: row.lon, cloudCover: row.max });
-            return acc;
-          }, this.cloudData);
-        },
-      });
-    },
     
     // eslint-disable-next-line @typescript-eslint/naming-convention
     parseResult(result: CloudData[]) {
+      if (this.cloudCoverRectangles === null) {
+        return;
+      }
       console.log('adding to map');
       result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}) => {
         const lat = row.lat;
@@ -283,6 +189,7 @@ export default defineComponent({
           this.cloudCoverRectangles.addLayer(rect);
         }
       });
+      // perhaps we should check if it is already added to the map. if it is, why remove it? 
       this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
       console.log('added to map', this.cloudCoverRectangles);
     },
@@ -400,10 +307,8 @@ export default defineComponent({
       this.basemap = L.tileLayer(options.templateUrl, options);
       this.basemap.addTo(map);
 
-      this.loadCloudCover().then(() => {
-        this.updateCloudCover(this.cloudCover);
-        this.bringLocationAndPathToFront();
-      });
+      this.updateCloudCover(this.showCloudCover);
+      this.bringLocationAndPathToFront();
 
       this.placeCircles = this.places.map(place => this.circleForPlace(place));
       this.placeCircles.forEach((circle, index) => {
@@ -506,10 +411,10 @@ export default defineComponent({
     },
 
     updateCloudCover(value: boolean) {
-      if (value && this.cloudData != null) {
-        this.parseResult(this.cloudData[this.selectedCloudCoverVariable ?? 'median']);
-      } else {
-        this.cloudCoverRectangles.remove();
+      if (value && this.selectedCloudCover != null) {
+        this.cloudCoverRectangles.remove(); // do we need to remove it from the map? but how do we make sure it's not already on the map?
+        this.cloudCoverRectangles.clearLayers(); // clear the rectangles is what we want
+        this.parseResult(this.selectedCloudCover);
       }
     }
 
@@ -526,13 +431,10 @@ export default defineComponent({
 
   watch: {
 
-    
-    selectedCloudCoverVariable(val) {
-      console.log('Selected cloud cover variable:', val);
-      // remove the current cloud cover rectangles
-      this.cloudCoverRectangles.remove();
-      if (val !== null && this.cloudData !== null) {
-        this.updateCloudCover(this.cloudCover);
+    selectedCloudCover(val: CloudData[] | null) {
+      if (val !== null) {
+        this.updateCloudCover(this.showCloudCover);
+        this.bringLocationAndPathToFront();
       }
     },
     
@@ -553,7 +455,7 @@ export default defineComponent({
     },
     
     
-    cloudCover(value: boolean) {
+    showCloudCover(value: boolean) {
       this.updateCloudCover(value);
       this.bringLocationAndPathToFront();
     },
