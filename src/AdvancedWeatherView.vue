@@ -2,48 +2,91 @@
   <!-- v-dialog. containing a card with a 3 row, 2 column layouy -->
   <v-dialog 
     v-model="showValue" 
-    max-width="800px"
     close-on-back
     >
-    <v-card>
+    <v-card id="advanced-weather-view">
       <v-card-title>
         <span class="headline">Advanced Weather View for {{ location.latitudeDeg }} {{ location.longitudeDeg }}</span>
       </v-card-title>
+      
       <v-card-text>
         <span class="text-bf bg-red text-white"> NOT USING ANY DATA </span>
+        <!-- dataloading progress widget -->
         <v-row>
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="selectedYear"
-              :items="selectedYearRange"
-              label="Year"
-            ></v-select>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="selectedStat"
-              :items="['mean', 'max', 'min']"
-              label="Statistic"
-            ></v-select>
+          <v-col cols="12">
+            <v-progress-linear
+              v-model="dataLoadingProgress"
+              :striped="dataLoadingProgress < 100"
+              color="indigo-lighten-2"
+              height="25"
+              rounded
+            >
+            <template v-slot:default="{ value }">
+                <strong>Loading Data ({{ Math.ceil(value) }}%)</strong>
+            </template>
+          </v-progress-linear>
           </v-col>
         </v-row>
+        
+        <!-- top row -->
+        <v-row class="bg-blue-lighten-3">
+          
+          <v-col cols="6">
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="selectedYear"
+                  :items="selectedYearRange"
+                  label="Year"
+                ></v-select>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="selectedStat"
+                  :items="['mean', 'max', 'min']"
+                  label="Statistic"
+                ></v-select>
+              </v-col>
+            </v-row>
+          </v-col>
+          
+          <v-col cols="6">
+            <v-container aspect-ratio="1">
+            <location-selector
+              class="elevation-5"
+              v-model="location"
+              label="Location"
+              :place-circle-options="placeCircleOptions"
+              :selected-circle-options="selectedCircleOptions"
+              />
+            </v-container>
+          </v-col>
+          
+        </v-row>
+        
+        
         <v-btn @click="randomData()">Random Data</v-btn>
-        <v-row class="ma-0 graph histogram-container">
+        
+        <!-- j -->
+        <v-row class="bg-red-lighten-3">
+          <v-col cols="6" class="graph-col">
           <bar-chart
             id="cloud-histogram"
+            class="elevation-5"
             :histogram-data="cloudDataHistogram"
             :labels="skyCoverCodes"
             :colors="colorMap"
             :title="`Cloud Conditions for ${selectedYear}`"
             />
-        </v-row>
-        
-        <v-row class="ma-0 bg-purple-lighten-5 graph line-graph-container">
+          </v-col>
+          <v-col cols="6" class="graph-col">
           <line-chart
+            class="elevation-5"
             :scatter-data="scatterData"
             show-line
             show-scatter
             />
+          </v-col>
         </v-row>
         
       </v-card-text>
@@ -59,6 +102,7 @@
 import { defineComponent, PropType } from 'vue';
 import BarChart from './BarChart.vue';
 import LineChart from './LineChart.vue';
+import LocationSelector from './LocationSelector.vue';
 
 type CityLocation = {
   longitudeDeg: number;
@@ -67,7 +111,7 @@ type CityLocation = {
 
 const cityBoston: CityLocation = {
   latitudeDeg: 42.3601,
-  longitudeDeg: 71.0589,
+  longitudeDeg: -71.0589,
 };
 
 function randomData(n: number): number[] {
@@ -86,6 +130,8 @@ function randomArray(n: number) {
   ));
 }
 
+
+
 type ScatterData = { x: number;y: number;}[];
 
 // https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6
@@ -97,6 +143,7 @@ export default defineComponent({
   components: { 
     'bar-chart': BarChart,
     'line-chart': LineChart,
+    'location-selector': LocationSelector,
   },
   
   emits: ['update:modelValue','close'],
@@ -118,6 +165,7 @@ export default defineComponent({
   data() {
     return {
       location: this.defaultLocation,
+      dataLoadingProgress: 0,
       selectedYear: 2021,
       selectedYearRange: [2001, 2022],
       selectedStat: 'mean',
@@ -134,6 +182,22 @@ export default defineComponent({
         'overcast': [87, 100],
       },
       colorMap: _colorMap,
+      mapOptions: {
+        templateUrl: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}",
+        attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
+      },
+      placeCircleOptions: {
+        color: "#FF0000",
+        fillColor: "#FF000088",
+        fillOpacity: 0.7,
+        radius: 5 
+      },
+      selectedCircleOptions: {
+        color: "#0000FF",
+        fillColor: "#0000FF88",
+        fillOpacity: 0.7,
+        radius: 5 
+      },
     };
   },
   
@@ -153,6 +217,13 @@ export default defineComponent({
   
   mounted() {
     console.log('Advanced Weather View mounted');
+    // create a time to simulate data loading
+    const interval = setInterval(() => {
+      this.dataLoadingProgress += 10;
+      if (this.dataLoadingProgress >= 100) {
+        clearInterval(interval);
+      }
+    }, 1000);
   },
   
   methods: {
@@ -178,14 +249,16 @@ export default defineComponent({
 
 
 <style lang="less">
+#advanced-weather-view {
+    
+  .graph-col {
+    height: 300px;
+  }
 
-.graph {
-  height: 300px;
-  border: 2px solid red;
+  .map-container {
+    aspect-ratio: 1;
+  }
+
+
 }
-
-.line-graph-container {
-  border-color: blue;
-}
-
 </style>

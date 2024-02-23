@@ -106,7 +106,13 @@ export default defineComponent({
       type: Boolean,
       default: false,
       required: false
-    }
+    },
+    
+    animated: {
+      type: Boolean,
+      default: false,
+      required: false
+    },
     
   },
   
@@ -152,6 +158,7 @@ export default defineComponent({
       return {
         responsive: true,
         maintainAspectRatio: false,
+        animation: this.animated,
         scales: {
           x: {
             grid: { display: false }

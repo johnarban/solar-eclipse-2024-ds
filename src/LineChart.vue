@@ -110,10 +110,10 @@ export default defineComponent({
       default: false,
     },
 
-    animation: {
+    animated: {
       type: Boolean,
       required: false,
-      default: true,
+      default: false,
     },
     
     showTooltip: {
@@ -334,7 +334,7 @@ export default defineComponent({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     chartOptions(): any {
       const options =  {
-        animation: this.animation,
+        animation: this.animated,
         maintainAspectRatio: false,
         responsive: true,
         scales: {
