@@ -1,7 +1,6 @@
-<!-- A ChartJS histogram. It will show the relative fraction of  -->
-<!-- years where it was overcast, mostly cloudy, partly cloudy, few clouds, clear  -->
+<!-- A ChartJS bar-chart helper. -->
 <template>
-  <canvas :id="'cloud-histogram' + `${id ? '-'+id : ''}`" role="img" :aria-label="accessiblityLabel">
+  <canvas :id="canvasID" role="img" :aria-label="accessiblityLabel">
     <!-- this only get's shown in a browser does not support canvas -->
     {{ accessiblityLabel }}
   </canvas>
@@ -9,23 +8,31 @@
 
 
 <script lang="ts"> // Options API
-import { defineComponent } from 'vue';
-import { Chart as ChartJS, Title, BarElement, CategoryScale, LinearScale, ChartData, BarController } from 'chart.js';
+import { defineComponent, PropType } from 'vue';
+import { Chart , Title, BarElement, CategoryScale, LinearScale, ChartData, BarController, Tooltip } from 'chart.js';
+import Color from '@kurkle/color'; // included as dependency of chart.js
 import annotationPlugin from 'chartjs-plugin-annotation';
-import { Chart } from 'chart.js';
 
-ChartJS.register(Title, BarElement, CategoryScale, LinearScale, annotationPlugin, BarController);
+Chart.register(Title, BarElement, CategoryScale, LinearScale, annotationPlugin, BarController, Tooltip);
 
 // NOTE: I don't know what this type really should be, but this makes errors go away
 interface ChartContext extends CanvasRenderingContext2D {
   chart: Chart;
 }
 
+type SingleOrArray<T> = T | T[];
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function SingleOrArrayProp<T>() {
+  // TypeScript helper for single or array prop
+  return [Array, String] as PropType<SingleOrArray<T>>;
+}
+
 // // Esri color ramps - Blue and Yellow 12
 const _colorMap = [ "#2b57d9", "#3d8799", "#77b46c", "#d4d94c", "#ffee99" ];
 
 export default defineComponent({
-  name: 'CloudHistogram',
+  name: 'BarChart',
   
   props: {
     id: {
@@ -33,36 +40,16 @@ export default defineComponent({
       default: "",
       required: false
     },
-    overcast: {
-      type: Number,
-      default: 0,
+    
+    borderColor: {
+      type: SingleOrArrayProp<string>(),
+      default: () => ["rgba(0,0,0,0.8)"],
       required: false
     },
     
-    mostlyCloudy: {
-      type: Number,
-      default: Math.random() * 100,
-      required: false
-    },
-    partlyCloudy: {
-      type: Number,
-      default: 7,
-      required: false
-    },
-    fewClouds: {
-      type: Number,
-      default: 45,
-      required: true
-    },
-    clear: {
-      type: Number,
-      default: 100,
-      required: true
-    },
-    
-    colorMap: {
-      type: Array as () => string[] | string,
-      default: () => _colorMap,
+    borderWidth: {
+      type: SingleOrArrayProp<number>(),
+      default: () => [1],
       required: false
     },
     
@@ -74,25 +61,43 @@ export default defineComponent({
     
     labels: {
       type: Array<string>,
-      default: null,
+      default: [],
       required: false
     },
     
     histogramData: {
       type: Array<number>,
-      default: null,
-      required: false
+      default: [],
+      required: true
     },
     
-    barColors: {
-      type: Array<string>,
-      default: null,
+    colors: {
+      type: SingleOrArrayProp<string>(),
+      default: () => ['black'],
       required: false
     },
     
     title: {
       type: String,
       default: "",
+      required: false
+    },
+    
+    dataLabel: {
+      type: String,
+      default: "Data",
+      required: false
+    },
+    
+    barAnnotations: {
+      type: Boolean,
+      default: true,
+      required: false
+    },
+    
+    showTooltip: {
+      type: Boolean,
+      default: false,
       required: false
     }
     
@@ -105,50 +110,31 @@ export default defineComponent({
   
   computed: {
     
-    colors() {
-      // check if colorMap is an array
-      if (Array.isArray(this.colorMap)) {
-        return {
-          clear: this.colorMap[4],
-          fewClouds: this.colorMap[3],
-          partlyCloudy: this.colorMap[2],
-          mostlyCloudy: this.colorMap[1],
-          overcast: this.colorMap[0]
-        };
-      } else {
-        return {
-          clear: this.colorMap,
-          fewClouds: this.colorMap,
-          partlyCloudy: this.colorMap,
-          mostlyCloudy: this.colorMap,
-          overcast: this.colorMap
-        };
-      }
+    canvasID() {
+      return 'bar-chart' + `${this.id ? '-'+this.id : ''}`;
+    },
+    
+    hoverColors() {
+      // adapted from https://github.com/chartjs/Chart.js/blob/ef5e4d4692a3e7fc3d24b6e780f18652287907ca/src/helpers/helpers.color.ts#L29
+      // We will darken the color by 50%
+      const interim = Array.isArray(this.colors) ? this.colors : [this.colors];
+      return interim.map((color) => {
+        return Color(color).darken(0.5).hexString();
+      }) as string[];
     },
     
     // ChartData<chart-type, data-format, label-format>
     chartData(): ChartData<"bar", number[], string> {
       return {
-        labels: this.labels ?? ["Clear", "Few Clouds", "Partly Cloudy", "Mostly Cloudy", "Overcast"],
+        labels: this.labels,
         datasets: [
           {
-            label: "Cloud Cover",
-            backgroundColor: this.barColors ?? [
-              this.colors.clear,
-              this.colors.fewClouds,
-              this.colors.partlyCloudy,
-              this.colors.mostlyCloudy,
-              this.colors.overcast
-            ],
-            borderColor: ["rgba(0,0,0,0.8)"],
-            borderWidth: 1,
-            data: this.histogramData ?? [
-              this.clear,
-              this.fewClouds,
-              this.partlyCloudy,
-              this.mostlyCloudy,
-              this.overcast
-            ]
+            label: this.dataLabel,
+            backgroundColor: this.colors,
+            hoverBackgroundColor: this.hoverColors,
+            borderColor: this.borderColor,
+            borderWidth: this.borderWidth,
+            data: this.histogramData,
           }
         ]
       };
@@ -185,6 +171,10 @@ export default defineComponent({
             display: false
           },
           
+          tooltip: {
+            enabled: this.showTooltip,
+          },
+          
           // https://www.chartjs.org/chartjs-plugin-annotation/latest/guide/usage.html
           annotation: {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -196,30 +186,31 @@ export default defineComponent({
     
     
     annotations(){
+      if (!this.barAnnotations) {
+        return [];
+      }
       return Array.from({length: this.chartData.datasets[0].data.length}, (_, i) => this.barChartAnnotation(i));
     },
     
     accessiblityLabel(): string {
-      // list the data values
-      // const overCastString = `Overcast: ${Math.round(this.overcast)}%`;
-      // const mostlyCloudyString = `Mostly Cloudy: ${Math.round(this.mostlyCloudy)}%`;
-      // const partlyCloudyString = `Partly Cloudy: ${Math.round(this.partlyCloudy)}%`;
-      // const fewCloudsString = `Few Clouds: ${Math.round(this.fewClouds)}%`;
-      // const clearString = `Clear: ${Math.round(this.clear)}%`;
-      // return `Cloud cover: ${overCastString}, ${mostlyCloudyString}, ${partlyCloudyString}, ${fewCloudsString}, ${clearString}`;
       const labels = this.chartData.labels?.reduce((acc, label, i) => {
         return acc + `${label}: ${this.chartData.datasets[0].data[i]}%, `;
       }, "");
-      return `Cloud cover: ${labels}`;
+      return `Bar chart description: ${labels}`;
     },
     
     
   },
     
   mounted() {
-    const canvas = document.getElementById('cloud-histogram' + `${this.id ? '-'+this.id : ''}`) as HTMLCanvasElement;
+    // get the canvas element
+    const canvas = document.getElementById(this.canvasID) as HTMLCanvasElement;
+    
+    // we want to draw in 2d
     const ctx = canvas.getContext("2d");
     if (ctx) {
+      
+      // we want to be able to set the canvas background color. we can do this with a plugin
       const plugin = {
         id: 'customCanvasBackgroundColor',
         // https://www.chartjs.org/docs/latest/configuration/canvas-background.html
@@ -232,6 +223,8 @@ export default defineComponent({
           ctx.restore();
         }
       };
+      
+      // create the chart
       new Chart(ctx, {
         type: "bar",
         data: this.chartData,

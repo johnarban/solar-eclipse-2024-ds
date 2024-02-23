@@ -29,21 +29,10 @@
         </v-row>
         <v-row class="histogram-container">
           <cloud-histogram
-            id="data1"
-            :overcast="10"
-            :mostlyCloudy="Math.random() * 100"
-            :partlyCloudy="30"
-            :fewClouds="0"
-            :clear="50"
-            title="Cloud Conditions for past 20 years"
-          />
-        </v-row>
-        <v-row class="histogram-container">
-          <cloud-histogram
             id="data2"
             :histogram-data="cloudDataHistogram"
             :labels="skyCoverCodes"
-            :bar-colors="colorMap"
+            :colors="colorMap"
             :title="`Cloud Conditions for ${selectedYear}`"
             />
         </v-row>
