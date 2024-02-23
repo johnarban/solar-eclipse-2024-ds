@@ -13,6 +13,7 @@ import HoverTooltip from "./HoverTooltip.vue";
 import CloudCover from "./CloudCover.vue";
 import DefineTerm from "./DefineTerm.vue";
 import PlaybackControl from "./PlaybackControl.vue";
+import AdvancedWeatherView from "./AdvancedWeatherView.vue";
 
 import "./polyfills";
 
@@ -143,5 +144,6 @@ createApp(SolarEclipse2023, {
   .component('cloud-cover', CloudCover)
   .component('define-term', DefineTerm)
   .component('playback-control', PlaybackControl)
+  .component('advanced-weather-view', AdvancedWeatherView)
   // Mount
   .mount("#app");
