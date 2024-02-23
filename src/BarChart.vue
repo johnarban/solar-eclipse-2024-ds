@@ -11,9 +11,12 @@
 import { defineComponent, PropType } from 'vue';
 import { Chart , Title, BarElement, CategoryScale, LinearScale, ChartData, BarController, Tooltip } from 'chart.js';
 import Color from '@kurkle/color'; // included as dependency of chart.js
+import {customCanvasBackgroundColor} from './ChartPlugins';
+
+// register plugins 
 import annotationPlugin from 'chartjs-plugin-annotation';
 
-Chart.register(Title, BarElement, CategoryScale, LinearScale, annotationPlugin, BarController, Tooltip);
+Chart.register(Title, BarElement, CategoryScale, LinearScale, annotationPlugin, BarController, Tooltip, customCanvasBackgroundColor);
 
 // NOTE: I don't know what this type really should be, but this makes errors go away
 interface ChartContext extends CanvasRenderingContext2D {
@@ -28,11 +31,15 @@ function SingleOrArrayProp<T>() {
   return [Array, String] as PropType<SingleOrArray<T>>;
 }
 
+// convenience type alias for specific ChartData
+type ChartDataType = ChartData<"bar", number[], string>;
+
 // // Esri color ramps - Blue and Yellow 12
 const _colorMap = [ "#2b57d9", "#3d8799", "#77b46c", "#d4d94c", "#ffee99" ];
 
 export default defineComponent({
   name: 'BarChart',
+  // components: { 'bar': Bar},
   
   props: {
     id: {
@@ -105,6 +112,7 @@ export default defineComponent({
   
   data() {
     return {
+      ctx: null as CanvasRenderingContext2D | null,
     };
   },
   
@@ -124,7 +132,7 @@ export default defineComponent({
     },
     
     // ChartData<chart-type, data-format, label-format>
-    chartData(): ChartData<"bar", number[], string> {
+    chartData():  ChartDataType {
       return {
         labels: this.labels,
         datasets: [
@@ -207,34 +215,21 @@ export default defineComponent({
     const canvas = document.getElementById(this.canvasID) as HTMLCanvasElement;
     
     // we want to draw in 2d
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      
-      // we want to be able to set the canvas background color. we can do this with a plugin
-      const plugin = {
-        id: 'customCanvasBackgroundColor',
-        // https://www.chartjs.org/docs/latest/configuration/canvas-background.html
-        beforeDraw: (chart: {ctx: CanvasRenderingContext2D, width: number, height: number}, _args: unknown, options: {'color':string}) => {
-          const {ctx} = chart;
-          ctx.save();
-          ctx.globalCompositeOperation = 'destination-over';
-          ctx.fillStyle = options.color || 'black';
-          ctx.fillRect(0, 0, chart.width, chart.height);
-          ctx.restore();
-        }
-      };
-      
-      // create the chart
-      new Chart(ctx, {
-        type: "bar",
-        data: this.chartData,
-        options: this.chartOptions,
-        plugins: [plugin]
-      });
-    }
+    this.ctx = canvas.getContext("2d");
+    this.renderChart(this.ctx);
   },
   
   methods: {
+    
+    renderChart(ctx: CanvasRenderingContext2D | null) {
+      if (ctx) {
+        new Chart(ctx, {
+          type: "bar",
+          data: this.chartData,
+          options: this.chartOptions
+        });
+      }
+    },
     
     barChartAnnotation(dataIndex: number) {
       // https://www.chartjs.org/chartjs-plugin-annotation/latest/samples/line/datasetBars.html
@@ -268,7 +263,22 @@ export default defineComponent({
       const dataset = chart.data.datasets[0];
       return dataset.data[index] as number;
     },
+        
+  },
+  
+  watch: {
+    // a watcher for all props
+    $props: {
+      handler() {
+        if (this.ctx) {
+          Chart.getChart(this.ctx)?.destroy();
+          this.renderChart(this.ctx);
+        }
+      },
+      deep: true
+    }
   }
+  
 });
 
 </script>
