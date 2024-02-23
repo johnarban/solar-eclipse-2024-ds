@@ -28,8 +28,8 @@
           </v-col>
         </v-row>
         <v-row class="histogram-container">
-          <cloud-histogram
-            id="data2"
+          <bar-chart
+            id="cloud-histogram"
             :histogram-data="cloudDataHistogram"
             :labels="skyCoverCodes"
             :colors="colorMap"
@@ -48,7 +48,7 @@
 
 <script lang="ts"> // Options API
 import { defineComponent, PropType } from 'vue';
-import CloudHistogram from './CloudHistogram.vue';
+import BarChart from './BarChart.vue';
 
 type CityLocation = {
   longitudeDeg: number;
@@ -74,7 +74,7 @@ const _colorMap = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'];
 export default defineComponent({
   name: 'AdvancedWeatherView',
   
-  components: { 'cloud-histogram': CloudHistogram },
+  components: { 'bar-chart': BarChart },
   
   emits: ['update:modelValue','close'],
   
