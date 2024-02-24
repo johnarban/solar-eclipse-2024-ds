@@ -7,6 +7,7 @@
 import { defineComponent, PropType } from "vue";
 import Chart from "chart.js/auto"; 
 import {customCanvasBackgroundColor} from './ChartPlugins';
+import 'chartjs-adapter-date-fns';
 
 Chart.register(customCanvasBackgroundColor);
 
@@ -41,6 +42,12 @@ export default defineComponent({
       type: Array as PropType<OrderedPair[]>,
       required: false,
       default: () => [],
+    },
+    
+    timeseries: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     
     scatterLabel: {
@@ -185,7 +192,7 @@ export default defineComponent({
     xTickFormatter: {
       type: Function,
       required: false,
-      default: (value: number) => value,
+      default: null,
     },
     
     yTickFormatter: {
@@ -264,11 +271,10 @@ export default defineComponent({
       }
       
         
-      if (this.scatterData[0].x instanceof Date) {
-        console.log("is a date");
-        return this.scatterData.map(d => ({ x: (d.x as Date).getTime(), y: d.y }));
-      } 
-
+      // if (this.scatterData[0].x instanceof Date) {
+      //   console.log("is a date");
+      //   return this.scatterData.map(d => ({ x: (d.x as Date).getTime(), y: d.y }));
+      // } 
       return this.scatterData;
     },
 
@@ -340,7 +346,7 @@ export default defineComponent({
         scales: {
           x: {
             display: !this.hideXAxis,
-            type: 'linear' ,
+            type: this.timeseries ? 'time' : 'linear',
             reverse: this.reverseX,
             width: 3,
             ...this.bothAxisOptions,
