@@ -12,6 +12,7 @@ import { defineComponent, PropType } from 'vue';
 import { Chart , Title, BarElement, CategoryScale, LinearScale, ChartData, BarController, Tooltip } from 'chart.js';
 import Color from '@kurkle/color'; // included as dependency of chart.js
 import {customCanvasBackgroundColor} from './ChartPlugins';
+import { ChartOptions } from 'chart.js';
 
 // register plugins 
 import annotationPlugin from 'chartjs-plugin-annotation';
@@ -233,7 +234,8 @@ export default defineComponent({
         new Chart(ctx, {
           type: "bar",
           data: this.chartData,
-          options: this.chartOptions
+          // needs 'as unknown as ChartOptions' to avoid type error
+          options: this.chartOptions as unknown as ChartOptions
         });
       }
     },
