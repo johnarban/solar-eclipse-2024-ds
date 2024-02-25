@@ -29,79 +29,78 @@
         </v-row>
         
         <!-- top row -->
-        <v-row class="bg-blue-lighten-3">
+        <v-row class="">
           
           <v-col cols="6">
-            <v-row>
-              <v-col cols="12">
-                <v-select
-                  density="compact"
-                  v-model="selectedYear"
-                  :items="availableYears"
-                  label="Select a Single Year to Veiw"
-                  hide-details
-                ></v-select>
-                <v-slider
-                  class="thumb-label-below"
-                  :model-value="selectedYear"
-                  @end="selectedYear = $event"
-                  :min="availableYears[0]"
-                  :max="availableYears[availableYears.length - 1]"
-                  :step="1"
-                  show-ticks="always"
-                  
-                  hide-details
-                  thumb-label="always"
-                  ></v-slider>
-              </v-col>
+            <v-row>              
               <v-col cols="12">
                 <v-col>
-                  <p> Select a statistic to view</p>
-                <div class="d-flex flex-wrap justify-space-around" style="gap:5px;">
-                  <v-btn
-                  v-for="stat in (['mean', 'median', 'max', 'min'] as Statistics[])" :key="stat"
+                  <p> I want to view </p>
+                  <button-group
                     v-model="selectedStat"
-                    :value="stat"
-                    rounded="lg"
-                    :variant="selectedStat == stat ? 'tonal' : 'outlined'"
-                    @click="selectedStat = stat"
-                    >
-                    {{ stat }}
-                  </v-btn>
-                </div>
+                    :options-map="statText"
+                    color="#eac402"
+                    />
                 </v-col>
-                <v-col>
-                  <p> 
-                    2024 is an El Nino year. 
-                    El Nino affects broad weather patterns, 
-                    including cloud cover. <br />
-                    Show me: </p>
-                    <div class="d-flex flex-wrap justify-space-around" style="gap:5px;">
-                      <v-btn
-                      v-for="preference in (['elNino', 'noElNino', 'allYears'] as ElNinoPreference[])" :key="preference"
-                        v-model="elNinoPreference"
-                        :value="preference"
-                        rounded="lg"
-                        :variant="elNinoPreference == preference ? 'tonal' : 'outlined'"
-                        @click="elNinoPreference = preference"
-                        >
-                        {{ preference }}
-                      </v-btn>
-                    </div>
-                  <!-- <v-btn-toggle
-                    style="gap:2px"
-                    v-model="elNinoPreference"
+                
+                <v-col col="12">
+                  <p> Show me: </p>
+                    
+                  <!-- can add any options from v-checkbox -->
+                  <!-- v-if="selectedStat !== 'singleyear'" -->
+                  <select-all 
+                    :options-map="elNinoText"
+                    @selected="(s) => console.log('selected', s)"
+                    @selectAll="(s) => console.log('selectAll', s)"
                     density="compact"
-                    divided
-                    rounded="xl"
-                    mandatory
-                    variant="flat"
+                    select-all-top
+                    color="#eac402"
+                  />
+                  
+                  <!-- range selector -->
+                  <v-range-slider
+                    class="awv-thumb-label"
+                    v-model="selectedYearRange"
+                    @end="() => console.log('selectedYearRange', selectedYearRange)"
+                    :min="availableYears[0]"
+                    :max="availableYears[availableYears.length - 1]"
+                    :step="1"
+                    show-ticks="always"
+                    hide-details
+                    thumb-label="always"
                     >
-                    <v-btn value="elNino">El Nino</v-btn>
-                    <v-btn value="noElNino">No El Nino</v-btn>
-                    <v-btn value="allYears">All Years</v-btn>
-                  </v-btn-toggle> -->
+                  </v-range-slider>
+                  <!-- v-if="selectedStat === 'singleyear'" -->
+                  <div>
+                    <v-select
+                      density="compact"
+                      v-model="selectedYear"
+                      :items="availableYears"
+                      label="Select a Single Year to Veiw"
+                      hide-details
+                    ></v-select>
+                    <v-slider
+                      class="awv-thumb-label thumb-label-below"
+                      :model-value="selectedYear"
+                      @end="selectedYear = $event"
+                      :min="availableYears[0]"
+                      :max="availableYears[availableYears.length - 1]"
+                      :step="1"
+                      show-ticks="always"
+                      
+                      hide-details
+                      thumb-label="always"
+                      ></v-slider>
+                  </div>
+                  
                 </v-col>
+              </v-col>
+              <v-col class="align-center justify-center">
+              <v-btn 
+                class="elevation-5"
+                variant="outlined"
+                color="#eac402" 
+                @click="updateData()">Update Data</v-btn>
               </v-col>
             </v-row>
           </v-col>
@@ -116,15 +115,12 @@
               :selected-circle-options="selectedCircleOptions"
               />
             </v-container>
-          </v-col>
-          
+          </v-col>  
         </v-row>
         
         
-        <v-btn @click="randomData()">Random Data</v-btn>
-        
         <!-- j -->
-        <v-row class="bg-red-lighten-3">
+        <v-row class="">
           <v-col cols="12" sm="6" class="graph-col">
           <bar-chart
             id="cloud-histogram"
@@ -159,6 +155,8 @@
 
 <script lang="ts"> // Options API
 import { defineComponent, PropType } from 'vue';
+import ButtonGroup from './ButtonGroup.vue';
+import SelectAll from './SelectAll.vue';
 import BarChart from './BarChart.vue';
 import LineChart from './LineChart.vue';
 import LocationSelector from './LocationSelector.vue';
@@ -190,24 +188,26 @@ function randomData(n: number): number[] {
 }
 
 
-type Statistics = 'mean' | 'median' | 'max' | 'min';
+type Statistics =  'mean' | 'median' | 'max' | 'min' | 'singleyear';
 type ElNinoPreference = 'elNino' | 'noElNino' | 'allYears';
 
+const statText = new Map([
+  ['mean', 'Mean'],
+  ['median', 'Median'],
+  ['max', 'Maximum'],
+  ['min', 'Minimum'],
+  ['singleyear', 'Single Year'],
+]) as Map<Statistics, string>;
 
+const elNinoText = new Map([
+  ['elNino', 'El Niño Years'],
+  ['noElNino', 'Non El Niño Years'],
+  ['allYears', 'All Years'],
+]) as Map<ElNinoPreference, string>;
 
 // https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6
 const _colorMap = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'];
 
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-// const LocationSelector = defineAsyncComponent({
-//   loader: () => import('./LocationSelector.vue'),
-//   loadingComponent: defineComponent({
-//     template: '<v-progress-circular indeterminate color="primary"></v-progress-circular>',
-//   }),
-//   delay: 10,
-//   timeout: 3000,
-// });
 
 export default defineComponent({
   name: 'AdvancedWeatherView',
@@ -216,6 +216,8 @@ export default defineComponent({
     'bar-chart': BarChart,
     'line-chart': LineChart,
     'location-selector': LocationSelector,
+    'button-group': ButtonGroup,
+    'select-all': SelectAll,
   },
   
   emits: ['update:modelValue','close'],
@@ -236,6 +238,8 @@ export default defineComponent({
   
   data() {
     return {
+      statText,
+      elNinoText,
       location: this.defaultLocation,
       dataLoadingProgress: 0,
       allYears: Array.from({ length: 22 }, (_, i) => 2001 + i),
@@ -306,8 +310,25 @@ export default defineComponent({
   },
   
   methods: {
+    
+    updateData() {
+      // simulate data loading
+      this.dataLoadingProgress = 0;
+      const interval = setInterval(() => {
+        this.dataLoadingProgress = Math.min(this.dataLoadingProgress + Math.random() * 10,100);
+        if (this.dataLoadingProgress >= 100) {
+          clearInterval(interval);
+        }
+      }, 100);
+      this.randomData();
+    },
+    
     close() {
       this.showValue = false;
+    },
+    
+    upper(word: string) {
+      return  word.charAt(0).toUpperCase() + word.slice(1);
     },
     
     randomData() {
@@ -350,6 +371,20 @@ export default defineComponent({
 
 <style lang="less">
 #advanced-weather-view {
+  --color: #eac402;
+  
+  .awv-button {
+    font-size: var(--default-font-size);
+    padding: 0.125em 0.5em;
+    border-radius: 3px;
+    border: 1px solid var(--color);
+    color: black;
+    cursor: pointer;
+  }
+  .awv-button:hover, .awv-button:focus {
+    color: black;
+    font-weight: bold;
+  }
     
   .graph-col {
     height: 300px;
@@ -363,6 +398,17 @@ export default defineComponent({
     outline: 0px solid red;
   }
   
+  .awv-thumb-label {
+    .v-slider-thumb__label {
+      background-color: var(--color);
+      color: black;
+    }
+    
+    .v-slider-thumb__label::before {
+      border-top-color: var(--color);
+    }
+    
+  }
   .thumb-label-below .v-slider-thumb__label {
     --pos: calc(var(--v-slider-thumb-size) + 10px);
     top: var(--pos);
