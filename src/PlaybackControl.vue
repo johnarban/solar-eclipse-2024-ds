@@ -24,7 +24,7 @@
           :md-icon="reverseTime ? 'mdi-step-forward-2' : 'mdi-step-backward-2'"
           :color="color"
           :focus-color="color"
-          tooltip-text="Play/Pause"
+          tooltip-text="Forward/Reverse"
           tooltip-location="top"
           tooltip-offset="5px"
           md-size="18"
@@ -83,7 +83,7 @@ export default defineComponent({
     'v-slider': VSlider,
   },
   
-  emits: ['update:modelValue', 'update:paused', 'close'],
+  emits: ['update:modelValue', 'paused', 'close'],
 
   props: {
     // Define the props here
@@ -240,7 +240,7 @@ export default defineComponent({
       },
       set(val: boolean) {
         console.log(val);
-        this.$emit('update:paused', val);
+        this.$emit('paused', val);
       }
     },
     
