@@ -1270,7 +1270,7 @@
               <span v-if="!playing">
                 ({{ playbackRate }}&times;) Paused
               </span>
-              <span v-if="playing && nearTotality && playbackRate == 10">
+              <span v-if="playing && nearTotality && (playbackRate == 10) && (oldPlaybackRate > 10)">
                 (Slowed for eclipse)
               </span>
             </div>
