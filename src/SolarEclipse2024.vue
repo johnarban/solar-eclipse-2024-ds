@@ -950,14 +950,6 @@
       </div>
     </v-dialog>
     
-  <div 
-    id="temporary-note-to-user"
-    :class="[playing && nearTotality && playbackRate == 10 ? 'note-visible' : '']"
-    >
-    <div>
-      Time Slowed for Eclipse
-    </div>
-  </div>
   
   <div id="top-wwt-content">
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
@@ -1220,7 +1212,7 @@
                         forceRate = nearTotality;
                       }"
                       :paused="!playing"
-                      @update:paused="playing = !$event"
+                      @paused="playing = !$event"
                       :max-power="3"
                       :max="Math.log10(1000) + 1"
                       :color="accentColor"
@@ -1253,6 +1245,8 @@
                         playbackRate = value;
                         forceRate = nearTotality;
                       }"
+                      :paused="!playing"
+                      @paused="playing = !$event"
                       :max-power="3"
                       :max="Math.log10(1000) + 1"
                       :color="accentColor"
@@ -1275,6 +1269,9 @@
               </span>
               <span v-if="!playing">
                 ({{ playbackRate }}&times;) Paused
+              </span>
+              <span v-if="playing && nearTotality && (oldPlaybackRate > 10)">
+                (Slowed for totality)
               </span>
             </div>
           </div>
@@ -3779,27 +3776,6 @@ body {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-// should appear and then disappear 5 seconds later
-// gray background, white text
-#temporary-note-to-user {
-  background-color: #9c9c9c7e;
-  font-weight: bold;
-  color: #fff;
-  position: absolute;
-  top: 1em;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: calc(1.5 * var(--default-font-size));
-  padding: 1em;
-  border-radius: 1em;
-  opacity: 0;
-  transition: opacity 2s linear;
-  
-  &.note-visible {
-    opacity: 1;
-  }
-}
-
 
 #app {
   width: 100%;
@@ -5105,13 +5081,16 @@ video, #info-video {
   padding-right: 1rem;
 }
 
+#enclosing-playback-container > #playback-play-pause-button {
+  pointer-events: auto!important;
+}
+
 #inline-speed-control {
   display: flex; 
   flex-grow:1; 
   align-items: flex-end; 
   position: relative; 
   gap: 5px;
-  
   
   // when the screen is small enough we want to hide the buttons in inline mode
   @media (min-width: 369px) {
