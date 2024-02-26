@@ -168,7 +168,7 @@ export default defineComponent({
         });
     },
 
-    parseData(csvData: string) {
+    async parseData(csvData: string) {
       Papa.parse(csvData, {
         header: true,
         dynamicTyping: true,
@@ -291,7 +291,7 @@ export default defineComponent({
       });
     },
 
-    setup(initial=false) {
+    async setup(initial=false) {
       const mapContainer = this.$el as HTMLDivElement;
       const location: L.LatLngExpression = initial && this.mapOptions.initialLocation ?
         this.locationToLatLng(this.mapOptions.initialLocation) :
