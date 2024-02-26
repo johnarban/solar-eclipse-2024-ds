@@ -3,6 +3,7 @@ import Vue, { createApp } from "vue";
 import { IconButton } from "@cosmicds/vue-toolkit";
 import LocationSelector from "./LocationSelector.vue";
 import { FundingAcknowledgment } from "@cosmicds/vue-toolkit";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import SolarEclipse2023 from "./SolarEclipse2024.vue";
 import TransitionExpand from "./TransitionExpand.vue";
 import GifPlayPause from "./GifPlayPause.vue";
@@ -99,7 +100,7 @@ library.add(faAnglesRight);
 // Extract the function out, up here, so I'm not writing it twice
 const update = (el: HTMLElement, binding: Vue.DirectiveBinding) => el.style.visibility = (binding.value) ? "hidden" : "";
 
-createApp(SolarEclipse2023, {
+createApp(AdvancedWeatherView, {
   wwtNamespace: "wwt-minids-solar-eclipse-2024",
   // wtml: { // use this just as a test for the sun
   //   eclipse: "https://raw.githubusercontent.com/patudom/star-life-cycle/master/content/BUACStellarLifeCycles.wtml",
