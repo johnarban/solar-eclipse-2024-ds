@@ -49,7 +49,8 @@
                   <!-- can add any options from v-checkbox -->
                   <!-- v-if="selectedStat !== 'singleyear'" -->
                   <select-all 
-                    :options-map="elNinoText"
+                    v-if="selectedStat !== 'singleyear'"
+                    :options-map="mapSubsets"
                     @selected="(s) => console.log('selected', s)"
                     @selectAll="(s) => console.log('selectAll', s)"
                     density="compact"
@@ -59,6 +60,7 @@
                   
                   <!-- range selector -->
                   <v-range-slider
+                    v-if="selectedStat !== 'singleyear'"
                     class="awv-thumb-label"
                     v-model="selectedYearRange"
                     @end="() => console.log('selectedYearRange', selectedYearRange)"
@@ -71,7 +73,7 @@
                     >
                   </v-range-slider>
                   <!-- v-if="selectedStat === 'singleyear'" -->
-                  <div>
+                  <div v-if="selectedStat === 'singleyear'">
                     <v-select
                       density="compact"
                       v-model="selectedYear"
@@ -108,12 +110,31 @@
           <v-col cols="6">
             <v-container aspect-ratio="1">
             <location-selector
-              class="elevation-5"
               v-model="location"
               label="Location"
               :place-circle-options="placeCircleOptions"
               :selected-circle-options="selectedCircleOptions"
+              cloud-cover
               />
+              
+              <v-radio-group 
+                v-model="modisDataSet"  
+                inline
+                density="comfortable"
+                persistent-hint
+                hint="MODIS Aqua Data Set"
+                >
+                <v-radio
+                  v-for="[key, value] in modisTimes"
+                  :key="key"
+                  :label="value"
+                  :value="key"
+                  color="#eac402"
+                  hint="MODIS Aqua Data Set"
+                ></v-radio>
+              </v-radio-group>
+                
+              
             </v-container>
           </v-col>  
         </v-row>
@@ -184,26 +205,32 @@ function randomData(n: number): number[] {
   // for testing purposes only
   const data = Array.from({ length: n }, () => Math.round((Math.random() * 100)));
   const sum = data.reduce((a, b) => a + b, 0);
-  return data.map((d) => Math.round((d / sum) * 140));
+  return data.map((d) => Math.round((d / sum) * 100));
 }
 
 
 type Statistics =  'mean' | 'median' | 'max' | 'min' | 'singleyear';
 type ElNinoPreference = 'elNino' | 'noElNino' | 'allYears';
+type ModisTimeSpan = '1day' | '8day' | 'monthly' ;
 
 const statText = new Map([
   ['mean', 'Mean'],
   ['median', 'Median'],
-  ['max', 'Maximum'],
-  ['min', 'Minimum'],
+  // ['max', 'Maximum'],
+  // ['min', 'Minimum'],
   ['singleyear', 'Single Year'],
 ]) as Map<Statistics, string>;
 
-const elNinoText = new Map([
+const mapSubsets = new Map([
   ['elNino', 'El Niño Years'],
   ['noElNino', 'Non El Niño Years'],
-  ['allYears', 'All Years'],
 ]) as Map<ElNinoPreference, string>;
+
+const modisTimes = new Map([
+  ['1day', '1 Day'],
+  ['8day', '8 Day'],
+  ['monthly', 'Monthly'],
+]) as Map<ModisTimeSpan, string>;
 
 // https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6
 const _colorMap = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'];
@@ -239,7 +266,9 @@ export default defineComponent({
   data() {
     return {
       statText,
-      elNinoText,
+      mapSubsets,
+      modisTimes,
+      modisDataSet: '8day' as ModisTimeSpan,
       location: this.defaultLocation,
       dataLoadingProgress: 0,
       allYears: Array.from({ length: 22 }, (_, i) => 2001 + i),
@@ -281,6 +310,7 @@ export default defineComponent({
       // lineData: evaluate(0, 2 * Math.PI, 100, sin) as LineGraphData,
       scatterData: generateFakeTimeSeries(new Date(2021, 0, 1), new Date(2021, 11, 31), 20, 1) as LineGraphData,
       lineData: generateFakeTimeSeries(new Date(2021, 0, 1), new Date(2021, 11, 31), 100, 0) as LineGraphData,
+      displayedCloudData: null,
     };
   },
   
@@ -321,6 +351,7 @@ export default defineComponent({
         }
       }, 100);
       this.randomData();
+      // set displayedCloudData and pass to location-selector
     },
     
     close() {
@@ -391,6 +422,7 @@ export default defineComponent({
   }
 
   .map-container {
+    contain: strict;
     aspect-ratio: 1;
   }
 
