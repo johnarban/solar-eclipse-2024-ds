@@ -12,7 +12,6 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-annotation": "^3.0.1",
     "d3-dsv": "^3.0.1",
-    "date-fns": "^3.3.1",
     "date-fns-tz": "^2.0.0",
     "leaflet": "^1.9.4",
     "papaparse": "^5.4.1",
@@ -28,7 +27,7 @@
     "build": "./patch.sh; vue-cli-service build",
     "clean": "rimraf dist",
     "lint": "vue-cli-service lint src --no-fix",
-    "serve": "vue-cli-service serve"
+    "serve": "./patch.sh; vue-cli-service serve"
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41",
