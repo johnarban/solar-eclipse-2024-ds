@@ -1212,7 +1212,7 @@
                         forceRate = nearTotality;
                       }"
                       :paused="!playing"
-                      @paused="console.log(!$event)"
+                      @paused="playing = !$event"
                       :max-power="3"
                       :max="Math.log10(1000) + 1"
                       :color="accentColor"
