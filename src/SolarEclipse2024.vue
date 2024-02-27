@@ -1214,8 +1214,8 @@
                       v-if="playbackVisible"
                       :model-value="playbackRateValue"
                       @update:modelValue="(value: number) => {
+                        forceRate = false;
                         playbackRate = value;
-                        forceRate = nearTotality;
                       }"
                       :paused="!playing"
                       @paused="playing = !$event"
@@ -1248,8 +1248,8 @@
                       v-if="playbackVisible"
                       :model-value="playbackRateValue"
                       @update:modelValue="(value: number) => {
+                        forceRate = false;
                         playbackRate = value;
-                        forceRate = nearTotality;
                       }"
                       :paused="!playing"
                       @paused="playing = !$event"
@@ -1276,7 +1276,7 @@
               <span v-if="!playing">
                 ({{ Math.round(playbackRate * 10)/10 }}&times;) Paused
               </span>
-              <span v-if="playing && nearTotality && (playbackRate==10) && (oldPlaybackRate > 10)">
+              <span v-if="playing && forceRate">
                 (Slowed for totality)
               </span>
             </div>
@@ -1900,7 +1900,6 @@ export default defineComponent({
 
       playbackRateValue: 1,
       forceRate: false,
-      oldPlaybackRate: 1,
       playbackVisible: false,
       
       horizonRate: 100, 
@@ -1936,6 +1935,7 @@ export default defineComponent({
       eclipseStart: 0 as number | null,
       eclipseMid: 0 as number | null,
       eclipseEnd: 0 as number | null,
+      eclipseApproach: 'entering' as 'entering' | 'leaving',
     };
   },
 
@@ -2366,6 +2366,10 @@ export default defineComponent({
         this.playbackRateValue = Math.sign(value) * Math.min(Math.abs(value), 5000);
       },
       get(): number {
+        if (this.forceRate) {
+          const sign = Math.sign(this.playbackRateValue);
+          return sign * Math.min(10, sign * this.playbackRateValue);
+        } 
         return this.playbackRateValue;        
       }
     },
@@ -3416,7 +3420,7 @@ export default defineComponent({
     },
     
     decreasePlaybackRate() {
-      this.forceRate = this.nearTotality;
+      this.forceRate = false;
       const sign = Math.sign(this.playbackRate);
       if (sign > 0 ) {
         this.playbackRate = -Math.min(this.playbackRate,100);
@@ -3429,7 +3433,7 @@ export default defineComponent({
     },
     
     increasePlaybackRate() {
-      this.forceRate = this.nearTotality;
+      this.forceRate = false;
       if (Math.sign(this.playbackRate) < 0 ) {
         this.playbackRate = -Math.max(this.playbackRate,-100);
         return;
@@ -3521,21 +3525,19 @@ export default defineComponent({
     
     nearTotality(near: boolean, oldNear: boolean) {
       if (near) {
-        console.log('oldPlaybackRate', this.oldPlaybackRate);
-        console.log('playbackRate at near', this.playbackRate);
-        this.oldPlaybackRate = this.playbackRate;
-        this.playbackRate = Math.min(this.playbackRate, 10);
+        this.forceRate = true;
       }
       
+      // if leaving eclipse reset speed to previous
       if (oldNear && !near) {
-        this.playbackRate = this.oldPlaybackRate;
+        this.forceRate = false;
       }
     },
 
 
     wwtCurrentTime(time: Date) {
       
-      if (this.forceRate && !this.nearTotality && (this.eclipsePhase === 'after')) {
+      if (this.forceRate && !this.nearTotality && (this.eclipsePhase === 'after' || this.eclipsePhase === 'before')) {
         this.forceRate = false;
       }
 
@@ -3679,30 +3681,15 @@ export default defineComponent({
       }
     },
     
-    playbackRate(val: number, oldVal: number) {
-      this.oldPlaybackRate = oldVal;
-      console.log(`Playback rate: ${val}`);
+    playbackRate(val: number) {
       if (Math.abs(val) > 11_000) {
         console.warn('playbackRate too high, setting to maxPlaybackRate');
         this.playbackRate = Math.sign(val) * 10_000;
       }
       
-      // if (val < .1) {
-      //   console.warn('playbackRate too low, setting to minPlaybackRate');
-      //   this.playbackRate = .1;
-      // }
-      
       this.setClockRate(val);
     },
     
-    // eclipsePhase(val: 'before' | 'during' | 'after' | null) {
-    //   if (this.forceRate) {
-    //     if (val === 'before' || val === 'after') {
-    //       this.forceRate = false;
-    //     }
-    //   }
-      
-    // }
 
   },
 });

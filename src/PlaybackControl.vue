@@ -476,9 +476,6 @@ export default defineComponent({
         background-color: var(--track-color);
       }
 
-    .v-slider-thumb {
-    }
-
     // show no progress fill
     .v-slider-track__fill {
       opacity: 0;
