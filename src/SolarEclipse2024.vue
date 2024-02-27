@@ -301,7 +301,7 @@
                         What causes Solar Eclipses?
                       </summary>
                       <p>
-                        A solar eclipse happens when the Moon passes between the Earth and the Sun and blocks the Sun from our view. Partial eclipses occur about every 6 months, somewhere on the Earth. The U.S. is lucky to be in the path of the next two solar eclipses. 
+                        A solar eclipse happens when the Moon passes between the Earth and the Sun and blocks the Sun from our view. Partial eclipses occur about every 6 months, somewhere on the Earth. In 2023 and 2024, the US has been lucky to be in the path of two solar eclipses.
                       </p>
                     </details>
                     
