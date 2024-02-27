@@ -1997,7 +1997,7 @@ export default defineComponent({
       presetLocationsVisited,
       userSelectedLocationsVisited,
       eclipseGraph: [] as { x: number; y: number }[],
-      eclipsePrediction: null as EclipseData | null,
+      eclipsePrediction: null as EclipseData<Date> | null,
       eclipseStart: 0 as number | null,
       eclipseMid: 0 as number | null,
       eclipseEnd: 0 as number | null,
