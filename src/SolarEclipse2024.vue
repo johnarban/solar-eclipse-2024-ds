@@ -618,7 +618,13 @@
 
   <div
     id="main-content"
-  >
+  > 
+    {{  new Date(wwtCurrentTime) }}
+    {{  Math.round(10*wwtClockRate)/10 }}
+    <!-- make a dive that blinks at 1 Hz -->
+    <span
+      class="blink"
+    ></span>
     <WorldWideTelescope
       :wwt-namespace="wwtNamespace"
       @pointerdown="onPointerDown"
@@ -1265,10 +1271,10 @@
                 Real time
               </span>
               <span v-if="playbackRate!=1 && playing">
-                {{ playbackRate }}&times;
+                {{ Math.round(playbackRate * 10)/10 }}&times;
               </span>
               <span v-if="!playing">
-                ({{ playbackRate }}&times;) Paused
+                ({{ Math.round(playbackRate * 10)/10 }}&times;) Paused
               </span>
               <span v-if="playing && nearTotality && (playbackRate==10) && (oldPlaybackRate > 10)">
                 (Slowed for totality)
@@ -1959,6 +1965,7 @@ export default defineComponent({
   },
 
   mounted() {
+    
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.updateSelectedLocationText();
     }
@@ -3504,6 +3511,8 @@ export default defineComponent({
     
     nearTotality(near: boolean, oldNear: boolean) {
       if (near) {
+        console.log('oldPlaybackRate', this.oldPlaybackRate);
+        console.log('playbackRate at near', this.playbackRate);
         this.oldPlaybackRate = this.playbackRate;
         this.playbackRate = Math.min(this.playbackRate, 10);
       }
@@ -3530,6 +3539,7 @@ export default defineComponent({
       }
       this.updateFrontAnnotations(time);
     },
+
 
     location(loc: LocationRad, oldLoc: LocationRad) {
       const locationDeg: [number, number] = [R2D * loc.latitudeRad, R2D * loc.longitudeRad];
@@ -3659,8 +3669,9 @@ export default defineComponent({
       }
     },
     
-    playbackRate(val: number) {
-      
+    playbackRate(val: number, oldVal: number) {
+      this.oldPlaybackRate = oldVal;
+      console.log(`Playback rate: ${val}`);
       if (Math.abs(val) > 11_000) {
         console.warn('playbackRate too high, setting to maxPlaybackRate');
         this.playbackRate = Math.sign(val) * 10_000;
@@ -5332,5 +5343,22 @@ a {
     color: var(--accent-color);
   }
   
+}
+
+
+// this is class called blink that makes a span look like a round blinking circle period of 1 sec
+.blink {
+  animation: blinker 1s linear infinite;
+  border-radius: 50%;
+  width: 1em;
+  height: 1em;
+  background-color: #29ff29;
+  display: inline-block;
+}
+
+@keyframes blinker {
+  10% {
+    opacity: 0;
+  }
 }
 </style>

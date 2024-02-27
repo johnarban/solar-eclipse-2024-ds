@@ -235,11 +235,11 @@ export default defineComponent({
     
     isPaused: {
       get() {
-        console.log(this.paused);
+        console.log('PBC: isPaused get',this.paused);
         return this.paused;
       },
       set(val: boolean) {
-        console.log(val);
+        console.log('PBC: isPaused set',val);
         this.$emit('paused', val);
       }
     },
@@ -258,7 +258,6 @@ export default defineComponent({
 
     step(): number {
       const val = Math.abs(this.value) <= 1 ? 1 : 0.1;
-      console.log(val);
       return val;
     }
 
@@ -274,7 +273,7 @@ export default defineComponent({
       } else {
         val = symLog.fromSymLogIndex(val);
       }
-      this.$emit('update:modelValue', Math.round(val) );
+      this.$emit('update:modelValue', val );
     },
     
     modelValue(val: number) {
@@ -294,7 +293,8 @@ export default defineComponent({
       } else {
         val = symLog.fromSymLogIndex(this.value);
       }
-      this.$emit('update:modelValue', Math.round(val) );
+      console.log('reverseTime changed to', rt, val);
+      this.$emit('update:modelValue', val );
     },
   },
 });
