@@ -3683,7 +3683,7 @@ export default defineComponent({
         this.playbackRate = Math.sign(val) * 10_000;
       }
       
-      this.setClockRate(val < 0 ? val - 1 : val );
+      this.setClockRate(val === 1 ? 1 : val - 1 + 0.000000001 );
     },
     
 
