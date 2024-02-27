@@ -1271,10 +1271,10 @@
                 Real time
               </span>
               <span v-if="playbackRate!=1 && playing">
-                {{ Math.round(playbackRate * 10)/10 }}&times;
+                {{ niceRound(playbackRate) }}&times;
               </span>
               <span v-if="!playing">
-                ({{ Math.round(playbackRate * 10)/10 }}&times;) Paused
+                ({{ niceRound(playbackRate) }}&times;) Paused
               </span>
               <span v-if="playing && forceRate">
                 (Slowed for totality)
@@ -3449,6 +3449,25 @@ export default defineComponent({
 
     async updateSelectedLocationText() {
       this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
+    },
+    
+    niceRound(val: number) {
+      // rounding routine specifically for the playback rate
+      const abs = Math.abs(val);
+      
+      if (abs < 2.7) {
+        return val.toFixed(1);
+      }
+      
+      if (abs < 35) {
+        return val.toFixed(0);
+      }
+      
+      if (abs < 255) {
+        return Math.round(val / 10) * 10;
+      }
+      
+      return Math.round(val / 100) * 100;
     }
   },
 
