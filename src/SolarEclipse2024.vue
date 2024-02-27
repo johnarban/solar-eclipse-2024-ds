@@ -3521,7 +3521,7 @@ export default defineComponent({
     
     nearTotality(near: boolean, oldNear: boolean) {
       if (near) {
-        this.forceRate = true;
+        this.forceRate =  (Math.abs(this.playbackRate) > 10) && this.playing;
       }
       
       // if leaving eclipse reset speed to previous
@@ -3600,6 +3600,11 @@ export default defineComponent({
     playing(play: boolean) {
       console.log(`${play ? 'Playing:' : 'Stopping:'} at ${this.playbackRate}x real time`);
       this.setClockSync(play);
+      
+      if (this.nearTotality && play) {
+        this.forceRate = (Math.abs(this.playbackRate) > 10);
+      }
+      
     },
 
     showSplashScreen(val: boolean) {
