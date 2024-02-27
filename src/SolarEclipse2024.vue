@@ -2097,7 +2097,7 @@ export default defineComponent({
     
     selectedLocaledTimeDateString() {
       if (this.smallSize) {
-        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm');
+        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm:ss');
       } else {
         return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd/yyyy HH:mm:ss (zzz)');
       }
