@@ -2183,7 +2183,7 @@ export default defineComponent({
       return {
         '--accent-color': this.accentColor,
         '--sky-color': this.skyColorLight,
-        '--app-content-height': this.showInfoSheet ? '100%' : '100%',
+        '--app-content-height': this.showInfoSheet ? '100vh' : '100vh',
         '--top-content-height': this.showGuidedContent? this.guidedContentHeight : this.guidedContentHeight,
         '--moon-color': this.moonColor,
       };
@@ -5128,6 +5128,7 @@ video, #info-video {
   border-radius: 0.3em;
   font-size: calc(1 * var(--default-font-size));
   text-wrap: nowrap;  
+  width: fit-content;
 
   left: calc(100% + 1rem);
   top: 1.5rem;
