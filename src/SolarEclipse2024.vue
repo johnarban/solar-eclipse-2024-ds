@@ -1185,6 +1185,8 @@
                 location="top"
                 offset="40"
                 location-strategy="connected"
+                persistent
+                no-click-animation
                 >
                 <template v-slot:activator="{ props }">
                   <icon-button
@@ -1192,7 +1194,7 @@
                     @activate="() => {
                       playbackVisible = !playbackVisible;
                     }"
-                    :fa-icon="'gauge-high'"
+                    :fa-icon="playbackVisible ? 'times' : 'gauge-high'"
                     :color="accentColor"
                     :focus-color="accentColor"
                     tooltip-text="Time Controls"
