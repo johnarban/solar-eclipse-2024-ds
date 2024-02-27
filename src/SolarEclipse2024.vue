@@ -23,7 +23,7 @@
       }"
     >
     <template v-if="!showGuidedContent" v-slot:button>
-      Learn & Explore <font-awesome-icon icon="chevron-down" class="bullet-icon"/>
+      Map & Weather <font-awesome-icon icon="chevron-down" class="bullet-icon"/>
     </template>
   </icon-button>
   </div>
@@ -64,15 +64,30 @@
             <div class="instructions-text" v-if="learnerPath=='Location'">
 
               <span class="description">
+                <!-- <div v-if="infoPage==1">
+                  <div v-if="eclipsePrediction !== null" style="font-size: 10px; line-height: 1;">
+                  In totality: {{ locationInTotality ? "Yes" : "No" }} <br>
+                  Current fraction: {{ currentFractionEclipsed }} <br>
+                  Magnitude: {{ eclipsePrediction.magnitude[0] }} <br>
+                  Coverage:  {{ eclipsePrediction.coverage[0] }} <br>
+                  Partial start: {{ toTimeString(eclipsePrediction.partialStart[0], true) }} <br>
+                  <strong>Central start: {{ toTimeString(eclipsePrediction.centralStart[0], true ) }} <br>
+                  Max time: {{ toTimeString(eclipsePrediction.maxTime[0], true) }} <br>
+                  Central end: {{ toTimeString(eclipsePrediction.centralEnd[0], true ) }} </strong><br>
+                  Partial end: {{ toTimeString(eclipsePrediction.partialEnd[0], true) }} <br>
+                  Duration: {{ eclipsePrediction.duration }} <br>
+                  </div>
+                </div> -->
+                
                 <div v-if="infoPage==1">
-                  <p v-if="!queryData">
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" class="bullet-icon"/> to "watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
+                  <p v-if="queryData.latitudeDeg == undefined || queryData.longitudeDeg == undefined">
+                    "Watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
-                  <p v-if="queryData">
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="play" size="l" class="bullet-icon"/> to "watch" the eclipse from the location shared in your link.
+                  <p v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">
+                    "Watch" the eclipse from the location shared in your link, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
                   <p>
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData">other</span> location and view the eclipse from there.
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">other</span> location and view the eclipse from there.
                   </p>
                 </div>
 
@@ -83,7 +98,7 @@
                   <p>
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="share-nodes" class="bullet-icon"/>: copy url for a location
                   </p>
-                  <p>
+                  <p v-if="getMyLocation">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong>
                     <font-awesome-icon icon="street-view" class="bullet-icon"/>:
                     view eclipse from <strong>My Location</strong> (Location services must be enabled on device)
@@ -384,7 +399,7 @@
                     <details> 
                       <summary>How precise are location and timing predications in this Data Story?</summary>
                       <p>
-                        You may notice some discrepancies in the reported eclipse percentages or with eclipse start and end times compared with other predictions. For example, maximum eclipse percentages may display as &lt;100% near the inside edge of the eclipse path. This is caused by limitations in precision for the calculations used to display the locations and sizes of the Sun and Moon on your screen. Timing predictions in this Data Story should be accurate to within about a minute.
+                        You may notice some discrepancies in the reported eclipse percentages or with eclipse start and end times compared with other predictions. This is caused by limitations in precision for the calculations used to display the locations and sizes of the Sun and Moon on your screen. Totality timing predictions in this Data Story should be accurate to within about 15 seconds.
                       </p> 
                     </details>
                     
@@ -486,7 +501,7 @@
                               icon="play"
                               size="lg" 
                             ></font-awesome-icon>
-                        to move time forward at 100x the real speed.
+                        to move time forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
                       </li>
                       <li>
                         If playing, {{ touchscreen ? "tap" : "click" }} <font-awesome-icon
@@ -614,11 +629,12 @@
                             ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
                       </li>
                       <li>
-                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="street-view"
-                              size="lg" 
-                            ></font-awesome-icon> to use the view my <strong>My Location</strong>. (Consult your device's user guide to enable location services.)                     
+                        {{ touchscreen ? "Tap" : "Click" }}
+                        <font-awesome-icon
+                          class="bullet-icon"
+                          icon="street-view"
+                          size="lg" 
+                        ></font-awesome-icon> to view from <strong>My Location</strong>. (If icon is grayed out, consult your device's user guide to enable location services. This feature works most reliably on Chrome and might not be available on every browser+operating system combination.)                    
                       </li>
                     </ul>
 
@@ -630,9 +646,15 @@
               </v-row>
               <div id="text-credits">
                 <h3>Credits:</h3>
+                <p class="mt-2">Atmospheric Physicist <a href="https://www.cfa.harvard.edu/people/caroline-nowlan" target="_blank" rel="noopener noreferrer">Caroline Nowlan</a> provided valuable guidance on interpreting the <a href="https://neo.gsfc.nasa.gov/view.php?datasetId=MYDAL2_E_CLD_FR&date=2023-04-07"  target="_blank" rel="noopener noreferrer">MODIS Cloud Cover</a> data.</p> 
 
-                <p class="mt-2">This Cosmic Data Story is powered by WorldWide Telescope (WWT).</p>              
-                <p class="my-3">Image of Sun is courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.</p>
+                <p class="mt-3">The path of totality data are from <a href="https://svs.gsfc.nasa.gov/5123" target="_blank" rel="noopener noreferrer">NASA's Science Visualization Studio</a>.</p>
+
+                <p class="mt-3">Eclipse Timing Predictions are by <a href="https://eclipse.gsfc.nasa.gov/JSEX/JSEX-NA.html" target="_blank" rel="noopener noreferrer">Fred Espenak and Chris O'Byrne</a> (NASA's GSFC). <em>Adapted for TypeScript by CosmicDS Team</em></p>
+            
+                <p class="mt-3">Image of Sun is courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.</p>
+
+                <p class="my-3">This Cosmic Data Story is powered by WorldWide Telescope (WWT).</p>  
 
                 <h4><a href="https://www.cosmicds.cfa.harvard.edu/" target="_blank" rel="noopener noreferrer">CosmicDS</a> Team:</h4> 
                 
@@ -683,12 +705,14 @@
           faSize="1x"
         ></icon-button>
         <icon-button
+          v-if="getMyLocation"
+          class="geolocation-button"
           id="my-location"
           fa-icon="street-view"
-          :color="accentColor"
-          :focus-color="accentColor"
+          :color="myLocationColor"
+          :focus-color="myLocationColor"
           :box-shadow="false"
-          tooltip-text="Use my location"
+          :tooltip-text="myLocationToolTip"
           :show-tooltip="!mobile"
           @update:modelValue="(value: boolean) => {
             if(value) {
@@ -708,11 +732,8 @@
         <geolocation-button
           :color="accentColor"
           :show-text-progress = "true"
-          :hide-text = "true"
-          :showCoords = "false"
-          :hide-button = "true"
-          :requirePermission = "false"
-          :hasPermission = "true"
+          hide-button
+          show-progress-circle
           ref="geolocation"
           @geolocation="(loc: GeolocationCoordinates) => { 
             myLocation = {
@@ -730,10 +751,24 @@
               text: error.message,
               type: 'error',
             }); 
-            getMyLocation = false;
+            if (error.code === 1) {
+              geolocationPermission = 'denied';
+            }
             console.log(error);
             }"
-        />
+            @permission="(p: PermissionState) => {
+              geolocationPermission = p;
+              // we're always gonna show the button,
+              // just leaving this if we wanna change
+              if (p == 'granted') {
+                getMyLocation = true;
+              } else if (p == 'prompt') {
+                getMyLocation = true;
+              } else {
+                getMyLocation = true;
+              }
+            }"
+        ></geolocation-button>
       </div>
       
       <!-- <div id="mobile-zoom-control"> -->
@@ -981,20 +1016,11 @@
         </div>
       </div>
     </v-dialog>
+    
   
   <div id="top-wwt-content">
+    <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
       <div id="location-date-display">
-        <v-chip 
-          :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
-          variant="outlined"
-          size="small"
-          elevation="2"
-          :text="selectedLocationText"
-          @click="() => {
-            showGuidedContent = true; 
-            learnerPath = 'Location'
-            }"
-        > </v-chip>
         <v-chip 
           :prepend-icon="smallSize ? `` : `mdi-clouds`"
           v-if="mobile"
@@ -1010,6 +1036,17 @@
         elevation="2"
         :text="selectedLocaledTimeDateString"
       > </v-chip>
+      <v-chip 
+          :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
+          variant="outlined"
+          size="small"
+          elevation="2"
+          :text="selectedLocationText"
+          @click="() => {
+            showGuidedContent = true; 
+            learnerPath = 'Location'
+            }"
+        > </v-chip>
       </div>
       <div id="top-switches">
         <div id="track-sun-switch"> 
@@ -1038,15 +1075,7 @@
     </div>
     
     <div class="bottom-content">
-      <div id="eclipse-percent-chip">
-        <v-chip 
-          v-if="showEclipsePercentage"
-          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
-          variant="outlined"
-          elevation="2"
-          :text="percentEclipsedText"
-        > </v-chip>
-      </div>
+
       <div
         id="controls"
         class="control-icon-wrapper"
@@ -1102,7 +1131,17 @@
           </div>
         </transition-expand>
       </div>
-
+      
+      <div id="eclipse-percent-chip">
+        <v-chip 
+          v-if="showEclipsePercentage"
+          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
+          variant="outlined"
+          elevation="2"
+          :text="percentEclipsedText"
+        > </v-chip>
+      </div>
+      
       <div id="video-icon">
             <icon-button
             v-model="showVideoSheet"
@@ -1117,71 +1156,176 @@
         </div>
       <div id="tools">
         <span class="tool-container">
-          <div id="speed-control">
-            <icon-button
-              id="play-pause-icon"
-              :fa-icon="!(playing) ? 'play' : 'pause'"
+          <div style="position: relative">
+            <div id="speed-control">
+              <icon-button
+                id="reverse-speed"
+                :fa-icon="'angles-left'"
+                @activate="() => {
+                      decreasePlaybackRate();
+                      // playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                :tooltip-text="playbackRate < 0 ? 'Reverse Faster' : 'Reverse'"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+                id="play-pause-icon"
+                :fa-icon="!(playing) ? 'play' : 'pause'"
+                @activate="() => {
+                  playing = !(playing);
+                }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                tooltip-text="Play/Pause"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+                id="forward-speed"
+                :fa-icon="'angles-right'"
+                @activate="() => {
+                      increasePlaybackRate();
+                      // playing = true;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                :tooltip-text="playbackRate > 0 ? 'Faster' : 'Forward'"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+              <icon-button
+              v-if="false"
+              id="set-time-now-button"
               @activate="() => {
-                playing = !(playing);
+                // selectedTime = times.reduce((a, b) => {
+                //   return Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a;
+                // });
+                selectedTime = Date.now();
+                playbackRate=1;
+                playing = true;
+                console.log('to now')
               }"
               :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="Play/Pause"
+              tooltip-text="Go to current time"
               tooltip-location="top"
               tooltip-offset="5px"
-              faSize="1x"
               :show-tooltip="!mobile"
-            ></icon-button>
-            <icon-button
-              id="speed-down"
-              :fa-icon="'angle-double-down'"
-              @activate="() => {
-                    speedIndex -= 1;
-                    playbackRate = Math.pow(10, speedIndex);
-                    playing = true;
-                  }"
-              :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="10x slower"
-              tooltip-location="top"
-              tooltip-offset="5px"
-              faSize="1x"
-              :show-tooltip="!mobile"
-            ></icon-button>
-            <icon-button
-              id="speed-up"
-              :fa-icon="'angle-double-up'"
-              @activate="() => {
-                    speedIndex += 1;
-                    playbackRate = Math.pow(10, speedIndex);
-                    playing = true;
-                  }"
-              :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="10x faster"
-              tooltip-location="top"
-              tooltip-offset="5px"
-              faSize="1x"
-              :show-tooltip="!mobile"
-            ></icon-button>
-            <icon-button
-              id="reset"
-              :fa-icon="'rotate'"
-              @activate="() => {
-                    selectedTime = 1697292380000;
-                    speedIndex = 3;
-                    playbackRate = Math.pow(10, speedIndex);
-                    playing = false;
-                    toggleTrackSun = true;
-                  }"
-              :color="accentColor"
-              :focus-color="accentColor"
-              tooltip-text="Reset"
-              tooltip-location="top"
-              tooltip-offset="5px"
-              faSize="1x"
-              :show-tooltip="!mobile"
-            ></icon-button>
+            >
+              <template v-slot:button>
+                Now
+              </template>
+            </icon-button>
+              <icon-button
+                id="reset"
+                :fa-icon="'rotate'"
+                @activate="() => {
+                      const _totalEclipseTimeUTC = new Date('2024-04-08T18:18:00Z');
+                    selectedTime = _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5;
+                      playbackRate = 100;
+                      playing = false;
+                      toggleTrackSun = true;
+                      forceRate = false;
+                    }"
+                :color="accentColor"
+                :focus-color="accentColor"
+                border="none"
+                tooltip-text="Reset"
+                tooltip-location="top"
+                tooltip-offset="5px"
+                faSize="1x"
+                :show-tooltip="!mobile"
+              ></icon-button>
+                    
+              <v-dialog 
+                v-if="!xSmallSize" 
+                v-model="playbackVisible" 
+                :scrim="false"
+                location="top"
+                offset="40"
+                location-strategy="connected"
+                >
+                <template v-slot:activator="{ props }">
+                  <icon-button
+                    id="speed-control-icon"
+                    @activate="() => {
+                      playbackVisible = !playbackVisible;
+                    }"
+                    :fa-icon="'gauge-high'"
+                    :color="accentColor"
+                    :focus-color="accentColor"
+                    tooltip-text="Time Controls"
+                    tooltip-location="top"
+                    tooltip-offset="5px"
+                    faSize="1x"
+                    :show-tooltip="!mobile"
+                    v-bind="props"
+                  ></icon-button>
+                </template>
+                    <playback-control
+                    class="desktop-playback-control"
+                      v-if="playbackVisible"
+                      :model-value="playbackRateValue"
+                      @update:modelValue="(value: number) => {
+                        playbackRate = value;
+                        forceRate = nearTotality;
+                      }"
+                      :paused="!playing"
+                      @paused="playing = !$event"
+                      :max-power="3"
+                      :max="Math.log10(1000) + 1"
+                      :color="accentColor"
+                      :inline="false"
+                    /> 
+              </v-dialog>
+      
+
+                <div v-if="xSmallSize" id="inline-speed-control">
+                  <icon-button
+                    id="speed-control-icon"
+                    @activate="() => {
+                      playbackVisible = !playbackVisible;
+                    }"
+                    :fa-icon="playbackVisible ? 'times' : 'gauge-high'"
+                    :color="accentColor"
+                    :focus-color="accentColor"
+                    tooltip-text="Time Controls"
+                    tooltip-location="top"
+                    tooltip-offset="5px"
+                    faSize="1x"
+                    :show-tooltip="!mobile"
+                  ></icon-button>
+
+                    <playback-control
+                      class="mobile-playback-control"
+                      v-if="playbackVisible"
+                      :model-value="playbackRateValue"
+                      @update:modelValue="(value: number) => {
+                        playbackRate = value;
+                        forceRate = nearTotality;
+                      }"
+                      :paused="!playing"
+                      @paused="playing = !$event"
+                      :max-power="3"
+                      :max="Math.log10(1000) + 1"
+                      :color="accentColor"
+                      :inline="true"
+                      inline-button
+                      @close="() => {
+                        playbackVisible = false;
+                      }"
+                    /> 
+
+                </div>
+            </div>
             <div id="speed-text">
               Time rate: 
               <span v-if="playbackRate===1 && playing">
@@ -1191,28 +1335,32 @@
                 {{ playbackRate }}&times;
               </span>
               <span v-if="!playing">
-                Paused
+                ({{ playbackRate }}&times;) Paused
+              </span>
+              <span v-if="playing && nearTotality && (oldPlaybackRate > 10)">
+                (Slowed for totality)
               </span>
             </div>
           </div>
-          <v-slider
-            id="slider"
-            v-model='selectedTime'
-            :max="maxTime"
-            :min="minTime"
-            :color="accentColor"
-            :ripple="false"
-            hide-details
-            track-size="4px"
-            thumb-size="14px"
-            thumb-label="always"
-            :step="millisecondsPerInterval"
-            @mousedown="() => {playing = false;}"
-            >
-            <template v-slot:thumb-label="item">
-              {{ toTimeString(new Date(item.modelValue))  }}
-            </template>
-          </v-slider>
+          <div id="slider">
+            <v-slider
+              v-model='selectedTime'
+              :max="maxTime"
+              :min="minTime"
+              :color="accentColor"
+              :ripple="false"
+              hide-details
+              track-size="8px"
+              thumb-size="20px"
+              thumb-label="always"
+              :step="millisecondsPerInterval"
+              @mousedown="() => {playing = false;}"
+              >
+              <template v-slot:thumb-label="item">
+                {{ toTimeString(new Date(item.modelValue))  }}
+              </template>
+            </v-slider>
+          </div>
           <div id="change-optout">
             <icon-button
               md-icon="mdi-lock"
@@ -1227,28 +1375,6 @@
             >
             </icon-button>
           </div>
-          <icon-button
-            id="set-time-now-button"
-            @activate="() => {
-              // selectedTime = times.reduce((a, b) => {
-              //   return Math.abs(b - Date.now()) < Math.abs(a - Date.now()) ? b : a;
-              // });
-              selectedTime = Date.now();
-              speedIndex = 0;
-              playbackRate=1;
-              playing = true;
-              console.log('to now')
-            }"
-            :color="accentColor"
-            tooltip-text="Go to current time"
-            tooltip-location="top"
-            tooltip-offset="5px"
-            :show-tooltip="!mobile"
-          >
-            <template v-slot:button>
-              Now
-            </template>
-          </icon-button>
         </span>      
       </div>
       <div id="body-logos" v-if= "!smallSize">
@@ -1256,7 +1382,7 @@
       </div>
     </div>
 
-
+<!--  -->
     <!-- Data collection opt-out dialog -->
     <v-dialog
       scrim="false"
@@ -1301,7 +1427,7 @@
     </v-dialog>
 
   <notifications group="copy-url" position="center top" classes="url-notification"/>
-  <notifications group="geolocation-error" position="center top" />
+  <notifications dangerouslySetInnerHtml group="geolocation-error" position="center top" />
   </div>
 </v-app>
 </template>
@@ -1320,9 +1446,13 @@ import tzlookup from "tz-lookup";
 import { v4 } from "uuid";
 
 import { drawPlanets, drawSkyOverlays, getScreenPosForCoordinates, makeAltAzGridText, layerManagerDraw, updateViewParameters, renderOneFrame } from "./wwt-hacks";
+import pointInPolygon from 'point-in-polygon';
+
+import { recalculateForObserverUTC } from "./eclipse_predict";
+import { EclipseData } from "./eclipse_types";
+
 
 import { GeoJSON } from "leaflet";
-import { recalculateForObserverUTC, EclipseData } from "./eclipse_predict";
 
 
 type SheetType = "text" | "video" | null;
@@ -1333,6 +1463,20 @@ type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | `moon-sky-blue-
 
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
+
+// The field names here come from MapBox
+export interface MapBoxFeature {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  place_type: string[];
+  text: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  properties: { short_code: string; };
+}
+
+export interface MapBoxFeatureCollection {
+  type: "FeatureCollection";
+  features: MapBoxFeature[];
+}
 
 
 // number of milliseconds since January 1, 1970, 00:00:00 UTC
@@ -1387,12 +1531,22 @@ type HorizontalRad = {
   azRad: number;
 };
 
-let queryData: LocationDeg | null = null;
+type OptionalFieldsShallow<T> = {
+  [P in keyof T]?: T[P]
+};
+
+type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean }>;
+
+let queryData: QueryData = {};
 const USER_SELECTED = "User Selected" as const;
 const UUID_KEY = "eclipse-mini-uuid" as const;
 const OPT_OUT_KEY = "eclipse-mini-optout" as const;
 const USER_SELECTED_LOCATIONS_KEY = "user-selected-locations" as const;
 const PRESET_LOCATIONS_KEY = "preset-locations" as const;
+
+const RELEVANT_FEATURE_TYPES = ["postcode", "place", "region", "country"];
+const NA_COUNTRIES = ["United States", "Canada", "Mexico"];
+const NA_ABBREVIATIONS = ["US-", "CA-", "MX-"];
 
 import { dsvFormat } from "d3-dsv";
 import { eclipse } from "./eclipse_path";
@@ -1580,6 +1734,9 @@ cloudData = cloudData.slice(1).map(row => row.slice(1));
 
 console.log("cloud cover data loaded");
 
+/* READ IN Eclipse Umbra */
+import eclipseUmbra from "./assets/upath_hi.json";
+
 export default defineComponent({
   extends: MiniDSBase,
   
@@ -1624,8 +1781,15 @@ export default defineComponent({
 
     const selections = window.localStorage.getItem(USER_SELECTED_LOCATIONS_KEY);
     const userSelectedLocationsVisited: [number, number][] = selections ? (this.parseJSONString(selections) ?? []) : [];
-    if (queryData) {
-      userSelectedLocationsVisited.push([queryData.latitudeDeg, queryData.longitudeDeg]);
+    const [latitudeDeg, longitudeDeg] = [queryData.latitudeDeg, queryData.longitudeDeg];
+    
+    let initialMapOptions = initialView;
+    if (latitudeDeg !== undefined && longitudeDeg !== undefined) {
+      userSelectedLocationsVisited.push([latitudeDeg, longitudeDeg]);
+      initialMapOptions = {
+        initialLocation: { latitudeDeg, longitudeDeg },
+        initialZoom: 5
+      };
     }
 
     const presets = window.localStorage.getItem(PRESET_LOCATIONS_KEY);
@@ -1638,11 +1802,14 @@ export default defineComponent({
 
     const storedOptOut = window.localStorage.getItem(OPT_OUT_KEY);
     const responseOptOut = typeof storedOptOut === "string" ? storedOptOut === "true" : null;
+    const location: LocationRad = (latitudeDeg !== undefined && longitudeDeg !== undefined) ?
+      { latitudeRad: D2R * latitudeDeg, longitudeRad: D2R * longitudeDeg } :
+      { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
-      showSplashScreen: true,
+      showSplashScreen: queryData.splash ?? true, 
       backgroundImagesets: [] as BackgroundImageset[],
       sheet: null as SheetType,
       layersLoaded: false,
@@ -1653,9 +1820,10 @@ export default defineComponent({
       showTextTooltip: false,
       showMapSelector: false,
       showLocationSelector: false,
-      getMyLocation: false,
+      getMyLocation: true,
       myLocation: null as LocationDeg | null,
-
+      geolocationPermission: '' as 'granted' | 'denied' | 'prompt',
+      
       showWWTGuideSheet: false,
       
       selectionProximity: 4,
@@ -1666,14 +1834,9 @@ export default defineComponent({
       // "Greatest Eclipse"
       selectedTime:  _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5,
       selectedTimezone: "America/Mexico_City",
-      location: queryData ? {
-        latitudeRad: D2R * queryData.latitudeDeg,
-        longitudeRad: D2R * queryData.longitudeDeg
-      } : {
-        latitudeRad: D2R * 25.2866667,
-        longitudeRad: D2R * -104.1383333
-      } as LocationRad,
-      selectedLocation: queryData ? USER_SELECTED : "Greatest Eclipse",
+      location,
+      selectedLocation,
+      selectedLocationText: "Nazas, DUR",
       locationErrorMessage: "",
       
       syncDateTimeWithWWTCurrentTime: true,
@@ -1691,9 +1854,7 @@ export default defineComponent({
         ...initialView
       },
       
-      initialMapOptions: {
-        ...(queryData ? { ...queryData, initialZoom: 5 } : initialView)
-      },
+      initialMapOptions,
 
       userSelectedMapOptions: {
         // templateUrl: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png",
@@ -1739,7 +1900,7 @@ export default defineComponent({
         radius: 5
       },
 
-      learnerPath: (queryData ? "Clouds" : "Location") as LearnerPath,
+      learnerPath: "Location" as LearnerPath,
       
       playing: false,
       playingIntervalId: null as ReturnType<typeof setInterval> | null,
@@ -1748,7 +1909,7 @@ export default defineComponent({
       activePointer: false,
       showControls: true,
       sunCenteredTracking: true,
-      showAltAzGrid: true,
+      showAltAzGrid: false,
       showHorizon: true,
       showTextSheet: false, 
       showEclipsePercentage: true, 
@@ -1788,10 +1949,13 @@ export default defineComponent({
       useRegularMoon: false,
       moonTexture: 'moon-sky-blue-overlay.png' as MoonImageFile,
 
-      playbackRate: 1,
+      playbackRateValue: 1,
+      forceRate: false,
+      oldPlaybackRate: 1,
+      playbackVisible: false,
+      
       horizonRate: 100, 
       scopeRate: 100, 
-      speedIndex: 3,
 
       startPaused: false,
 
@@ -1803,13 +1967,14 @@ export default defineComponent({
       // the order is the layer order form bottom to top
       geojson: [
         {
-          url: 'https://raw.githubusercontent.com/johnarban/wwt_interactives/main/images/upath_hi.json',
+          geojson: eclipseUmbra as GeoJSON.GeometryCollection,
           style: {fillColor: '#333', weight: 1, opacity: 0, fillOpacity: 0.3, id:"upath"}
         },
         {
           url: 'https://raw.githubusercontent.com/johnarban/wwt_interactives/main/images/center.json',
           style: {color: '#ff0000', weight: 2, opacity: 1, fillOpacity: 0}
         },
+
         { // individual places
           'geojson': _eclipsePathGeoJson as GeoJSON.FeatureCollection,
           'style': {radius:3,fillColor: '#ccc', color:'#222', weight: 2, opacity: 1, fillOpacity: 1}
@@ -1832,7 +1997,10 @@ export default defineComponent({
       presetLocationsVisited,
       userSelectedLocationsVisited,
       eclipseGraph: [] as { x: number; y: number }[],
-      eclipsePrediction: [] as EclipseData[],
+      eclipsePrediction: null as EclipseData | null,
+      eclipseStart: 0 as number | null,
+      eclipseMid: 0 as number | null,
+      eclipseEnd: 0 as number | null,
     };
   },
 
@@ -1841,9 +2009,12 @@ export default defineComponent({
     const lat = parseFloat(searchParams.get("lat") ?? "");
     const lon = parseFloat(searchParams.get("lon") ?? "");
     if (lat && lon) {
-      queryData = { latitudeDeg: lat, longitudeDeg: lon };
+      queryData = {
+        latitudeDeg: lat, longitudeDeg: lon
+      };
     }
-
+    const splashQuery = searchParams.get("splash");
+    queryData.splash = splashQuery !== "false";
   },
 
   created() {
@@ -1856,11 +2027,12 @@ export default defineComponent({
           longitudeDeg: R2D * pl.longitudeRad
         };
       });
-
-
   },
 
   mounted() {
+    if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
+      this.updateSelectedLocationText();
+    }
     this.waitForReady().then(async () => {
 
       this.backgroundImagesets = [...skyBackgroundImagesets];
@@ -1920,7 +2092,10 @@ export default defineComponent({
       this.updateMoonTexture(true);
 
       this.updateWWTLocation();
-      this.setClockSync(false); // set to false to pause
+      
+      this.setClockSync(!queryData.splash); // set to true if queryData.splash == false
+      this.playing = !queryData.splash;
+
       this.setClockRate(1); //
 
       this.playbackRate = 1;  //this.setplaybackRate('8 minutes per second'); // 500;
@@ -2011,6 +2186,45 @@ export default defineComponent({
       }
       return "Outside Range";
 
+    },
+    
+    myLocationToolTip() {
+      if (this.geolocationPermission === 'denied') {
+        return "Geolocation disabled. Check browser and site permissions and reload page.";
+      } else if (this.geolocationPermission === 'prompt') {
+        return "Click to enable location permissions";
+      } else {
+        return "Use my location";
+      } 
+    },
+    
+    myLocationColor() {
+      console.log(this.geolocationPermission);
+      if (this.geolocationPermission === 'denied') {
+        return "grey";
+      }
+      
+      if (this.geolocationPermission === 'prompt') {
+        return "grey";
+      }
+      
+      if (this.geolocationPermission === 'granted') {
+        
+        if (this.myLocation) {
+          // check if location = myLocation. if not fade the color a bit.
+          if (
+            this.locationDeg.latitudeDeg === this.myLocation.latitudeDeg && this.locationDeg.longitudeDeg === this.myLocation.longitudeDeg
+          ) {
+            return this.accentColor;
+          } else {
+            return this.accentColor;
+          }
+        }
+      }
+      
+      return this.accentColor;
+      
+      
     },
 
     ready(): boolean {
@@ -2151,18 +2365,6 @@ export default defineComponent({
       return this.sunPosition.altRad > 0;
     },
 
-    selectedLocationText(): string {
-      if ((this.selectedLocation !== USER_SELECTED) && (this.selectedLocation !== 'My Location')) {
-        return this.selectedLocation;
-      } else {
-        const ns = this.locationDeg.latitudeDeg >= 0 ? 'N' : 'S';
-        const ew = this.locationDeg.longitudeDeg >= 0 ? 'E' : 'W';
-        const lat = Math.abs(this.locationDeg.latitudeDeg).toFixed(3);
-        const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
-        return `${lat}° ${ns}, ${lon}° ${ew}`;
-      }
-    },
-
     percentEclipsedText(): string {
       let percentEclipsed = Math.abs(this.currentFractionEclipsed * 100).toFixed(0);
       if (this.currentFractionEclipsed < 1 && percentEclipsed === "100") {
@@ -2189,6 +2391,59 @@ export default defineComponent({
     defaultRate(): number {
       return this.viewerMode === 'Horizon' ? this.horizonRate : this.scopeRate;
     },
+    
+    inEclipse(): boolean | null {
+      if (this.eclipsePrediction && this.eclipseStart != null && this.eclipseEnd != null) {
+        return this.wwtCurrentTime.getTime() >= this.eclipseStart && this.wwtCurrentTime.getTime() <= this.eclipseEnd;
+      } else {
+        return null;
+      }
+    },
+    
+    // before during or after the eclipse
+    eclipsePhase(): 'before' | 'during' | 'after' | null {
+      if (this.eclipsePrediction && this.eclipseStart != null && this.eclipseEnd != null) {
+        if (this.wwtCurrentTime.getTime() < this.eclipseStart) {
+          return 'before';
+        } else if (this.wwtCurrentTime.getTime() > this.eclipseEnd) {
+          return 'after';
+        } else {
+          return 'during';
+        }
+      } else {
+        return null;
+      }
+    },
+    
+    nearTotality(): boolean {
+      let nearEclipseMax = false;
+      if (this.eclipsePrediction) {
+        if (this.eclipsePrediction.maxTime[0]) {
+          nearEclipseMax = Math.abs(this.eclipsePrediction.maxTime[0].getTime() - this.wwtCurrentTime.getTime()) < 120_000;
+        }
+      }
+
+      // if the eclipse prediction isn't available fallback on the current fraction eclipsed
+      return this.locationInTotality && (nearEclipseMax || this.currentFractionEclipsed > .99);
+    },
+    
+    playbackRate: {
+      set(value: number) {
+        this.playbackRateValue = Math.sign(value) * Math.min(Math.abs(value), 5000);
+      },
+      get(): number {
+        return this.playbackRateValue;        
+      }
+    },
+    
+    locationInTotality() {
+      // check if the location is within eclipseUmbra path
+      const location = this.locationDeg;
+      const poly = eclipseUmbra.geometries[0].coordinates[0];
+      const point = [location.longitudeDeg, location.latitudeDeg];
+      return pointInPolygon(point, poly);
+    },
+
 
     showVideoSheet: {
       get(): boolean {
@@ -2544,7 +2799,16 @@ export default defineComponent({
           );
         fractionEclipsed = intersectionArea / sunArea;
       }
-      this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+      
+      let forceTotality = false;
+      if (this.locationInTotality && this.inEclipse) {
+        if (this.currentFractionEclipsed <= 1) {
+          this.currentFractionEclipsed = 1;
+          forceTotality = true;
+        }
+      } else {
+        this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+      }
 
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
       if (this.useRegularMoon) {
@@ -2552,15 +2816,13 @@ export default defineComponent({
       }
 
       const n = 50;
-      
       // If the moon/sun is completely "inside" of the sun/moon
-      if (moonInsideSun || sunInsideMoon) {
+      if (moonInsideSun || sunInsideMoon || forceTotality) {
         for (let i = 0; i <= n; i++) {
           const angle = (i / n) * 2 * Math.PI;
           points.push({ x: rMoonPx * Math.cos(angle), y: rMoonPx * Math.sin(angle) });
         }
       } else {
-
         let x1: number;
         let y1: number;
         let x2: number;
@@ -2656,6 +2918,8 @@ export default defineComponent({
         }
 
       }
+      
+      
 
       // We made a translation into the moon's frame, so undo that
       for (let i = 0; i < points.length; i++) {
@@ -2679,6 +2943,7 @@ export default defineComponent({
       overlay.set_lineColor(color);
       locations.forEach(pt => overlay.addPoint(pt.ra, pt.dec));
       Annotation2.addAnnotation(overlay);
+      
     },
 
 
@@ -2710,8 +2975,14 @@ export default defineComponent({
         if (!blueMoon) {
           filename = "moon-dark-gray-overlay.png";
         } else {
-          const skyOpacity = Math.max(Math.min(this.skyOpacity, 1), 0);
-          const opacityToUse = Math.round(skyOpacity * 2) * 50;
+          let opacityToUse = 100;
+          if (this.skyOpacity > 0.8) {
+            opacityToUse = 100;
+          } else if (this.skyOpacity <= 0.8 && this.skyOpacity >0.7) {
+            opacityToUse = 20;
+          } else {
+            opacityToUse = 10;
+          }
           filename = `moon-sky-blue-overlay-${opacityToUse}.png`;
         }
       }
@@ -2766,9 +3037,17 @@ export default defineComponent({
       return `${hours != 0 ? hours : 12}:${minuteString} ${ampm}`;
     },
 
-    toTimeString(date: Date) {
+    toTimeString(date: Date | null, seconds = false, utc = false) {
       // return this.toLocaleTimeString(date);
-      return formatInTimeZone(date, this.selectedTimezone, 'HH:mm aaa (zzz)');
+
+      if (date === null) {
+        return "";
+      }
+      
+      if (seconds) {
+        return formatInTimeZone(date, utc ? 'UTC' : this.selectedTimezone, 'h:mm:ss aaa (zzz)');
+      }
+      return formatInTimeZone(date, utc ? 'UTC' : this.selectedTimezone, 'h:mm aaa (zzz)');
     },
     
     toUTCHMS(date: Date) {
@@ -3090,6 +3369,8 @@ export default defineComponent({
         this.setTime(this.dateTime);
       }
       this.updateFrontAnnotations(this.dateTime);
+      // check if the time is within the range of the eclipse
+      // }
     },
 
     updateFrontAnnotations(when: Date | null = null) {
@@ -3133,7 +3414,7 @@ export default defineComponent({
     startHorizonMode() {
       // turn on local horizon mode
       this.wwtSettings.set_localHorizonMode(true);
-      this.showAltAzGrid = true;
+      this.showAltAzGrid = false;
       this.skyColor = this.skyColorLight;
       this.showHorizon = true; // automatically calls it's watcher and updates horizon
       this.horizonOpacity = 1;
@@ -3222,7 +3503,7 @@ export default defineComponent({
       const sunAlt = altRad;
       let dssOpacity = 0;
       this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      this.skyOpacity = this.skyOpacity * (1 - 0.75 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
+      this.skyOpacity = this.skyOpacity * (1 - 0.5 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
       dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
     
       this.updateMoonTexture();
@@ -3230,36 +3511,6 @@ export default defineComponent({
       this.setForegroundOpacity(dssOpacity * 100);
     },
 
-    getplaybackRate(rate: string) {
-      // console.log('setplaybackRate', rate);
-      // parse a string that looks like "x [time] per y [time]"
-      // e.g. "1 second per 1 minute"
-      // returns a number that is the ratio of the two times converted to seconds/seconds
-      // e.g. 1/60
-      // if the string is not parseable, returns 1
-      function unitToSec(unitString: string): number {
-        if (unitString[0] == 'h') {
-          return 3600;
-        } else if (unitString[0] == 'm') {
-          return 60;
-        } else if (unitString[0] == 's') {
-          return 1;
-        } else {
-          return 0;
-        }
-      }
-      
-      // parse string
-      const parsedString = rate.match(/(\d+(\.(\d+)?)?)\s(\w+)\sper\s(\d+(\.(\d+)?)?)?\s?(\w+)/);
-
-      if (parsedString === null) {
-        return 1;
-      }
-      const num1 = parseInt(parsedString[1]) * unitToSec(parsedString[4]);
-      const num2 = (parseInt(parsedString[5]?? 1) ) * unitToSec(parsedString[8]);
-      
-      return num1 / num2;
-    },
   
     copyShareURL() {
       const baseURL = `${window.location.origin}${window.location.pathname}`;
@@ -3305,11 +3556,118 @@ export default defineComponent({
     },
     
     getEclipsePrediction() {
-      
       const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100);
-      this.eclipsePrediction = eclipsePrediction;
+      this.eclipsePrediction = eclipsePrediction[0];
+      if (this.eclipsePrediction.centralStart[0]) {
+        this.eclipseStart = this.eclipsePrediction.centralStart[0].getTime();
+      } else if (this.eclipsePrediction.partialStart[0]) {
+        this.eclipseStart = this.eclipsePrediction.partialStart[0].getTime();
+      } else {
+        this.eclipseStart = null;
+      }
+      
+      if (this.eclipsePrediction.centralEnd[0]) {
+        this.eclipseEnd = this.eclipsePrediction.centralEnd[0].getTime();
+      } else if (this.eclipsePrediction.partialEnd[0]) {
+        this.eclipseEnd = this.eclipsePrediction.partialEnd[0].getTime();
+      } else {
+        this.eclipseEnd = null;
+      }
+      
+      // this means there is not eclipse at this location
+      if (this.eclipsePrediction.maxTime[0]) {
+        this.eclipseMid = this.eclipsePrediction.maxTime[0].getTime();
+      } else {
+        this.eclipseMid = null;
+      }
+      
+    },
+    
+
+    mapboxLocationText(location: MapBoxFeatureCollection): string {
+      const relevantFeatures = location.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
+      const placeFeature = relevantFeatures.find(feature => feature.place_type.includes("place")) ?? (relevantFeatures.find(feature => feature.place_type.includes("postcode")) ?? null);
+      const pieces: string[] = [];
+      if (placeFeature && placeFeature.text) {
+        pieces.push(placeFeature.text);
+      }
+      const countryFeature = relevantFeatures.find(feature => feature.place_type.includes("country"));
+      if (countryFeature) {
+        let countryText: string | null = countryFeature.text;
+        if (NA_COUNTRIES.includes(countryText)) {
+          countryText = null;
+          const regionFeature = relevantFeatures.find(feature => feature.place_type.includes("region"));
+          if (regionFeature) {
+            let stateCode = regionFeature.properties.short_code as string;
+            if (stateCode) {
+              if (NA_ABBREVIATIONS.some(abbr => stateCode.startsWith(abbr))) {
+                stateCode = stateCode.substring(3);
+              }
+              pieces.push(stateCode);
+            }
+          }
+        }
+        if (countryText) {
+          pieces.push(countryText);
+        }
+      }
+      return pieces.join(", ");
     },
 
+    async textForLocation(longitudeDeg: number, latitudeDeg: number): Promise<string> {
+      const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitudeDeg},${latitudeDeg}.json?access_token=${accessToken}`;
+      const mapBoxText = await fetch(url)
+        .then(response => response.json())
+        .then((result: MapBoxFeatureCollection) => {
+          if (result.features.length === 0) {
+            return null;
+          }
+          return this.mapboxLocationText(result);
+        })
+        .catch((_err) => null);
+      if (mapBoxText) {
+        return mapBoxText;
+      } else {
+        const ns = this.locationDeg.latitudeDeg >= 0 ? 'N' : 'S';
+        const ew = this.locationDeg.longitudeDeg >= 0 ? 'E' : 'W';
+        const lat = Math.abs(this.locationDeg.latitudeDeg).toFixed(3);
+        const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
+        return `${lat}° ${ns}, ${lon}° ${ew}`;
+      }
+    },
+    
+    decreasePlaybackRate() {
+      this.forceRate = this.nearTotality;
+      const sign = Math.sign(this.playbackRate);
+      if (sign > 0 ) {
+        this.playbackRate = -Math.min(this.playbackRate,100);
+        return;
+      }
+      const abs = Math.abs(this.playbackRate);
+      let ezrate = Math.floor(Math.log10(abs));
+      ezrate -= sign * 1;
+      this.playbackRate = sign * Math.pow(10, Math.abs(ezrate));
+    },
+    
+    increasePlaybackRate() {
+      this.forceRate = this.nearTotality;
+      if (Math.sign(this.playbackRate) < 0 ) {
+        this.playbackRate = -Math.max(this.playbackRate,-100);
+        return;
+      }
+      const sign = Math.sign(this.playbackRate);
+      const abs = Math.abs(this.playbackRate);
+      let ezrate = Math.floor(Math.log10(abs));
+      ezrate += sign * 1;
+      this.playbackRate = sign * Math.pow(10, Math.abs(ezrate));
+    },
+    
+    
+
+    async updateSelectedLocationText() {
+      this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
+    }
   },
 
   watch: {
@@ -3330,8 +3688,11 @@ export default defineComponent({
     },
 
     inIntro(value: boolean) {
-      if (!value && !this.showSplashScreen && this.responseOptOut === null) {
-        this.showPrivacyDialog = true;
+      if (!value) {
+        this.playing = true;
+        if (!this.showSplashScreen && this.responseOptOut === null) {
+          this.showPrivacyDialog = true;
+        }
       }
     },
 
@@ -3379,15 +3740,29 @@ export default defineComponent({
     selectedTime(_time: number) {
       return;
     },
+    
+    nearTotality(near: boolean, oldNear: boolean) {
+      if (near) {
+        this.oldPlaybackRate = this.playbackRate;
+        this.playbackRate = Math.min(this.playbackRate, 10);
+      }
+      
+      if (oldNear && !near) {
+        this.playbackRate = this.oldPlaybackRate;
+      }
+    },
+
 
     wwtCurrentTime(time: Date) {
+      
+      if (this.forceRate && !this.nearTotality && (this.eclipsePhase === 'after')) {
+        this.forceRate = false;
+      }
+
       if (time.getTime() >= this.maxTime || time.getTime() < this.minTime) {
         if (this.playing) {
           this.playing = false;
           this.selectedTime = this.minTime;
-          // setTimeout(() => {
-          //   this.playing = true;
-          // }, 1000);
         }
         
         return;
@@ -3406,10 +3781,12 @@ export default defineComponent({
       this.playing = false;
       // this.sunOffset = null;
       this.updateWWTLocation();
+      this.updateSelectedLocationText();
 
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
       this.wwtControl.renderOneFrame();
+      this.getEclipsePrediction();
       this.updateFrontAnnotations();
 
       this.getEclipseGraph();
@@ -3487,6 +3864,7 @@ export default defineComponent({
     
     currentFractionEclipsed(_frac: number) {
       // this.skyOpacity = 1 - frac;
+      this.updateSkyOpacityForSunAlt(this.sunPosition.altRad);
       this.updateFrontAnnotations();
     },
 
@@ -3526,20 +3904,27 @@ export default defineComponent({
     
     playbackRate(val: number) {
       
-      if (val > 11_000) {
+      if (Math.abs(val) > 11_000) {
         console.warn('playbackRate too high, setting to maxPlaybackRate');
-        this.speedIndex = 4;
-        this.playbackRate = 10_000;
+        this.playbackRate = Math.sign(val) * 10_000;
       }
-
-      if (val < .1) {
-        console.warn('playbackRate too low, setting to minPlaybackRate');
-        this.speedIndex = -1;
-        this.playbackRate = .1;
-      }
+      
+      // if (val < .1) {
+      //   console.warn('playbackRate too low, setting to minPlaybackRate');
+      //   this.playbackRate = .1;
+      // }
       
       this.setClockRate(val);
     },
+    
+    // eclipsePhase(val: 'before' | 'during' | 'after' | null) {
+    //   if (this.forceRate) {
+    //     if (val === 'before' || val === 'after') {
+    //       this.forceRate = false;
+    //     }
+    //   }
+      
+    // }
 
   },
 });
@@ -3556,6 +3941,7 @@ export default defineComponent({
 :root {
   --default-font-size: clamp(0.7rem, min(1.7vh, 1.7vw), 1.1rem);
   --default-line-height: clamp(1rem, min(2.2vh, 2.2vw), 1.6rem);
+  --time-content-max-width: 700px;
 }
 
 html {
@@ -3617,9 +4003,21 @@ body {
     user-select: none;
   }
 
-  
+  #my-location-button {
+    border-width: 2px;
+  }
 }
 
+
+#test-content {
+  position: absolute;
+  width: 50%;
+  height: 60%;
+  padding: 1em;
+  top: 5%;
+  left: 5%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
 
 
 #app {
@@ -3769,6 +4167,9 @@ body {
   .icon-wrapper {
     padding-inline: calc(0.3 * var(--default-line-height));
     padding-block: calc(0.4 * var(--default-line-height));
+  }
+  
+  .icon-wrapper:not(#my-location-button) {
     border: 2px solid var(--accent-color);
   }
 }
@@ -3840,7 +4241,7 @@ body {
   right: 0.5rem;
   width: calc(100% - 1rem);
   pointer-events: none;
-  align-items: center;
+  align-items: flex-end;
   gap: 5px;
   // outline: 1px solid lime;
 }
@@ -3873,11 +4274,17 @@ body {
   align-items: center;
   gap: 5px;
   pointer-events: auto;
+  
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
   div.icon-wrapper {
     padding: 5px 5px;
     min-width: 30px;
   }
+  
 }
 
 #controls {
@@ -3888,7 +4295,6 @@ body {
   border: solid 1px var(--accent-color);
   display: flex;
   flex-direction: column;
-  align-self: flex-end;
   pointer-events: auto;
 
   .v-label {
@@ -4432,11 +4838,9 @@ video, #info-video {
 }
 
 // Styling the slider
-
-
-.v-slider {
+#slider .v-slider {
   .v-slider-track {
-    --v-slider-track-size: 4px !important;
+    // --v-slider-track-size: 4px !important;
 
     .v-slider-track__background {
       background-color: #CCC !important;
@@ -4481,9 +4885,10 @@ video, #info-video {
 
 #slider {
   width: 100% !important;
-  margin-block: 30px;
   margin-left: 5px;
   margin-right: 0;
+  position: relative
+  
 }
 
 .v-container {
@@ -4500,7 +4905,7 @@ video, #info-video {
       left: 0.5rem;
       @media (max-width: 599px) {
         left: 0.5rem;
-        top: 2.5rem;
+        top: .75rem;
       }
     }
   }
@@ -4892,8 +5297,13 @@ video, #info-video {
 #speed-control {
   display: flex;
   flex-direction: row;
+  align-items: flex-end;
   gap: 5px;
   margin-left: 10px;
+  
+  @media (max-width: 370px) {
+    justify-content: center;
+  }
 
   .icon-wrapper {
     padding-inline: calc(0.3 * var(--default-line-height));
@@ -4903,31 +5313,76 @@ video, #info-video {
 
 }
 
+#enclosing-playback-container.desktop-playback-control {
+  --tick-font-size: 12px;
+  margin-bottom: calc(2.5rem + 5px);
+  padding-right: 1rem;
+  
+}
+
+#enclosing-playback-container.inset.mobile-playback-control {
+  padding-right: 1rem;
+}
+
+#enclosing-playback-container > #playback-play-pause-button {
+  pointer-events: auto!important;
+}
+
+#inline-speed-control {
+  display: flex; 
+  flex-grow:1; 
+  align-items: flex-end; 
+  position: relative; 
+  gap: 5px;
+  
+  // when the screen is small enough we want to hide the buttons in inline mode
+  @media (min-width: 369px) {
+    #enclosing-playback-container > #playback-play-pause-button {
+      display: none;
+    }
+    
+    #enclosing-playback-container > #playback-close-button {
+      display: none;
+    }
+  }
+  // when small enough we want to cover the controls
+  @media (max-width: 370px) {
+    // position: absolute;
+    flex-grow: 0;
+    #enclosing-playback-container.mobile-playback-control {
+      position: fixed;
+      width: calc(90% - 1rem);
+      left: 50%;
+      --off: calc(50% - 5px);
+      transform: translateX(-50%) translateY(var(--off)) !important;
+    }
+  }
+}
+
 #speed-text {
   position: absolute;
-
   background-color: rgba(0, 0, 0, 0.5);
   padding-inline: 0.4em;
   padding-block: 0.15em;
   border-radius: 0.3em;
+  font-size: calc(1 * var(--default-font-size));
+  text-wrap: nowrap;  
 
-  @media (max-width: 959px) {
-    bottom: -0.4rem;
-    left: 9.5rem;
+  left: calc(100% + 1rem);
+  top: 1.5rem;
+  
+  @media (max-width: 600px) {
+    position: relative;
+    top: 3rem;
+    left: 0.5rem;
+    display: inline;
   }
-  @media (min-width: 960px) {
-    bottom: 0.3rem;
-    left: 0.3rem;
-  }
-
-
-  font-size: var(--default-font-size)
-  }  
+}
 
 #eclipse-percent-chip {
-  position: absolute;
-  right: 0.5rem;
-  top: calc(-1.5 * var(--default-line-height));
+  // position: absolute;
+  // right: 0.5rem;
+  // top: calc(-1.5 * var(--default-line-height));
 
   .v-chip.v-chip--density-default {
     height: var(--default-line-height);
@@ -4953,7 +5408,16 @@ video, #info-video {
     justify-content: flex-end;
     flex-wrap: column;
     gap:5px;
-
+    
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    
+    @media (max-width: 250px) {
+      padding-top: 3.5em;
+    }
+    
     @media (max-width: 700px) {
       .v-chip.v-chip--density-default {
         height: var(--default-line-height);
@@ -5036,11 +5500,16 @@ video, #info-video {
 }
 
 #change-optout {
-
+  
+  @media (max-width: 600px) {
+    position: absolute;
+    bottom: -0.5rem ;
+    right: 0.5rem;
+  }
+  
   .icon-wrapper {
     margin: 0;
-    padding-inline: 0;
-    padding-block: 0;
+    padding: 0.15em;
     border: none;
     min-width: 0;
   }
