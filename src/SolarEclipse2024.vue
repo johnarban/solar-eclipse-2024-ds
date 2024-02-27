@@ -2580,7 +2580,13 @@ export default defineComponent({
           forceTotality = true;
         }
       } else {
-        this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+        const cfe = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+        if (cfe == 1) {
+          // force a lower value to hide corona
+          this.currentFractionEclipsed = .999;
+        } else {
+          this.currentFractionEclipsed = cfe;
+        }
       }
 
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
@@ -3271,7 +3277,11 @@ export default defineComponent({
       const sunAlt = altRad;
       let dssOpacity = 0;
       this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      this.skyOpacity = this.skyOpacity * (1 - 0.5 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
+      let frac = this.currentFractionEclipsed;
+      if (this.locationInTotality && !this.inEclipse) {
+        frac = frac > 0.98 ? 0.98 : frac;
+      }
+      this.skyOpacity = this.skyOpacity * (1 - 0.5 * Math.pow(Math.E,-Math.pow((frac -1),2)/(0.001)));
       dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
     
       this.updateMoonTexture();
