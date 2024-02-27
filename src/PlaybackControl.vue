@@ -2,7 +2,7 @@
   <div id="enclosing-playback-container" :style="cssVars">
     
     <!-- add a close box -->
-    <div v-if="inline && inlineButton" id="playback-close-button" @click="$emit('close')">
+    <div v-if="(inline && inlineButton) || showCloseButton" id="playback-close-button" @click="$emit('close')">
         <v-icon :color="color" size="18">mdi-close</v-icon>
     </div>
     
@@ -127,7 +127,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    
+    showCloseButton: {
+      type: Boolean,
+      default: false,
+    },
     
   },
 
@@ -315,8 +318,27 @@ export default defineComponent({
   
   // no close button normally
   #playback-close-button {
-    display: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transform: translate(125%, 0);
+    
+    border-radius: 50%;
+    padding: 2px;
+
+    pointer-events: auto;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color);
+    background-color: black;
+    color: var(--color);
   }
+    
+  // #playback-close-button {
+  //   display: none;
+  // }
   
   &.inset {
     padding: 0;
@@ -340,24 +362,7 @@ export default defineComponent({
       padding-inline-start: 0.5rem;
     }
     
-    #playback-close-button {
-      position: absolute;
-      right: 0;
-      top: 0;
-      transform: translate(125%, 0);
-      
-      border-radius: 50%;
-      padding: 2px;
-
-      pointer-events: auto;
-      
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--color);
-      background-color: black;
-      color: var(--color);
-    }
+    
     
   }
   

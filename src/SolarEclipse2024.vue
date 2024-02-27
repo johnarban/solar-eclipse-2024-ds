@@ -1219,6 +1219,10 @@
                       :max="Math.log10(1000) + 1"
                       :color="accentColor"
                       :inline="false"
+                      show-close-button
+                      @close="() => {
+                        playbackVisible = false;
+                      }"
                     /> 
               </v-dialog>
       
