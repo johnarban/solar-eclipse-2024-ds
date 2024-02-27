@@ -619,12 +619,6 @@
   <div
     id="main-content"
   > 
-    {{  new Date(wwtCurrentTime) }}
-    {{  Math.round(10*wwtClockRate)/10 }}
-    <!-- make a dive that blinks at 1 Hz -->
-    <span
-      class="blink"
-    ></span>
     <WorldWideTelescope
       :wwt-namespace="wwtNamespace"
       @pointerdown="onPointerDown"
@@ -1212,7 +1206,7 @@
                     <playback-control
                     class="desktop-playback-control"
                       v-if="playbackVisible"
-                      :model-value="playbackRateValue"
+                      :model-value="playbackRate"
                       @update:modelValue="(value: number) => {
                         forceRate = false;
                         playbackRate = value;
@@ -1245,8 +1239,8 @@
 
                     <playback-control
                       class="mobile-playback-control"
-                      v-if="playbackVisible"
-                      :model-value="playbackRateValue"
+                      v-show="playbackVisible"
+                      :model-value="playbackRate"
                       @update:modelValue="(value: number) => {
                         forceRate = false;
                         playbackRate = value;

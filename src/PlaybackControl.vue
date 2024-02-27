@@ -132,7 +132,6 @@ export default defineComponent({
   },
 
   mounted() {
-    this.value = this.symlog.toSymlogIndex(this.modelValue);
     // Do something when the component is mounted
     // get height of v-input_container
     const container = document.getElementById('playback-slider-container');
@@ -195,11 +194,8 @@ export default defineComponent({
       data: ['a', 'b', 'c'],
       symlog: symLog,
       index: symLog.sequence(this.maxPower).filter(v => v > 0),
-      // eslint-disable-next-line vue/no-reserved-keys
       myTicks: symmLinspace(1, Math.pow(10,this.maxPower), 2).map((val) => symLog.toSymlogIndex(val)),
       useBuiltInTicks: true,
-      reverseTime: false,
-      value: 1,
     };
   },
 
@@ -259,44 +255,33 @@ export default defineComponent({
     step(): number {
       const val = Math.abs(this.value) <= 1 ? 1 : 0.1;
       return val;
-    }
-
-
-
-  },
-
-  watch: {
-    // Define the watch properties here
-    value(val: number) {
-      if (this.reverseTime) {
-        val = -symLog.fromSymLogIndex(val);
-      } else {
-        val = symLog.fromSymLogIndex(val);
+    },
+    
+    value: {
+      get() {
+        return Math.abs(symLog.toSymlogIndex(this.modelValue));
+      },
+      
+      set(val: number) {
+        const abs = symLog.fromSymLogIndex(val);
+        const sign = this.reverseTime ? -1 : 1;
+        this.$emit('update:modelValue', sign * abs);
       }
-      this.$emit('update:modelValue', val );
     },
     
-    modelValue(val: number) {
-      this.reverseTime = val < 0;
-      this.value = Math.abs(symLog.toSymlogIndex(val));
-    },
-    
-    paused(val: boolean) {
-      console.log('paused changed to', val);
-    },
-    
-    
-    reverseTime(rt: boolean) {
-      let val = 0;
-      if (rt) {
-        val = -symLog.fromSymLogIndex(this.value);
-      } else {
-        val = symLog.fromSymLogIndex(this.value);
+    reverseTime: {
+      get() {
+        return this.modelValue < 0;
+      },
+      set(rt: boolean) {
+        const val = symLog.fromSymLogIndex(this.value);
+        this.$emit('update:modelValue', rt ? -val : val);
       }
-      console.log('reverseTime changed to', rt, val);
-      this.$emit('update:modelValue', val );
     },
-  },
+
+
+
+  }
 });
 
 </script>
