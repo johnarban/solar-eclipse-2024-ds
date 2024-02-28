@@ -2904,7 +2904,7 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           user_uuid: this.uuid, 
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          preset_locations: toRaw(this.presetLocationsVisited), user_selected_locations: toRaw(this.userSelectedLocationsVisited)
+          user_selected_locations: toRaw(this.userSelectedLocationsVisited)
         })
       });
     },
