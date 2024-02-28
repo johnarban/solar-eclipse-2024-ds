@@ -1373,7 +1373,7 @@
 
 <script lang="ts">
 import { defineComponent, toRaw, PropType } from "vue";
-import { MiniDSBase, BackgroundImageset, skyBackgroundImagesets, MINIDS_BASE_URL } from "@cosmicds/vue-toolkit";
+import { MiniDSBase, BackgroundImageset, skyBackgroundImagesets, API_BASE_URL } from "@cosmicds/vue-toolkit";
 import { GotoRADecZoomParams } from "@wwtelescope/engine-pinia";
 import { Classification, SolarSystemObjects } from "@wwtelescope/engine-types";
 import { Folder, Grids, LayerManager, Planets, Poly, Settings, WWTControl, Place, Texture, CAAMoon } from "@wwtelescope/engine";
@@ -2893,7 +2893,7 @@ export default defineComponent({
       if (this.responseOptOut) {
         return;
       }
-      fetch(`${MINIDS_BASE_URL}/solar-eclipse-2024/response`, {
+      fetch(`${API_BASE_URL}/solar-eclipse-2024/response`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
