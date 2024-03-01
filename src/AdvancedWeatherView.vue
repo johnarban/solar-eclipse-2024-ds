@@ -51,8 +51,8 @@
                   <select-all 
                     v-if="selectedStat !== 'singleyear'"
                     :options-map="mapSubsets"
-                    @selected="(s) => console.log('selected', s)"
-                    @selectAll="(s) => console.log('selectAll', s)"
+                    @selected="(s) => {console.log('selected',s); if (s) {elNinoPreference = s[0] as ElNinoPreference;}}"
+                    @selectAll="(s) => {console.log('selectAll',s); if (s) {elNinoPreference = 'allYears'};}"
                     density="compact"
                     select-all-top
                     color="#eac402"
@@ -116,7 +116,9 @@
               :place-circle-options="placeCircleOptions"
               :selected-circle-options="selectedCircleOptions"
               :selected-cloud-cover="displayedCloudData"
+              :rectangle-degrees="0.5"
               show-cloud-cover
+              @dataclick="selectedDataIndex = $event.index"
               />
               
               <v-radio-group 
@@ -151,13 +153,21 @@
             :histogram-data="cloudDataHistogram"
             :labels="skyCoverCodes"
             :colors="colorMap"
-            :title="`Cloud Conditions for ${selectedYear}`"
+            :title="`Cloud Conditions for ${allYears[0]} - ${allYears[allYears.length - 1]}`"
             />
           </v-col>
           <v-col cols="12" sm="6" class="graph-col">
           <line-chart
             class="elevation-5"
-            :scatter-data="yearForLocation"
+            :scatter-data="cloudDataNearLocation"
+            :y-range="[-.1,1.1]"
+            :x-range="[new Date(2003, 1, 8), new Date(2023, 7, 8)]"
+
+            :y-axis-options="{
+              ticks: {callback: (value: number, index: number) => {
+                        if (value < 0 || value > 1) {return;}
+                        return (value * 100).toFixed(0) + '%';
+                        }}}"
             timeseries
             color="blue"
             show-scatter
@@ -192,7 +202,6 @@ import {isNumber, toOrderedPairs, fromOrderedPairs, elementWise, OrderedPair, ro
 type LineGraphData = OrderedPair<number | Date, number>[];
 import { csvParseRows } from "d3-dsv";
 
-
 type CityLocation = {
   longitudeDeg: number;
   latitudeDeg: number;
@@ -223,6 +232,22 @@ const statText = new Map([
   ['singleyear', 'Single Year'],
 ]) as Map<Statistics, string>;
 
+function getStat(val: CloudSummaryData, stat: Exclude<Statistics,'singleyear'>): number {
+  if (stat === 'mean') {
+    return val.mean;
+  }
+  if (stat === 'median') {
+    return val.median;
+  }
+  if (stat === 'max') {
+    return val.max;
+  }
+  if (stat === 'min') {
+    return val.min;
+  }
+  return -1;
+}
+
 const mapSubsets = new Map([
   ['elNino', 'El Niño Years'],
   ['noElNino', 'Non El Niño Years'],
@@ -252,6 +277,33 @@ interface CloudDataElement {
 
 type CloudData = CloudDataElement[];
 
+type CloudSummaryData = {
+  lat: number;
+  lon: number;
+  mean: number;
+  median: number;
+  mode: number;
+  max: number;
+  min: number;
+  cloudCover?: number;
+};
+
+// latitude,longitude,mean_cloud_cover,median_cloud_cover,mode_cloud_cover,min_cloud_cover,max_cloud_cover,inside_us
+// type CloudSummaryCSV = {
+//   latitude: number;
+//   longitude: number;
+//   // eslint-disable-next-line @typescript-eslint/naming-convention
+//   mean_cloud_cover: number;
+//   // eslint-disable-next-line @typescript-eslint/naming-convention
+//   median_cloud_cover: number;
+//   // eslint-disable-next-line @typescript-eslint/naming-convention
+//   mode_cloud_cover: number;
+//   // eslint-disable-next-line @typescript-eslint/naming-convention
+//   min_cloud_cover: number;
+//   // eslint-disable-next-line @typescript-eslint/naming-convention
+//   max_cloud_cover: number;
+// };
+
 export default defineComponent({
   name: 'AdvancedWeatherView',
   
@@ -280,6 +332,7 @@ export default defineComponent({
   },
   
   data() {
+    const eps = 0.000001;
     return {
       statText,
       mapSubsets,
@@ -296,19 +349,18 @@ export default defineComponent({
       ],
       selectedYear: 2021,
       selectedYearRange: [2001, 2022],
-      selectedStat: 'mean' as Statistics,
-      elNinoPreference: 'allYears' as ElNinoPreference,
-      cloudDataHistogram: randomData(6), // overcast, mostlyCloudy, partlyCloudy, fewClouds, clear
+      selectedStat: 'singleyear' as Statistics,
+      elNinoPreference: 'elNino' as ElNinoPreference,
       // https://www.weather.gov/media/notification/dir/AFM_Specifications.pdf
       skyCoverCodes: ['Clear', 'Mostly Clear', 'Parly Cloudy', 'Mostly Cloudy', 'Considerably Cloudy', 'Overcast'],
-      skyCoverCodeRanges: {
-        'clear': [0, 5],
-        'mostlyClear': [5, 25],
-        'parlyCloudy': [25, 50],
-        'mostlyCloudy': [50, 69],
-        'considerablyCloudy': [69, 87],
-        'overcast': [87, 100],
-      },
+      skyCoverCodeRanges: [
+        ['clear', [0, 5 - eps]],
+        ['mostlyClear', [5, 25-eps]],
+        ['parlyCloudy', [25, 50-eps]],
+        ['mostlyCloudy', [50, 69-eps]],
+        ['considerablyCloudy', [69, 87-eps]],
+        ['overcast', [87, 100]],
+      ] as [string, [number, number]][],
       colorMap: _colorMap,
       mapOptions: {
         templateUrl: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}",
@@ -338,6 +390,12 @@ export default defineComponent({
       latitudes: [] as number[],
       longitudes: [] as number[],
       latLonIndex: new Map<[number, number], number>,
+      allYearsSummary: [] as CloudSummaryData[],
+      neutralYearsSummary: [] as CloudSummaryData[],
+      elNinoYearsSummary: [] as CloudSummaryData[],
+      // laNinaYearsSummary: [] as CloudData, 
+      selectedDataIndex: null as number | null,
+      
     };
   },
   
@@ -372,36 +430,46 @@ export default defineComponent({
       return this.allYears;
     },
     
-    // cloudDataNearLocation(): LineGraphData | undefined {
-    //   console.log('creating cloud data for location', this.location);
-    //   // get the cloud data nearest to the location for all years
-    //   const allData = [] as LineGraphData;
-    //   if (this.allYears.length === 0) {
-    //     console.log('no years');
-    //     return undefined;
-    //   }
+    cloudDataNearLocation(): LineGraphData | undefined {
+      // get the cloud data nearest to the location for all years
+      const allData = [] as LineGraphData;
+      if (this.allYears.length === 0) {
+        console.log('no years');
+        return undefined;
+      }
       
-    //   if (Object.keys(this.allCloudData).length === 0) {
-    //     console.log('no cloud data');
-    //     return undefined;
-    //   }
+      if (Object.keys(this.allCloudData).length != this.allYears.length) {
+        console.log('all data not yet loaded');
+        return undefined;
+      }
       
-    //   const index = this.getLatLonIndex(this.location.latitudeDeg, this.location.longitudeDeg);
-    //   if (index === -1) {
-    //     return undefined;
-    //   }
-    //   // create  a log table of index, this.location.latitudeDeg, this.location.longitudeDeg, this.latitudes[index], this.longitudes[index]);
-    //   const log = {'index': index, 
-    //     'lat': this.location.latitudeDeg, 
-    //     'lon': this.location.longitudeDeg, 
-    //     'rounded lat': this.latitudes[index], 
-    //     'rounded lon2': this.longitudes[index]};
-    //   console.log('creating cloud data for index', log);
-    //   this.allYears.map((year) => {
-    //     allData.push({'x': new Date(year, 4, 8), 'y':this.allCloudData[year][index].cloudCover});
-    //   });
-    //   return allData;
-    // },
+      const index = this.selectedDataIndex ?? this.getLatLonIndex(this.location.latitudeDeg, this.location.longitudeDeg);
+      if (index === -1 || index === null) {
+        return undefined;
+      }
+      console.log('data index', index);
+
+      this.allYears.map((year) => {
+        allData.push({'x': new Date(year, 4, 8), 'y':this.allCloudData[year][index].cloudCover});
+      });
+      return allData;
+    },
+    
+    cloudDataHistogram(): number[] {
+      // get the cloudDataNearLocation
+      const data = this.cloudDataNearLocation;
+      if (data === undefined) {
+        return [];
+      }
+      // bin according to skyCoverCodeRanges, not incluside of the max except for the last bin
+      const hist = this.skyCoverCodeRanges.reduce((acc, [_key, range]) => {
+        const count = data.filter((d) => d.y >= range[0]/100 && d.y <= range[1]/100).length;
+        acc.push(100 * count / data.length);
+        return acc;
+      }, [] as number[]);
+      console.log('hist', hist, hist.reduce((a, b) => a + b, 0));
+      return hist;
+    },
       
     
     yearForLocation(): LineGraphData {
@@ -425,11 +493,113 @@ export default defineComponent({
       return allData;
     },
     
+    elNinoData(): CloudData | undefined {
+      if (this.selectedStat === 'singleyear') {
+        return;
+      }
+      return this.getStat(this.elNinoYearsSummary, this.selectedStat);
+    },
+    
+    neutralData(): CloudData | undefined {
+      if (this.selectedStat === 'singleyear') {
+        return;
+      }
+      return this.getStat(this.neutralYearsSummary, this.selectedStat);
+    },
+    
+    allYearsData(): CloudData | undefined {
+      if (this.selectedStat === 'singleyear') {
+        return;
+      }
+      return this.getStat(this.allYearsSummary, this.selectedStat);
+    },
+    
   },
   
   
   
   methods: {
+    
+    getStat(array: CloudSummaryData[], stat: Exclude<Statistics,'singleyear'>): CloudData {
+      return array.map((d) => {
+        return {
+          lat: d.lat,
+          lon: d.lon,
+          cloudCover: getStat(d, stat),
+        };
+      });
+    },
+    
+    async getSummaryData(path: string) {
+      console.log('loading summary data', path);
+      return import(path)
+        .then( (module) => {
+          return csvParseRows(module.default, (row, i) => {
+            if (i === 0) {return;}
+            return {
+              lat: +row[0],
+              lon: +row[1],
+              mean: +row[2],
+              median: +row[3],
+              mode: +row[4],
+              min: +row[5],
+              max: +row[6],
+            } as CloudSummaryData;
+          });
+        });
+    },
+    
+    async getElNinoData() {
+      return import('./assets/ucm_boundary_data/nino_ucm.csv').then((module) => {
+        this.elNinoYearsSummary = csvParseRows(module.default, (row, i) => {
+          if (i === 0) {return;}
+          return {
+            lat: +row[0],
+            lon: +row[1],
+            mean: +row[2],
+            median: +row[3],
+            mode: +row[4],
+            min: +row[5],
+            max: +row[6],
+          } as CloudSummaryData;
+        });
+      });
+    },
+    
+    async getNeutralData() {
+      await import('./assets/ucm_boundary_data/neutral_ucm.csv').then((module) => {
+        this.neutralYearsSummary = csvParseRows(module.default, (row, i) => {
+          if (i === 0) {return;}
+          return {
+            lat: +row[0],
+            lon: +row[1],
+            mean: +row[2],
+            median: +row[3],
+            mode: +row[4],
+            min: +row[5],
+            max: +row[6],
+          } as CloudSummaryData;
+        });
+      });
+    },
+    
+    async getAllYearsData() {
+      await import('./assets/ucm_boundary_data/all_years_ucm.csv').then((module) => {
+        this.allYearsSummary = csvParseRows(module.default, (row, i) => {
+          if (i === 0) {return;}
+          return {
+            lat: +row[0],
+            lon: +row[1],
+            mean: +row[2],
+            median: +row[3],
+            mode: +row[4],
+            min: +row[5],
+            max: +row[6],
+          } as CloudSummaryData;
+        });
+      });
+    },
+
     
     loadCloudData() {
       console.log('awv: loading cloud data');
@@ -438,10 +608,9 @@ export default defineComponent({
         import(`./assets/ucm_boundary_data/${val}_cloud_cover.csv`).then((module) => {
           const data = csvParseRows(module.default, (row, i) => {
             if (i === 0) {return;}
-            if (i === 1) {
+            if (index == 0) {
               this.latitudes.push(+row[0]);
               this.longitudes.push(+row[1]);
-              this.latLonIndex.set([+row[0], +row[1]], i);
             }
             return {
               lat: +row[0],
@@ -482,7 +651,49 @@ export default defineComponent({
       // simulate data loading
       this.dataLoadingProgress = 0;
       this.randomData();
-      this.displayedCloudData = this.allCloudData[this.selectedYear];
+      if (this.selectedStat === 'singleyear') {
+        this.displayedCloudData = this.allCloudData[this.selectedYear];
+        return;
+      }
+      if (this.elNinoPreference === 'elNino') {
+        console.log('el nino');
+        if (this.elNinoYearsSummary.length === 0) {
+          console.log('loading el nino data');
+          this.getElNinoData().then(() => {
+            this.displayedCloudData = this.elNinoData;
+            return;
+          });
+          return;
+        }
+        this.displayedCloudData = this.elNinoData;
+        return;
+      }
+      if (this.elNinoPreference === 'noElNino') {
+        console.log('no el nino');
+        if (this.neutralYearsSummary.length === 0) {
+          console.log('loading neutral data');
+          this.getNeutralData().then(() => {
+            this.displayedCloudData = this.neutralData;
+            return;
+          });
+          return;
+        }
+        this.displayedCloudData = this.neutralData;
+        return;
+      }
+      if (this.elNinoPreference === 'allYears') {
+        console.log('all years');
+        if (this.allYearsSummary.length === 0) {
+          console.log('loading all years data');
+          this.getAllYearsData().then(() => {
+            this.displayedCloudData = this.allYearsData;
+            return;
+          });
+          return;
+        }
+        this.displayedCloudData = this.allYearsData;
+        return;
+      }
     },
     
     close() {
@@ -506,14 +717,14 @@ export default defineComponent({
     },
     
     // stats methods
-    mean(array: number[], ignoreNaN: boolean = true): number {
+    mean(array: (number | null)[]): number {
       // null + x, undefined +x = NaN. 
-      const arr = ignoreNaN ? array.filter((v) => isNumber(v)) : array;
+      const arr = array.filter((v) => isNumber(v)) as number[];
       return arr.reduce((a, b) => a + b, 0) / arr.length;
     },
     
-    median(array: number[], ignoreNaN: boolean = true): number {
-      const arr = ignoreNaN ? array.filter((v) => isNumber(v)) : array;
+    median(array: (number | null)[]): number {
+      const arr = array.filter((v) => isNumber(v)) as number[];
       const mid = Math.floor(arr.length / 2);
       const nums = [...arr].sort((a, b) => a - b);
       return arr.length % 2 == 0 ? (nums[mid] + nums[mid - 1]) / 2 : nums[mid];
@@ -534,7 +745,25 @@ export default defineComponent({
     },
     
     displayedCloudData(_val: CloudData | undefined) {
+      // print out the selection options
+      const log = {
+        'selectedStat': this.upper(this.selectedStat),
+        'elNinoPreference': this.upper(this.elNinoPreference),
+        'selectedYear': this.selectedYear,
+        'selectedYearRange': this.selectedYearRange,
+      };
+      console.log('displayedCloudData', log);
       this.needToUpdate = true;
+    },
+    
+    selectedStat(_val: Statistics) {
+      console.log('selectedStat', this.selectedStat);
+    },
+    elNinoPreference(_val: ElNinoPreference) {
+      console.log('elNinoPreference', this.elNinoPreference);
+    },
+    selectedYear(_val: number) {
+      console.log('selectedYear', this.selectedYear);
     },
   },
   

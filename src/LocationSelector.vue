@@ -51,7 +51,7 @@ interface CloudData {
 
 export default defineComponent({
 
-  emits: ["place", "update:modelValue", "error"],
+  emits: ["place", "update:modelValue", "error", "dataclick"],
 
   props: {
     
@@ -140,6 +140,11 @@ export default defineComponent({
     selectedCloudCover: {
       type:  Array as PropType<CloudData[]>,
       default: null
+    },
+    
+    rectangleDegrees: {
+      type: Number,
+      default: 1
     }
   },
 
@@ -175,7 +180,7 @@ export default defineComponent({
       if (this.cloudCoverRectangles === null) {
         return;
       }
-      result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}) => {
+      result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}, index: number) => {
         const lat = row.lat;
         const lon = row.lon;
         const cloudCover = row.cloudCover;
@@ -184,7 +189,7 @@ export default defineComponent({
           return;
         }
 
-        const rect = this.createRectangle(lat, lon, cloudCover);
+        const rect = this.createRectangle(lat, lon, cloudCover, index);
         if (rect) {
           this.cloudCoverRectangles.addLayer(rect);
         }
@@ -198,12 +203,12 @@ export default defineComponent({
     },
 
     
-    createRectangle(lat: number, lon: number, cloudCover: number): L.Rectangle {
+    createRectangle(lat: number, lon: number, cloudCover: number, index: number): L.Rectangle {
       const color = this.getColor(cloudCover);
       
-      return L.rectangle([
-        [lat + 0.5, lon - 0.5],
-        [lat - 0.5, lon + 0.5],
+      const rect = L.rectangle([
+        [lat + this.rectangleDegrees / 2, lon - this.rectangleDegrees / 2],
+        [lat - this.rectangleDegrees / 2, lon + this.rectangleDegrees / 2],
       ], {
         stroke: true,
         color: color,
@@ -212,6 +217,10 @@ export default defineComponent({
         fillColor: color,
         fillOpacity: cloudCover > .05 ? .2 + Math.pow(cloudCover,1.5) * .8 : cloudCover
       });
+      rect.on('click', () => {
+        this.$emit('dataclick', { lat, lon, cloudCover, index});
+      });
+      return rect;
     },
 
     getColor(_cloudCover:number) {

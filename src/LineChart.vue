@@ -95,7 +95,7 @@ export default defineComponent({
     },
     
     xRange: {
-      type: Array<number>,
+      type: Array<number | Date>,
       required: false,
     },
 
@@ -348,6 +348,8 @@ export default defineComponent({
             display: !this.hideXAxis,
             type: this.timeseries ? 'time' : 'linear',
             reverse: this.reverseX,
+            max: this.xRange ? this.xRange[1] : undefined,
+            min: this.xRange ? this.xRange[0] : undefined,
             width: 3,
             ...this.bothAxisOptions,
             ...this.xAxisOptions,
@@ -360,6 +362,8 @@ export default defineComponent({
             display: !this.hideYAxis,
             type: 'linear',
             reverse: this.reverseY,
+            max: this.yRange ? this.yRange[1] : undefined,
+            min: this.yRange ? this.yRange[0] : undefined,
             width: 3,
             ...this.bothAxisOptions,
             ...this.yAxisOptions,
