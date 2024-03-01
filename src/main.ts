@@ -3,6 +3,7 @@ import Vue, { createApp } from "vue";
 import { IconButton } from "@cosmicds/vue-toolkit";
 import LocationSelector from "./LocationSelector.vue";
 import { FundingAcknowledgment } from "@cosmicds/vue-toolkit";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import SolarEclipse2023 from "./SolarEclipse2024.vue";
 import TransitionExpand from "./TransitionExpand.vue";
 import GifPlayPause from "./GifPlayPause.vue";
@@ -13,6 +14,7 @@ import HoverTooltip from "./HoverTooltip.vue";
 import CloudCover from "./CloudCover.vue";
 import DefineTerm from "./DefineTerm.vue";
 import PlaybackControl from "./PlaybackControl.vue";
+import AdvancedWeatherView from "./AdvancedWeatherView.vue";
 
 import "./polyfills";
 
@@ -143,5 +145,6 @@ createApp(SolarEclipse2023, {
   .component('cloud-cover', CloudCover)
   .component('define-term', DefineTerm)
   .component('playback-control', PlaybackControl)
+  .component('advanced-weather-view', AdvancedWeatherView)
   // Mount
   .mount("#app");

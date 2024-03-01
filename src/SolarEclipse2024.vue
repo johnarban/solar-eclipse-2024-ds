@@ -621,8 +621,14 @@
         </v-card>
       </v-card>
     </v-dialog>
-
-
+  <advanced-weather-view
+    v-model="showAdvancedWeather"
+    @close="() => {
+      console.log('closing'); 
+      showAdvancedWeather = false;
+      }"
+    :default-location="locationDeg"
+    />
   <div
     id="main-content"
   > 
@@ -633,6 +639,20 @@
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
+        <icon-button
+          v-model="showAdvancedWeather"
+          id="showAdvancedWeather"
+          :color="accentColor"
+          :focus-color="accentColor"
+          :box-shadow="false"
+          tooltip-text="Share Advanced Weather View"
+          :show-tooltip="!mobile"
+        >
+        <template #button>
+          <span> Advanced Weather </span>
+        </template>
+      </icon-button>
+      
         <icon-button
           id="share"
           fa-icon="share-nodes"
@@ -1718,6 +1738,7 @@ export default defineComponent({
       geolocationPermission: '' as 'granted' | 'denied' | 'prompt',
       
       showWWTGuideSheet: false,
+      showAdvancedWeather: false,
       
       selectionProximity: 4,
       pointerMoveThreshold: 6,
