@@ -1417,27 +1417,6 @@ import pointInPolygon from 'point-in-polygon';
 import { recalculateForObserverUTC } from "./eclipse_predict";
 import { EclipseData } from "./eclipse_types";
 
-import Papa from 'papaparse';
-
-
-
-
-// ,latitude,longitude,mean_cloud_cover,median_cloud_cover,mode_cloud_cover,min_cloud_cover,max_cloud_cover
-interface CloudCSVRow {
-  latitude: number;
-  longitude: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  mean_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  median_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  mode_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  min_cloud_cover: number;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  max_cloud_cover: number;
-}
-
 
 interface CloudData {
   lat: number;
@@ -1445,9 +1424,9 @@ interface CloudData {
   cloudCover: number;
 }
 
-interface CloudCoverData {
-  [key: string]: CloudData[];
-}
+// interface CloudCoverData {
+//   [key: string]: CloudData[];
+// }
 
 
 
@@ -1634,39 +1613,36 @@ const _eclipsePathGeoJson = {
 
 
 /** PARSE CLOUD COVERAGE DATA **/
-//import cloudCover from "./assets/cloud_cover.csv";
+import cloudCover from "./assets/cloud_cover.csv";
 import { csvParseRows } from "d3-dsv";
 
 // the first row is the longitude values
 // the first column is the latitude values
 // the data lies in the interior of the matrix
-// let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
-// loop over the row and convert each value to a number ("+v")
-// return d.map((v) => +v);
-// });
-
-import jackData from  "./assets/nino_reformat.csv";
-const ninoData  = csvParseRows(jackData, (d, _i) => {
-  
-  return {
-    'lat': +d[0],
-    'lon': +d[1],
-    'mean': +d[2],
-    'median': +d[3],
-    'mode': +d[4],
-    'min': +d[5],
-    'max': +d[6]
-  };
+let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
+  // loop over the row and convert each value to a number ("+v")
+  return d.map((v) => +v);
 });
 
 // lon and lat are first col and row (dropping the first value)
-//const minLat = Math.min(...ninoData.map(d => d.lat).slice(1));
-// Access the lon property in each object of ninoData
-//const minLon = Math.min(...ninoData.map(d => d.lon).slice(1));
+const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
+const minLon = Math.min(...cloudData[0].slice(1));
 // get just the inner data grid
-// const jackData = jackData.slice(1).map(row => row.slice(1));
+cloudData = cloudData.slice(1).map(row => row.slice(1));
 
-//console.log("cloud cover data loaded");
+// conver cloudData from array to CloudData[] for locationselector
+const cloudDataArray: CloudData[] = [];
+cloudData.forEach((row, i) => {
+  row.forEach((cloudCover, j) => {
+    cloudDataArray.push({
+      lat: minLat + i ,
+      lon: minLon + j ,
+      cloudCover
+    });
+  });
+});
+
+console.log("cloud cover data loaded");
 
 /* READ IN Eclipse Umbra */
 import eclipseUmbra from "./assets/upath_hi.json";
@@ -1694,7 +1670,7 @@ export default defineComponent({
   },
   data() {
     const _totalEclipseTimeUTC = new Date("2024-04-08T18:18:00Z");
-    
+
     const sunPlace = new Place();
     sunPlace.set_names(["Sun"]);
     sunPlace.set_classification(Classification.solarSystem);   
@@ -1741,7 +1717,7 @@ export default defineComponent({
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
       selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
-      cloudCoverData:   null as CloudCoverData | null,
+      cloudCoverData: cloudDataArray as CloudData[],
       
       uuid,
       responseOptOut: responseOptOut as boolean | null,
@@ -1760,8 +1736,6 @@ export default defineComponent({
       getMyLocation: true,
       myLocation: null as LocationDeg | null,
       geolocationPermission: '' as 'granted' | 'denied' | 'prompt',
-      
-      ninoData,
       
       showWWTGuideSheet: false,
       showAdvancedWeather: false,
@@ -2050,7 +2024,7 @@ export default defineComponent({
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.updateSelectedLocationText();
     }
-    this.loadCloudCover();
+    // this.loadCloudCover();
     this.waitForReady().then(async () => {
 
       this.backgroundImagesets = [...skyBackgroundImagesets];
@@ -2167,7 +2141,7 @@ export default defineComponent({
 
     selectedCloudCoverData(): CloudData[] | null {
       if (this.cloudCoverData != null) {
-        return this.cloudCoverData[this.selectedCloudCoverVariable];
+        return this.cloudCoverData;
       } else {
         console.log('selectedCloudCoverData: cloud cover data not loaded');
         return null;
@@ -2175,11 +2149,6 @@ export default defineComponent({
     },
 
 
-
-    cloudDataSource() {
-      return this.getCloudCoverColumn('mean');
-    },
-    
     dateTime() {
       return new Date(this.selectedTime);
     },
@@ -2205,16 +2174,7 @@ export default defineComponent({
       if (this.locationDeg) {
         const lat = this.locationDeg.latitudeDeg;
         const lon = this.locationDeg.longitudeDeg;
-        
-        // Find the data point in ninoData with the closest latitude and longitude
-        const closestDataPoint = ninoData.reduce((closest, current) => {
-          const distClosest = Math.abs(closest.lat - lat) + Math.abs(closest.lon - lon);
-          const distCurrent = Math.abs(current.lat - lat) + Math.abs(current.lon - lon);
-          return distCurrent < distClosest ? current : closest;
-        });
-
-        // Return the mean cloud cover from the closest data point
-        return closestDataPoint.mean;
+        return this.getCloudCover(lat, lon);
       } else {
         return null;
       }
@@ -2505,74 +2465,6 @@ export default defineComponent({
 
   methods: {
 
-    async loadCloudCover(): Promise<void> {
-      return fetch('https://raw.githubusercontent.com/Jack-Hayes/solar-eclipse-2024/main/src/assets/nino.csv')
-        .then(response => response.text())
-        .then(csvData => {
-          this.parseData(csvData);
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-        });
-    },
-
-    parseData(csvData: string) {
-      console.log('Parsing CSV data...');
-      Papa.parse(csvData, {
-        worker: true, // put it on a worker thread so it uses fewer of the resources
-        header: true,
-        dynamicTyping: true,
-        complete: (result: Papa.ParseResult<CloudCSVRow>) => {
-          this.convertCSV(result);
-        }
-      });
-    },
-
-    convertCSV(result: Papa.ParseResult<CloudCSVRow>) {
-
-      // parse the result data in the format we want
-      const csv = (result.data as CloudCSVRow[]).map((row: CloudCSVRow) => {
-        // check if row is empty
-        if (Object.keys(row).length === 1) {
-          return; // returns undefined
-        }
-
-        return row;
-      });
-
-      // Group the data by the respective keys
-      const cloudCoverData: CloudCoverData = {
-        mean: [],
-        median: [],
-        mode: [],
-        min: [],
-        max: [],
-      };
-
-      csv.forEach((entry) => {
-        if (entry) {
-          cloudCoverData.mean.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.mean_cloud_cover });
-          cloudCoverData.median.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.median_cloud_cover });
-          cloudCoverData.mode.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.mode_cloud_cover });
-          cloudCoverData.min.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.min_cloud_cover });
-          cloudCoverData.max.push({ lat: entry.latitude, lon: entry.longitude, cloudCover: entry.max_cloud_cover });
-        }
-      });
-      this.cloudCoverData = cloudCoverData;
-    },
-
-    getCloudCoverColumn(name: string = 'mean') {
-      
-      return this.ninoData.map(d => {
-        let out: number = 0;
-        if (name === 'mean') {
-          out = d.mean;
-        } 
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        return {'lat':d.lat, 'lon':d.lon, 'cloudCover':out};
-      });
-    },
-    
     onScroll() {
       const el = document.getElementById('guided-content-container');
 
@@ -3501,15 +3393,15 @@ export default defineComponent({
       }
     },
     
-    //    getCloudCover(lat: number, lon: number): number | null {
-    //      // convert lat/lon to row/col
-    //      const row = Math.floor(lat + 0.5 - minLat);
-    //      const col = Math.floor(lon + 0.5 - minLon);
-    //      if (row < 0 || row >= cloudData.length || col < 0 || col >= cloudData[0].length) {
-    //        return null;
-    //      }
-    //      return cloudData[row][col];
-    //    },
+    getCloudCover(lat: number, lon: number): number | null {
+      // convert lat/lon to row/col
+      const row = Math.floor(lat + 0.5 - minLat);
+      const col = Math.floor(lon + 0.5 - minLon);
+      if (row < 0 || row >= cloudData.length || col < 0 || col >= cloudData[0].length) {
+        return null;
+      }
+      return cloudData[row][col];
+    },
     
     getEclipsePrediction() {
       const eclipsePrediction = recalculateForObserverUTC(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg, 100);
