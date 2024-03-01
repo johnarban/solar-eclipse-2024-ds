@@ -56,3 +56,12 @@ export function generateFakeTimeSeries(start: Date, end: Date, n: number, noise:
   // return the ordered pairs
   return toOrderedPairs(dates.map((d) => new Date(d)), out);
 }
+
+
+export function roundToNearest(val: number, nearest: number) {
+  return Math.round(val / nearest) * nearest;
+}
+
+export function roundToNearestHalf(val: number) {
+  return roundToNearest(val, 0.5);
+}

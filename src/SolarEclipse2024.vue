@@ -621,7 +621,6 @@
         </v-card>
       </v-card>
     </v-dialog>
-
   <advanced-weather-view
     v-model="showAdvancedWeather"
     @close="() => {
@@ -1762,7 +1761,7 @@ export default defineComponent({
       ninoData,
       
       showWWTGuideSheet: false,
-      showAdvancedWeather: true,
+      showAdvancedWeather: false,
       
       selectionProximity: 4,
       pointerMoveThreshold: 6,

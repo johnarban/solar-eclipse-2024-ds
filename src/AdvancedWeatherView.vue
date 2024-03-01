@@ -114,7 +114,8 @@
               label="Location"
               :place-circle-options="placeCircleOptions"
               :selected-circle-options="selectedCircleOptions"
-              cloud-cover
+              :selected-cloud-cover="displayedCloudData"
+              show-cloud-cover
               />
               
               <v-radio-group 
@@ -155,11 +156,9 @@
           <v-col cols="12" sm="6" class="graph-col">
           <line-chart
             class="elevation-5"
-            :scatter-data="scatterData"
-            :line-data="lineData"
+            :scatter-data="yearForLocation"
             timeseries
-            line-color="blue"
-            show-line
+            color="blue"
             show-scatter
             />
           </v-col>
@@ -183,13 +182,15 @@ import LineChart from './LineChart.vue';
 import LocationSelector from './LocationSelector.vue';
 import {generateFakeTimeSeries} from './utils';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import {isNumber, toOrderedPairs, fromOrderedPairs, elementWise, OrderedPair} from './utils';
+import {isNumber, toOrderedPairs, fromOrderedPairs, elementWise, OrderedPair, roundToNearestHalf} from './utils';
 // isNumber is a utility function that checks if a value is a number
 // toOrderedPairs converts an array of objects to an array of ordered pairs
 // fromOrderedPairs converts an array of {x:x[i],x:y[i]}[] ordered pairs to an array of [x,y]
 // elementWise applies a function to each element of an array returning an ordered pair
 // We need to use Ordered Pairs as that is the data format that Chart.js expects
 type LineGraphData = OrderedPair<number | Date, number>[];
+import { csvParseRows } from "d3-dsv";
+
 
 type CityLocation = {
   longitudeDeg: number;
@@ -235,6 +236,20 @@ const modisTimes = new Map([
 // https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6
 const _colorMap = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'];
 
+// interface CloudCSVRow {
+//   latitude: number;
+//   longitude: number;
+//   // eslint-disable-next-line @typescript-eslint/naming-convention
+//   cloud_cover: number;
+// }
+
+interface CloudDataElement {
+  lat: number;
+  lon: number;
+  cloudCover: number;
+}
+
+type CloudData = CloudDataElement[];
 
 export default defineComponent({
   name: 'AdvancedWeatherView',
@@ -270,8 +285,14 @@ export default defineComponent({
       modisTimes,
       modisDataSet: '8day' as ModisTimeSpan,
       location: this.defaultLocation,
+      dataloaded: false,
       dataLoadingProgress: 0,
-      allYears: Array.from({ length: 22 }, (_, i) => 2001 + i),
+      allYears: [
+        2003, 2004, 2005, 2006, 2007, 
+        2008, 2009, 2010, 2011, 2012,
+        2013, 2014, 2015, 2016, 2017,
+        2018, 2019, 2020, 2021, 2023
+      ],
       selectedYear: 2021,
       selectedYearRange: [2001, 2022],
       selectedStat: 'mean' as Statistics,
@@ -310,8 +331,26 @@ export default defineComponent({
       // lineData: evaluate(0, 2 * Math.PI, 100, sin) as LineGraphData,
       scatterData: generateFakeTimeSeries(new Date(2021, 0, 1), new Date(2021, 11, 31), 20, 1) as LineGraphData,
       lineData: generateFakeTimeSeries(new Date(2021, 0, 1), new Date(2021, 11, 31), 100, 0) as LineGraphData,
-      displayedCloudData: null,
+      displayedCloudData: undefined as CloudData | undefined,
+      allCloudData: {} as Record<string, CloudData>,
+      needToUpdate: false,
+      latitudes: [] as number[],
+      longitudes: [] as number[],
+      latLonIndex: new Map<[number, number], number>,
     };
+  },
+  
+  mounted() {
+    console.log('Advanced Weather View mounted');
+    // create a time to simulate data loading
+    console.log('all cloud data', this.allCloudData);
+    if (this.modelValue) {
+      this.loadCloudData().then(() => {
+        console.log('preloading data');
+        this.dataloaded = true;
+        this.updateData();
+      });
+    }
   },
   
   computed: {
@@ -332,26 +371,117 @@ export default defineComponent({
       return this.allYears;
     },
     
+    // cloudDataNearLocation(): LineGraphData | undefined {
+    //   console.log('creating cloud data for location', this.location);
+    //   // get the cloud data nearest to the location for all years
+    //   const allData = [] as LineGraphData;
+    //   if (this.allYears.length === 0) {
+    //     console.log('no years');
+    //     return undefined;
+    //   }
+      
+    //   if (Object.keys(this.allCloudData).length === 0) {
+    //     console.log('no cloud data');
+    //     return undefined;
+    //   }
+      
+    //   const index = this.getLatLonIndex(this.location.latitudeDeg, this.location.longitudeDeg);
+    //   if (index === -1) {
+    //     return undefined;
+    //   }
+    //   // create  a log table of index, this.location.latitudeDeg, this.location.longitudeDeg, this.latitudes[index], this.longitudes[index]);
+    //   const log = {'index': index, 
+    //     'lat': this.location.latitudeDeg, 
+    //     'lon': this.location.longitudeDeg, 
+    //     'rounded lat': this.latitudes[index], 
+    //     'rounded lon2': this.longitudes[index]};
+    //   console.log('creating cloud data for index', log);
+    //   this.allYears.map((year) => {
+    //     allData.push({'x': new Date(year, 4, 8), 'y':this.allCloudData[year][index].cloudCover});
+    //   });
+    //   return allData;
+    // },
+      
+    
+    yearForLocation(): LineGraphData {
+      // get the all cloud data for this location for all years
+      const allData = [] as LineGraphData;
+      if (this.allYears.length === 0) {
+        return allData;
+      }
+      
+      if (Object.keys(this.allCloudData).length === 0) {
+        return allData;
+      }
+      
+      this.allYears.map( (year: number) => {
+        const data = this.allCloudData[year];
+        const mean = this.mean(data.map((d) => d.cloudCover));
+        allData.push({'x':new Date(year, 4, 8), 'y':mean});
+      });
+      
+      
+      return allData;
+    },
+    
   },
   
-  mounted() {
-    console.log('Advanced Weather View mounted');
-    // create a time to simulate data loading
-  },
+  
   
   methods: {
+    
+    loadCloudData() {
+      console.log('awv: loading cloud data');
+      this.dataLoadingProgress = 0;
+      this.allYears.map((val: number, index) => {
+        import(`./assets/ucm_boundary_data/${val}_cloud_cover.csv`).then((module) => {
+          const data = csvParseRows(module.default, (row, i) => {
+            if (i === 0) {return;}
+            if (i === 1) {
+              this.latitudes.push(+row[0]);
+              this.longitudes.push(+row[1]);
+              this.latLonIndex.set([+row[0], +row[1]], i);
+            }
+            return {
+              lat: +row[0],
+              lon: +row[1],
+              cloudCover: +row[2],
+            } as CloudDataElement;
+          });
+          // skip first row
+          this.allCloudData[val] = data.slice(1);
+          this.dataLoadingProgress = Math.ceil(((index + 1) / this.allYears.length) * 100);
+        });
+      });
+      return new Promise((resolve) => {resolve(true);});
+    },
+    
+    zip(arrays: number[][]): number[][] {
+      // https://stackoverflow.com/a/10284006
+      return arrays[0].map((_, i) => arrays.map((array) => array[i]));
+    },
+    
+    getLatLonIndex(lat: number, lon: number): number {
+      if (this.latitudes.length === 0) {
+        return -1;
+      }
+      if (this.longitudes.length === 0) {
+        return -1;
+      }
+      // binary search using distance
+      const distances = this.latitudes.map((lat2, i) => Math.sqrt((lat - lat2) ** 2 + (lon - this.longitudes[i]) ** 2));
+      const minIndex = distances.indexOf(Math.min(...distances));
+      console.log('minIndex', minIndex, 'distance', distances[minIndex]);
+      return minIndex;
+    },
+    
+    
     
     updateData() {
       // simulate data loading
       this.dataLoadingProgress = 0;
-      const interval = setInterval(() => {
-        this.dataLoadingProgress = Math.min(this.dataLoadingProgress + Math.random() * 10,100);
-        if (this.dataLoadingProgress >= 100) {
-          clearInterval(interval);
-        }
-      }, 100);
       this.randomData();
-      // set displayedCloudData and pass to location-selector
+      this.displayedCloudData = this.allCloudData[this.selectedYear];
     },
     
     close() {
@@ -390,8 +520,20 @@ export default defineComponent({
   },
   
   watch: {
-    show(value: boolean) {
+    modelValue(value: boolean) {
       console.log('AdvancedWeatherView show watch', value);
+      if (value) {
+        console.log('loading data');
+        this.loadCloudData().then(() => {
+          console.log('finished loading data');
+          this.dataloaded = true;
+          this.updateData();
+        });
+      }
+    },
+    
+    displayedCloudData(_val: CloudData | undefined) {
+      this.needToUpdate = true;
     },
   },
   

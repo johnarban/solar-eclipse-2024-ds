@@ -144,6 +144,7 @@ export default defineComponent({
   },
 
   mounted() {
+    console.log('ls mounted');
     if (this.initialPlace) {
       this.selectedPlace = this.initialPlace;
     }
@@ -174,7 +175,6 @@ export default defineComponent({
       if (this.cloudCoverRectangles === null) {
         return;
       }
-      console.log('adding to map');
       result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}) => {
         const lat = row.lat;
         const lon = row.lon;
@@ -190,6 +190,9 @@ export default defineComponent({
         }
       });
       // perhaps we should check if it is already added to the map. if it is, why remove it? 
+      if (this.map === null) {
+        return;
+      }
       this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
       console.log('added to map', this.cloudCoverRectangles);
     },
@@ -294,6 +297,7 @@ export default defineComponent({
     },
 
     setup(initial=false) {
+      console.log('setup', initial);
       const mapContainer = this.$el as HTMLDivElement;
       const location: L.LatLngExpression = initial && this.mapOptions.initialLocation ?
         this.locationToLatLng(this.mapOptions.initialLocation) :
@@ -301,7 +305,9 @@ export default defineComponent({
 
       const initialZoom = this.mapOptions.initialZoom ?? 4;
       const zoom = initial ? initialZoom : (this.map?.getZoom() ?? initialZoom);
+      console.log('LS mapContainer', mapContainer);
       const map = L.map(mapContainer).setView(location, zoom);
+      console.log('LS map',map);
       
       const options = { ...defaultMapOptions, ...this.mapOptions };
       this.basemap = L.tileLayer(options.templateUrl, options);

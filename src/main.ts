@@ -100,7 +100,7 @@ library.add(faAnglesRight);
 // Extract the function out, up here, so I'm not writing it twice
 const update = (el: HTMLElement, binding: Vue.DirectiveBinding) => el.style.visibility = (binding.value) ? "hidden" : "";
 
-createApp(AdvancedWeatherView, {
+createApp(SolarEclipse2023, {
   wwtNamespace: "wwt-minids-solar-eclipse-2024",
   // wtml: { // use this just as a test for the sun
   //   eclipse: "https://raw.githubusercontent.com/patudom/star-life-cycle/master/content/BUACStellarLifeCycles.wtml",
