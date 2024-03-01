@@ -2,7 +2,7 @@
   <div id="enclosing-playback-container" :style="cssVars">
     
     <!-- add a close box -->
-    <div v-if="inline && inlineButton" id="playback-close-button" @click="$emit('close')">
+    <div v-if="(inline && inlineButton) || showCloseButton" id="playback-close-button" @click="$emit('close')">
         <v-icon :color="color" size="18">mdi-close</v-icon>
     </div>
     
@@ -24,7 +24,7 @@
           :md-icon="reverseTime ? 'mdi-step-forward-2' : 'mdi-step-backward-2'"
           :color="color"
           :focus-color="color"
-          tooltip-text="Play/Pause"
+          tooltip-text="Forward/Reverse"
           tooltip-location="top"
           tooltip-offset="5px"
           md-size="18"
@@ -83,7 +83,7 @@ export default defineComponent({
     'v-slider': VSlider,
   },
   
-  emits: ['update:modelValue', 'update:paused', 'close'],
+  emits: ['update:modelValue', 'paused', 'close'],
 
   props: {
     // Define the props here
@@ -127,12 +127,14 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    
+    showCloseButton: {
+      type: Boolean,
+      default: false,
+    },
     
   },
 
   mounted() {
-    this.value = this.symlog.toSymlogIndex(this.modelValue);
     // Do something when the component is mounted
     // get height of v-input_container
     const container = document.getElementById('playback-slider-container');
@@ -195,11 +197,8 @@ export default defineComponent({
       data: ['a', 'b', 'c'],
       symlog: symLog,
       index: symLog.sequence(this.maxPower).filter(v => v > 0),
-      // eslint-disable-next-line vue/no-reserved-keys
       myTicks: symmLinspace(1, Math.pow(10,this.maxPower), 2).map((val) => symLog.toSymlogIndex(val)),
       useBuiltInTicks: true,
-      reverseTime: false,
-      value: 1,
     };
   },
 
@@ -235,12 +234,12 @@ export default defineComponent({
     
     isPaused: {
       get() {
-        console.log(this.paused);
+        console.log('PBC: isPaused get',this.paused);
         return this.paused;
       },
       set(val: boolean) {
-        console.log(val);
-        this.$emit('update:paused', val);
+        console.log('PBC: isPaused set',val);
+        this.$emit('paused', val);
       }
     },
     
@@ -258,45 +257,34 @@ export default defineComponent({
 
     step(): number {
       const val = Math.abs(this.value) <= 1 ? 1 : 0.1;
-      console.log(val);
       return val;
-    }
-
-
-
-  },
-
-  watch: {
-    // Define the watch properties here
-    value(val: number) {
-      if (this.reverseTime) {
-        val = -symLog.fromSymLogIndex(val);
-      } else {
-        val = symLog.fromSymLogIndex(val);
+    },
+    
+    value: {
+      get() {
+        return Math.abs(symLog.toSymlogIndex(this.modelValue));
+      },
+      
+      set(val: number) {
+        const abs = symLog.fromSymLogIndex(val);
+        const sign = this.reverseTime ? -1 : 1;
+        this.$emit('update:modelValue', sign * abs);
       }
-      this.$emit('update:modelValue', Math.round(val) );
     },
     
-    modelValue(val: number) {
-      this.reverseTime = val < 0;
-      this.value = Math.abs(symLog.toSymlogIndex(val));
-    },
-    
-    paused(val: boolean) {
-      console.log('paused changed to', val);
-    },
-    
-    
-    reverseTime(rt: boolean) {
-      let val = 0;
-      if (rt) {
-        val = -symLog.fromSymLogIndex(this.value);
-      } else {
-        val = symLog.fromSymLogIndex(this.value);
+    reverseTime: {
+      get() {
+        return this.modelValue < 0;
+      },
+      set(rt: boolean) {
+        const val = symLog.fromSymLogIndex(this.value);
+        this.$emit('update:modelValue', rt ? -val : val);
       }
-      this.$emit('update:modelValue', Math.round(val) );
     },
-  },
+
+
+
+  }
 });
 
 </script>
@@ -330,8 +318,27 @@ export default defineComponent({
   
   // no close button normally
   #playback-close-button {
-    display: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transform: translate(125%, 0);
+    
+    border-radius: 50%;
+    padding: 2px;
+
+    pointer-events: auto;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color);
+    background-color: black;
+    color: var(--color);
   }
+    
+  // #playback-close-button {
+  //   display: none;
+  // }
   
   &.inset {
     padding: 0;
@@ -355,24 +362,7 @@ export default defineComponent({
       padding-inline-start: 0.5rem;
     }
     
-    #playback-close-button {
-      position: absolute;
-      right: 0;
-      top: 0;
-      transform: translate(125%, 0);
-      
-      border-radius: 50%;
-      padding: 2px;
-
-      pointer-events: auto;
-      
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--color);
-      background-color: black;
-      color: var(--color);
-    }
+    
     
   }
   
@@ -475,9 +465,6 @@ export default defineComponent({
         opacity: 1;
         background-color: var(--track-color);
       }
-
-    .v-slider-thumb {
-    }
 
     // show no progress fill
     .v-slider-track__fill {

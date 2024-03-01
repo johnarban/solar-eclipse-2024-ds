@@ -308,7 +308,7 @@
                         What causes Solar Eclipses?
                       </summary>
                       <p>
-                        A solar eclipse happens when the Moon passes between the Earth and the Sun and blocks the Sun from our view. Partial eclipses occur about every 6 months, somewhere on the Earth. The U.S. is lucky to be in the path of the next two solar eclipses. 
+                        A solar eclipse happens when the Moon passes between the Earth and the Sun and blocks the Sun from our view. Partial eclipses occur about every 6 months, somewhere on the Earth. In 2023 and 2024, the US has been lucky to be in the path of two solar eclipses.
                       </p>
                     </details>
                     
@@ -631,7 +631,7 @@
     />
   <div
     id="main-content"
-  >
+  > 
     <WorldWideTelescope
       :wwt-namespace="wwtNamespace"
       @pointerdown="onPointerDown"
@@ -977,14 +977,6 @@
       </div>
     </v-dialog>
     
-  <div 
-    id="temporary-note-to-user"
-    :class="[playing && nearTotality && playbackRate == 10 ? 'note-visible' : '']"
-    >
-    <div>
-      Time Slowed for Eclipse
-    </div>
-  </div>
   
   <div id="top-wwt-content">
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
@@ -1220,6 +1212,8 @@
                 location="top"
                 offset="40"
                 location-strategy="connected"
+                persistent
+                no-click-animation
                 >
                 <template v-slot:activator="{ props }">
                   <icon-button
@@ -1227,7 +1221,7 @@
                     @activate="() => {
                       playbackVisible = !playbackVisible;
                     }"
-                    :fa-icon="'gauge-high'"
+                    :fa-icon="playbackVisible ? 'times' : 'gauge-high'"
                     :color="accentColor"
                     :focus-color="accentColor"
                     tooltip-text="Time Controls"
@@ -1241,17 +1235,21 @@
                     <playback-control
                     class="desktop-playback-control"
                       v-if="playbackVisible"
-                      :model-value="playbackRateValue"
+                      :model-value="playbackRate"
                       @update:modelValue="(value: number) => {
+                        forceRate = false;
                         playbackRate = value;
-                        forceRate = nearTotality;
                       }"
                       :paused="!playing"
-                      @update:paused="playing = !$event"
+                      @paused="playing = !$event"
                       :max-power="3"
                       :max="Math.log10(1000) + 1"
                       :color="accentColor"
                       :inline="false"
+                      show-close-button
+                      @close="() => {
+                        playbackVisible = false;
+                      }"
                     /> 
               </v-dialog>
       
@@ -1274,12 +1272,14 @@
 
                     <playback-control
                       class="mobile-playback-control"
-                      v-if="playbackVisible"
-                      :model-value="playbackRateValue"
+                      v-show="playbackVisible"
+                      :model-value="playbackRate"
                       @update:modelValue="(value: number) => {
+                        forceRate = false;
                         playbackRate = value;
-                        forceRate = nearTotality;
                       }"
+                      :paused="!playing"
+                      @paused="playing = !$event"
                       :max-power="3"
                       :max="Math.log10(1000) + 1"
                       :color="accentColor"
@@ -1298,10 +1298,13 @@
                 Real time
               </span>
               <span v-if="playbackRate!=1 && playing">
-                {{ playbackRate }}&times;
+                {{ niceRound(playbackRate) }}&times;
               </span>
               <span v-if="!playing">
-                ({{ playbackRate }}&times;) Paused
+                ({{ niceRound(playbackRate) }}&times;) Paused
+              </span>
+              <span v-if="playing && forceRate">
+                (Slowed for totality)
               </span>
             </div>
           </div>
@@ -1978,7 +1981,6 @@ export default defineComponent({
 
       playbackRateValue: 1,
       forceRate: false,
-      oldPlaybackRate: 1,
       playbackVisible: false,
       
       horizonRate: 100, 
@@ -2014,6 +2016,7 @@ export default defineComponent({
       eclipseStart: 0 as number | null,
       eclipseMid: 0 as number | null,
       eclipseEnd: 0 as number | null,
+      eclipseApproach: 'entering' as 'entering' | 'leaving',
     };
   },
 
@@ -2043,6 +2046,7 @@ export default defineComponent({
   },
 
   mounted() {
+    
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.updateSelectedLocationText();
     }
@@ -2190,7 +2194,7 @@ export default defineComponent({
     
     selectedLocaledTimeDateString() {
       if (this.smallSize) {
-        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm');
+        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm:ss');
       } else {
         return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd/yyyy HH:mm:ss (zzz)');
       }
@@ -2289,7 +2293,7 @@ export default defineComponent({
       return {
         '--accent-color': this.accentColor,
         '--sky-color': this.skyColorLight,
-        '--app-content-height': this.showInfoSheet ? '100%' : '100%',
+        '--app-content-height': this.showInfoSheet ? '100vh' : '100vh',
         '--top-content-height': this.showGuidedContent? this.guidedContentHeight : this.guidedContentHeight,
         '--moon-color': this.moonColor,
       };
@@ -2468,6 +2472,10 @@ export default defineComponent({
         this.playbackRateValue = Math.sign(value) * Math.min(Math.abs(value), 5000);
       },
       get(): number {
+        if (this.forceRate) {
+          const sign = Math.sign(this.playbackRateValue);
+          return sign * Math.min(10, sign * this.playbackRateValue);
+        } 
         return this.playbackRateValue;        
       }
     },
@@ -2750,7 +2758,13 @@ export default defineComponent({
           forceTotality = true;
         }
       } else {
-        this.currentFractionEclipsed = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+        const cfe = isNaN(fractionEclipsed) ? 1 : Math.max(Math.min(fractionEclipsed, 1), 0);
+        if (cfe == 1) {
+          // force a lower value to hide corona
+          this.currentFractionEclipsed = .999;
+        } else {
+          this.currentFractionEclipsed = cfe;
+        }
       }
 
       // If we're using the regular WWT moon, or in sun scope mode, we don't want the overlay but did want the percentage eclipsed
@@ -3441,7 +3455,11 @@ export default defineComponent({
       const sunAlt = altRad;
       let dssOpacity = 0;
       this.skyOpacity = (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
-      this.skyOpacity = this.skyOpacity * (1 - 0.5 * Math.pow(Math.E,-Math.pow((this.currentFractionEclipsed -1),2)/(0.001)));
+      let frac = this.currentFractionEclipsed;
+      if (this.locationInTotality && !this.inEclipse) {
+        frac = frac > 0.98 ? 0.98 : frac;
+      }
+      this.skyOpacity = this.skyOpacity * (1 - 0.5 * Math.pow(Math.E,-Math.pow((frac -1),2)/(0.001)));
       dssOpacity = sunAlt > 0 ? 0 : 1 - (1 + Math.atan(Math.PI * sunAlt / (-astronomicalTwilight))) / 2;
     
       this.updateMoonTexture();
@@ -3576,7 +3594,7 @@ export default defineComponent({
     },
     
     decreasePlaybackRate() {
-      this.forceRate = this.nearTotality;
+      this.forceRate = false;
       const sign = Math.sign(this.playbackRate);
       if (sign > 0 ) {
         this.playbackRate = -Math.min(this.playbackRate,100);
@@ -3589,7 +3607,7 @@ export default defineComponent({
     },
     
     increasePlaybackRate() {
-      this.forceRate = this.nearTotality;
+      this.forceRate = false;
       if (Math.sign(this.playbackRate) < 0 ) {
         this.playbackRate = -Math.max(this.playbackRate,-100);
         return;
@@ -3605,6 +3623,25 @@ export default defineComponent({
 
     async updateSelectedLocationText() {
       this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
+    },
+    
+    niceRound(val: number) {
+      // rounding routine specifically for the playback rate
+      const abs = Math.abs(val);
+      
+      if (abs < 2.7) {
+        return val.toFixed(1);
+      }
+      
+      if (abs < 35) {
+        return val.toFixed(0);
+      }
+      
+      if (abs < 255) {
+        return Math.round(val / 10) * 10;
+      }
+      
+      return Math.round(val / 100) * 100;
     }
   },
 
@@ -3681,19 +3718,19 @@ export default defineComponent({
     
     nearTotality(near: boolean, oldNear: boolean) {
       if (near) {
-        this.oldPlaybackRate = this.playbackRate;
-        this.playbackRate = Math.min(this.playbackRate, 10);
+        this.forceRate =  (Math.abs(this.playbackRate) > 10) && this.playing;
       }
       
+      // if leaving eclipse reset speed to previous
       if (oldNear && !near) {
-        this.playbackRate = this.oldPlaybackRate;
+        this.forceRate = false;
       }
     },
 
 
     wwtCurrentTime(time: Date) {
       
-      if (this.forceRate && !this.nearTotality && (this.eclipsePhase === 'after')) {
+      if (this.forceRate && !this.nearTotality && (this.eclipsePhase === 'after' || this.eclipsePhase === 'before')) {
         this.forceRate = false;
       }
 
@@ -3707,6 +3744,7 @@ export default defineComponent({
       }
       this.updateFrontAnnotations(time);
     },
+
 
     location(loc: LocationRad, oldLoc: LocationRad) {
       const locationDeg: [number, number] = [R2D * loc.latitudeRad, R2D * loc.longitudeRad];
@@ -3759,6 +3797,11 @@ export default defineComponent({
     playing(play: boolean) {
       console.log(`${play ? 'Playing:' : 'Stopping:'} at ${this.playbackRate}x real time`);
       this.setClockSync(play);
+      
+      if (this.nearTotality && play) {
+        this.forceRate = (Math.abs(this.playbackRate) > 10);
+      }
+      
     },
 
     showSplashScreen(val: boolean) {
@@ -3837,28 +3880,14 @@ export default defineComponent({
     },
     
     playbackRate(val: number) {
-      
       if (Math.abs(val) > 11_000) {
         console.warn('playbackRate too high, setting to maxPlaybackRate');
         this.playbackRate = Math.sign(val) * 10_000;
       }
       
-      // if (val < .1) {
-      //   console.warn('playbackRate too low, setting to minPlaybackRate');
-      //   this.playbackRate = .1;
-      // }
-      
-      this.setClockRate(val);
+      this.setClockRate(val === 1 ? 1 : val - 1 + 0.000000001 );
     },
     
-    // eclipsePhase(val: 'before' | 'during' | 'after' | null) {
-    //   if (this.forceRate) {
-    //     if (val === 'before' || val === 'after') {
-    //       this.forceRate = false;
-    //     }
-    //   }
-      
-    // }
 
   },
 });
@@ -3951,27 +3980,6 @@ body {
   top: 5%;
   left: 5%;
   background-color: rgba(0, 0, 0, 0.5);
-}
-
-// should appear and then disappear 5 seconds later
-// gray background, white text
-#temporary-note-to-user {
-  background-color: #9c9c9c7e;
-  font-weight: bold;
-  color: #fff;
-  position: absolute;
-  top: 1em;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: calc(1.5 * var(--default-font-size));
-  padding: 1em;
-  border-radius: 1em;
-  opacity: 0;
-  transition: opacity 2s linear;
-  
-  &.note-visible {
-    opacity: 1;
-  }
 }
 
 
@@ -5279,13 +5287,16 @@ video, #info-video {
   padding-right: 1rem;
 }
 
+#enclosing-playback-container > #playback-play-pause-button {
+  pointer-events: auto!important;
+}
+
 #inline-speed-control {
   display: flex; 
   flex-grow:1; 
   align-items: flex-end; 
   position: relative; 
   gap: 5px;
-  
   
   // when the screen is small enough we want to hide the buttons in inline mode
   @media (min-width: 369px) {
@@ -5319,6 +5330,7 @@ video, #info-video {
   border-radius: 0.3em;
   font-size: calc(1 * var(--default-font-size));
   text-wrap: nowrap;  
+  width: fit-content;
 
   left: calc(100% + 1rem);
   top: 1.5rem;
@@ -5527,5 +5539,22 @@ a {
     color: var(--accent-color);
   }
   
+}
+
+
+// this is class called blink that makes a span look like a round blinking circle period of 1 sec
+.blink {
+  animation: blinker 1s linear infinite;
+  border-radius: 50%;
+  width: 1em;
+  height: 1em;
+  background-color: #29ff29;
+  display: inline-block;
+}
+
+@keyframes blinker {
+  10% {
+    opacity: 0;
+  }
 }
 </style>
