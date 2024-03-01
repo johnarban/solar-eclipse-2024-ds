@@ -1,5 +1,6 @@
 <template>
-  <div class="map-container"></div>
+  <div class="map-container">
+  </div>
 </template>
 
 <script lang="ts">
@@ -7,7 +8,6 @@ import L, { LeafletMouseEvent, Map, TileLayerOptions } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { notify } from "@kyvg/vue3-notification";
 import { defineComponent, PropType } from "vue";
-import Papa from 'papaparse';
 
 export interface LocationDeg {
   longitudeDeg: number;
@@ -43,16 +43,24 @@ const defaultMapOptions: MapOptions = {
   className: 'map-tiles'
 };
 
+interface CloudData {
+  lat: number;
+  lon: number;
+  cloudCover: number;
+}
+
 export default defineComponent({
 
   emits: ["place", "update:modelValue", "error"],
 
   props: {
+    
+    
     activatorColor: {
       type: String,
       default: "#ffffff"
     },
-    cloudCover: {
+    showCloudCover: {
       type: Boolean,
       default: false
     },
@@ -127,6 +135,11 @@ export default defineComponent({
     geoJsonFiles: {
       type: Array as PropType<GeoJSONProp[]>,
       default: () => []
+    },
+    
+    selectedCloudCover: {
+      type:  Array as PropType<CloudData[]>,
+      default: null
     }
   },
 
@@ -138,7 +151,6 @@ export default defineComponent({
       this.getLocation(true);
     }
     this.setup(true);
-
   },
 
   data() {
@@ -151,48 +163,38 @@ export default defineComponent({
       selectedPlaceCircle: null as L.CircleMarker | null,
       cloudCoverRectangles: L.layerGroup(),
       map: null as Map | null,
-      basemap: null as L.TileLayer | null
+      basemap: null as L.TileLayer | null,
     };
   },
 
   methods: {
+    
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    parseResult(result: CloudData[]) {
+      if (this.cloudCoverRectangles === null) {
+        return;
+      }
+      console.log('adding to map');
+      result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}) => {
+        const lat = row.lat;
+        const lon = row.lon;
+        const cloudCover = row.cloudCover;
+        // check for nan
+        if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
+          return;
+        }
 
-    async loadCloudCover(): Promise<void> {
-      return fetch('https://raw.githubusercontent.com/johnarban/solar-eclipse-2024-ds/use-median-cloud-cover/src/assets/one_deg_median_cc.csv')
-        .then(response => response.text())
-        .then(csvData => {
-          this.parseData(csvData);
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-        });
-    },
-
-    parseData(csvData: string) {
-      Papa.parse(csvData, {
-        header: true,
-        dynamicTyping: true,
-        complete: (result) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          result.data.forEach((row: any) => {
-            const lat = parseFloat(row.lat);
-            const lon = parseFloat(row.lon);
-            const cloudCover = parseFloat(row.cloud_cover);
-            // check for nan
-            if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
-              return;
-            }
-
-            const rect = this.createRectangle(lat, lon, cloudCover);
-            if (rect) {
-              this.cloudCoverRectangles.addLayer(rect);
-            }
-          });
-          this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
-        },
+        const rect = this.createRectangle(lat, lon, cloudCover);
+        if (rect) {
+          this.cloudCoverRectangles.addLayer(rect);
+        }
       });
+      // perhaps we should check if it is already added to the map. if it is, why remove it? 
+      this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
+      console.log('added to map', this.cloudCoverRectangles);
     },
 
+    
     createRectangle(lat: number, lon: number, cloudCover: number): L.Rectangle {
       const color = this.getColor(cloudCover);
       
@@ -305,10 +307,8 @@ export default defineComponent({
       this.basemap = L.tileLayer(options.templateUrl, options);
       this.basemap.addTo(map);
 
-      this.loadCloudCover().then(() => {
-        this.updateCloudCover(this.cloudCover);
-        this.bringLocationAndPathToFront();
-      });
+      this.updateCloudCover(this.showCloudCover);
+      this.bringLocationAndPathToFront();
 
       this.placeCircles = this.places.map(place => this.circleForPlace(place));
       this.placeCircles.forEach((circle, index) => {
@@ -411,8 +411,10 @@ export default defineComponent({
     },
 
     updateCloudCover(value: boolean) {
-      if (value) {
-        this.cloudCoverRectangles.addTo(this.map as Map);
+      if (value && this.selectedCloudCover != null) {
+        this.cloudCoverRectangles.remove(); // do we need to remove it from the map? but how do we make sure it's not already on the map?
+        this.cloudCoverRectangles.clearLayers(); // clear the rectangles is what we want
+        this.parseResult(this.selectedCloudCover);
       } else {
         this.cloudCoverRectangles.remove();
       }
@@ -426,10 +428,34 @@ export default defineComponent({
     },
     latLng(): L.LatLngExpression {
       return this.locationToLatLng(this.modelValue);
+    },
+    
+    pixelSize(): number {
+      // not used but eventually
+      if (this.selectedCloudCover === null) {
+        return 0;
+      }
+      const lats = Array.from(new Set(this.selectedCloudCover?.map((row) => row.lat))).sort();
+      const lons = Array.from(new Set(this.selectedCloudCover?.map((row) => row.lon))).sort();
+      // get difference between consecutive latitudes
+      // average of the differences is the pixel size
+      const latDiff = lats.map((val, index, arr) => index === 0 ? 0 : val - arr[index - 1]);
+      const lonDiff = lons.map((val, index, arr) => index === 0 ? 0 : val - arr[index - 1]);
+      const latAvg = latDiff.reduce((a, b) => a + b, 0) / latDiff.length;
+      const lonAvg = lonDiff.reduce((a, b) => a + b, 0) / lonDiff.length;
+      return (latAvg + lonAvg) / 2;
     }
   },
 
   watch: {
+
+    selectedCloudCover(val: CloudData[] | null) {
+      if (val !== null) {
+        this.updateCloudCover(this.showCloudCover);
+        this.bringLocationAndPathToFront();
+      }
+    },
+    
     modelValue() {
       this.updateCircle();
       if (this.map && !this.map.getBounds().contains(this.latLng)) {
@@ -447,7 +473,7 @@ export default defineComponent({
     },
     
     
-    cloudCover(value: boolean) {
+    showCloudCover(value: boolean) {
       this.updateCloudCover(value);
       this.bringLocationAndPathToFront();
     },

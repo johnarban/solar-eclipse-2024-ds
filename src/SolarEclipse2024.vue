@@ -142,7 +142,13 @@
                   <div>
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
-                    />
+                    /><select v-model="selectedCloudCoverVariable">
+                        <option value="median">Median Cloud Cover</option>
+                        <option value="mean">Mean Cloud Cover</option>
+                        <option value="mode">Mode Cloud Cover</option>
+                        <option value="min">Minimum Cloud Cover</option>
+                        <option value="max">Maximum Cloud Cover</option>
+                      </select>
                   </div>
                 </div>
               </span>
@@ -219,9 +225,10 @@
               :detect-location="false"
               :map-options="(learnerPath === 'Clouds') ? userSelectedMapOptions : initialMapOptions"
               :selected-circle-options="selectedCircleOptions"
-              :cloud-cover="learnerPath === 'Clouds'"
+              :show-cloud-cover="learnerPath === 'Clouds' && cloudCoverData !== null"
               class="leaflet-map"
               :geo-json-files="geojson"
+              :selected-cloud-cover="selectedCloudCoverData"
             ></location-selector>
             <!-- the colorbar is generated using colorbarGradient() to make a serieis of divs -->
               <div v-show="learnerPath === 'Clouds'"  id="colorbar"></div>
@@ -1391,6 +1398,18 @@ import { recalculateForObserverUTC } from "./eclipse_predict";
 import { EclipseData } from "./eclipse_types";
 
 
+interface CloudData {
+  lat: number;
+  lon: number;
+  cloudCover: number;
+}
+
+// interface CloudCoverData {
+//   [key: string]: CloudData[];
+// }
+
+
+
 type SheetType = "text" | "video" | null;
 type LearnerPath = "Location" | "Clouds" | "Learn";
 type ViewerMode = "Horizon";
@@ -1591,6 +1610,18 @@ const minLon = Math.min(...cloudData[0].slice(1));
 // get just the inner data grid
 cloudData = cloudData.slice(1).map(row => row.slice(1));
 
+// conver cloudData from array to CloudData[] for locationselector
+const cloudDataArray: CloudData[] = [];
+cloudData.forEach((row, i) => {
+  row.forEach((cloudCover, j) => {
+    cloudDataArray.push({
+      lat: minLat + i ,
+      lon: minLon + j ,
+      cloudCover
+    });
+  });
+});
+
 console.log("cloud cover data loaded");
 
 /* READ IN Eclipse Umbra */
@@ -1665,6 +1696,9 @@ export default defineComponent({
       { latitudeRad: D2R * latitudeDeg, longitudeRad: D2R * longitudeDeg } :
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
+      selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
+      cloudCoverData: cloudDataArray as CloudData[],
+      
       uuid,
       responseOptOut: responseOptOut as boolean | null,
 
@@ -1969,6 +2003,7 @@ export default defineComponent({
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.updateSelectedLocationText();
     }
+    // this.loadCloudCover();
     this.waitForReady().then(async () => {
 
       this.backgroundImagesets = [...skyBackgroundImagesets];
@@ -2082,6 +2117,16 @@ export default defineComponent({
   },
 
   computed: {
+
+    selectedCloudCoverData(): CloudData[] | null {
+      if (this.cloudCoverData != null) {
+        return this.cloudCoverData;
+      } else {
+        console.log('selectedCloudCoverData: cloud cover data not loaded');
+        return null;
+      }
+    },
+
 
     dateTime() {
       return new Date(this.selectedTime);
