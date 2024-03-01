@@ -10,7 +10,7 @@
       </v-card-title>
       
       <v-card-text>
-        <span class="text-bf bg-red text-white"> NOT USING ANY DATA </span>
+        <span class="text-bf bg-red text-white"> NOT ALL COMPONENTS ARE HOOKED UP TO REAL DATA YET</span>
         <!-- dataloading progress widget -->
         <v-row>
           <v-col cols="12">
@@ -112,6 +112,7 @@
             <location-selector
               v-model="location"
               label="Location"
+              :map-options="mapOptions"
               :place-circle-options="placeCircleOptions"
               :selected-circle-options="selectedCircleOptions"
               :selected-cloud-cover="displayedCloudData"
