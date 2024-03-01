@@ -199,8 +199,8 @@ export default defineComponent({
       const color = this.getColor(cloudCover);
       
       return L.rectangle([
-        [lat + 0.25, lon - 0.25],
-        [lat - 0.25, lon + 0.25],
+        [lat + 0.5, lon - 0.5],
+        [lat - 0.5, lon + 0.5],
       ], {
         stroke: true,
         color: color,
@@ -415,6 +415,8 @@ export default defineComponent({
         this.cloudCoverRectangles.remove(); // do we need to remove it from the map? but how do we make sure it's not already on the map?
         this.cloudCoverRectangles.clearLayers(); // clear the rectangles is what we want
         this.parseResult(this.selectedCloudCover);
+      } else {
+        this.cloudCoverRectangles.remove();
       }
     }
 
@@ -426,6 +428,22 @@ export default defineComponent({
     },
     latLng(): L.LatLngExpression {
       return this.locationToLatLng(this.modelValue);
+    },
+    
+    pixelSize(): number {
+      // not used but eventually
+      if (this.selectedCloudCover === null) {
+        return 0;
+      }
+      const lats = Array.from(new Set(this.selectedCloudCover?.map((row) => row.lat))).sort();
+      const lons = Array.from(new Set(this.selectedCloudCover?.map((row) => row.lon))).sort();
+      // get difference between consecutive latitudes
+      // average of the differences is the pixel size
+      const latDiff = lats.map((val, index, arr) => index === 0 ? 0 : val - arr[index - 1]);
+      const lonDiff = lons.map((val, index, arr) => index === 0 ? 0 : val - arr[index - 1]);
+      const latAvg = latDiff.reduce((a, b) => a + b, 0) / latDiff.length;
+      const lonAvg = lonDiff.reduce((a, b) => a + b, 0) / lonDiff.length;
+      return (latAvg + lonAvg) / 2;
     }
   },
 
