@@ -259,8 +259,13 @@ const modisTimes = new Map([
   ['monthly', 'Monthly'],
 ]) as Map<ModisTimeSpan, string>;
 
-// https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6
-const _colorMap = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'];
+// https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6 //
+// const _colorMap = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'];
+// https://colorbrewer2.org/?type=sequential&scheme=YlGnBu&n=4
+// const _colorMap = ['#ffffcc','#a1dab4','#41b6c4','#225ea8'].reverse();
+
+// https://colorbrewer2.org/?type=sequential&scheme=Blues&n=4
+const _colorMap = ['#eff3ff','#bdd7e7','#6baed6','#2171b5'].reverse();
 
 // interface CloudCSVRow {
 //   latitude: number;
