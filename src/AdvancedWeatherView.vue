@@ -352,14 +352,12 @@ export default defineComponent({
       selectedStat: 'singleyear' as Statistics,
       elNinoPreference: 'elNino' as ElNinoPreference,
       // https://www.weather.gov/media/notification/dir/AFM_Specifications.pdf
-      skyCoverCodes: ['Clear', 'Mostly Clear', 'Parly Cloudy', 'Mostly Cloudy', 'Considerably Cloudy', 'Overcast'],
+      skyCoverCodes: ['Clear/Mostly Clear', 'Parly Cloudy', 'Mostly Cloudy', 'Cloud/Overcast'],
       skyCoverCodeRanges: [
-        ['clear', [0, 5 - eps]],
-        ['mostlyClear', [5, 25-eps]],
-        ['parlyCloudy', [25, 50-eps]],
-        ['mostlyCloudy', [50, 69-eps]],
-        ['considerablyCloudy', [69, 87-eps]],
-        ['overcast', [87, 100]],
+        ['clear', [0, 25]],
+        ['parlyCloudy', [25 + eps, 50]],
+        ['mostlyCloudy', [50 + eps, 87]],
+        ['overcast', [87+eps, 100]],
       ] as [string, [number, number]][],
       colorMap: _colorMap,
       mapOptions: {
