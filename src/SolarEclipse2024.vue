@@ -647,6 +647,9 @@
           :box-shadow="false"
           tooltip-text="Share Advanced Weather View"
           :show-tooltip="!mobile"
+          @activate="() => {
+            playing = false;
+          }"
         >
         <template #button>
           <span> Advanced Weather </span>
