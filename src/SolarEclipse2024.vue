@@ -136,8 +136,8 @@
               <span class="description">
                 <div class=".d-flex">
                   <div>
-                    This map shows historical cloud cover data on April 8 for the years 2001&#8211;2023 from the <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA MODIS</a> Aqua satellite.
-                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2001&#8211;2003 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
+                    This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from the <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA MODIS</a> Aqua satellite.
+                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003#8211;2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
                   </div>
                   <div>
                     <cloud-cover
@@ -845,7 +845,7 @@
               A lucky segment of Mexico, the U.S., and Canada will witness an awe-inspiring <b>total eclipse</b>. Other parts of North America will still see a <em>partial</em> eclipse, where the Moon blocks out some, but not all of the Sun's light.
               </p>
               <p class="mb-5">
-              See what the eclipse will look like where you are, and what the historical cloud coverage has been on April 8th from 2001&#8211;2023.
+              See what the eclipse will look like where you are, and what the historical cloud coverage has been during the week of April 8th from 2003&#8211;2023.
               </p>
             </div>
           </v-window-item>
@@ -867,7 +867,7 @@
                   <template v-slot:prepend>
                     <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                    <strong>View historical cloud data</strong> for April 8th from 2001&#8211;2023.
+                    <strong>View historical cloud data</strong> for the week of April 8th from 2003&#8211;2023.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
