@@ -19,29 +19,37 @@
             <v-row>              
               <v-col cols="12">
                 
-                <div class="sentence" col="12">
-                  Show me
-                  <v-select
+                <v-col class="sentence" col="12">
+                  <label for="statistics">Show me</label>
+                  <select 
                     class="select-box"
-                    :items="[
-                      { title: 'the Mean', value: 'mean' },
-                      { title: 'the Median', value: 'median' },
-                      { title: 'a Single Year', value: 'singleyear' }
-                    ]"
+                    name="statistics" 
+                    id="select-statistics" 
                     v-model="selectedStat"
-                    label="Choose a statistic"
-                    variant="underlined"
-                  ></v-select>
-                    of the cloud cover for
-                    <v-select
+                    >
+                    <option disabled value="">Select one</option>
+                    <option value="mean">the Mean</option>
+                    <option value="median">the Median</option>
+                    <option value="singleyear">a Single Year</option>
+                  </select>
+                    <label for="years">of the cloud cover for </label>
+                    <select 
                       class="select-box"
+                      name="years" 
+                      id="select-years" 
                       v-model="dataSubset"
-                      :items="selectedStat !== 'singleyear' ? [...mapSubsets.entries()].map(([k,v]) => {return {title: v, value: k}}) : availableYears"
-                      :label="selectedStat !== 'singleyear' ? 'Choose from weather pattern' : 'Choose a year'"
-                      placeholder="Select one"
-                      variant="underlined"
-                    ></v-select>
-                </div>
+                      >
+                      <option disabled value="">Select one</option>
+                      <!-- eslint-disable-next-line vue/no-use-v-if-with-v-for -->
+                      <option v-if="selectedStat !== 'singleyear'" value="mean">the Mean</option>
+                      <option v-if="selectedStat !== 'singleyear'" value="median">the Median</option>
+                      <option v-if="selectedStat !== 'singleyear'" value="singleyear">a Single Year</option>
+                      <!-- eslint-disable-next-line vue/no-use-v-if-with-v-for -->
+                      <option v-if="selectedStat === 'singleyear'"
+                        v-for="year in availableYears" :key="year" :value="year">{{ year }}
+                      </option>
+                    </select>
+                  </v-col>
                 
               </v-col>
               <v-col class="align-center justify-center">
@@ -202,7 +210,6 @@ const mapSubsets = new Map([
   ['elNino', 'El Niño Years'],
   ['neutral', 'Non El Niño Years'],
   ['laNina', 'La Niña Years'],
-  ['allYears', 'All Years'],
 ]) as Map<DataSubset, string>;
 
 const modisTimes = new Map([
@@ -876,25 +883,12 @@ export default defineComponent({
 .sentence {
   font-size: 1.35rem;
   font-weight: bold;
-  display: inline-flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  overflow-wrap: break-word;
-  white-space: normal;
 }
 
 .select-box {
-  display: inline-block!important;
-  flex: 0 0 auto;
-  &.v-input {
-    width: fit-content !important;
-  }
-  
-  .v-select__selection-text {
-    font-size: 1.35rem;
-    font-weight: bold;
-  }
+  border-bottom: 1px solid white;
+  appearance: auto !important;
+  margin-inline: 0.5em;
 }
 
 }
