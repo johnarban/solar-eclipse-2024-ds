@@ -13,6 +13,7 @@ import { Chart , Title, BarElement, CategoryScale, LinearScale, ChartData, BarCo
 import Color from '@kurkle/color'; // included as dependency of chart.js
 import {customCanvasBackgroundColor} from './ChartPlugins';
 import { ChartOptions } from 'chart.js';
+import {deepMerge} from './utils';
 
 // register plugins 
 import annotationPlugin from 'chartjs-plugin-annotation';
@@ -103,6 +104,25 @@ export default defineComponent({
       required: false
     },
     
+    barAnnotationLabel: {
+      // it should be a function which takes a data value and returns a string
+      type : Function as PropType<(data: number) => string> | null,
+      default: null,
+      required: false
+    },
+    
+    barLabelScale: {
+      type: Number,
+      default: 1,
+      required: false
+    },
+    
+    barOffset: {
+      type: Number,
+      default: 0,
+      required: false
+    },
+    
     showTooltip: {
       type: Boolean,
       default: false,
@@ -114,6 +134,25 @@ export default defineComponent({
       default: false,
       required: false
     },
+    
+    stacked: {
+      type: Boolean,
+      default: false,
+      required: false
+    },
+    
+    options: {
+      type: Object as PropType<ChartOptions>,
+      default: () => { return {} as ChartOptions;},
+      required: false
+    },
+    
+    otherDatasets: {
+      type: Object as PropType<ChartDataType["datasets"]>,
+      default: () => { return [] as ChartDataType["datasets"];},
+      required: false
+    }
+    
     
   },
   
@@ -143,6 +182,7 @@ export default defineComponent({
       return {
         labels: this.labels,
         datasets: [
+          ...this.otherDatasets,
           {
             label: this.dataLabel,
             backgroundColor: this.colors,
@@ -150,24 +190,25 @@ export default defineComponent({
             borderColor: this.borderColor,
             borderWidth: this.borderWidth,
             data: this.histogramData,
-          }
+          },
         ]
       };
     },
     
     chartOptions() { 
-      return {
+      const options = {
         responsive: true,
         maintainAspectRatio: false,
         animation: this.animated,
         scales: {
           x: {
-            grid: { display: false }
+            grid: { display: false },
+            stacked: this.stacked,
           },
           y: {
             beginAtZero: true,
-            max: 100,
             grid: { display: true },
+            stacked: this.stacked,
           }
         },
         plugins: {
@@ -184,7 +225,7 @@ export default defineComponent({
           },
           // https://www.chartjs.org/docs/latest/configuration/legend.html
           legend: {
-            display: false
+            display: true
           },
           
           tooltip: {
@@ -196,8 +237,14 @@ export default defineComponent({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             annotations: this.annotations as any
           }
-        }
+        },
       };
+      
+      
+      // deep merge with user options
+      
+      
+      return deepMerge(options, this.options) as ChartOptions;
     },
     
     
@@ -253,7 +300,7 @@ export default defineComponent({
           backgroundColor: "whitesmoke",
           borderRadius: 0,
           color: "black",
-          content: (ctx: ChartContext) =>  this.barValueByIndex(ctx, dataIndex).toFixed(0) + "%",
+          content: (ctx: ChartContext) =>  this.barAnnotationString(this.barValueByIndex(ctx, dataIndex)),
           position: "center",
           textAlign: "start",
           padding: 0,
@@ -261,17 +308,36 @@ export default defineComponent({
         xMin: dataIndex - .36,
         xMax: dataIndex + .36,
         xScaleID: "x",
-        yMax: (ctx: ChartContext) => Math.min(this.barValueByIndex(ctx, dataIndex) + 10 , 100),
-        yMin: (ctx: ChartContext) => Math.min(this.barValueByIndex(ctx, dataIndex) + 10, 100),
+        yMax: (ctx: ChartContext) => Math.min(this.barValueByIndex(ctx, dataIndex) + this.barOffset , 100),
+        yMin: (ctx: ChartContext) => Math.min(this.barValueByIndex(ctx, dataIndex) + this.barOffset , 100),
         yScaleID: "y"
       };
     },
     
     barValueByIndex(ctx: ChartContext, index:number): number {
       const chart = ctx.chart;
-      const dataset = chart.data.datasets[0];
+      if (this.stacked && this.otherDatasets.length > 0) {
+        return this.stackedBarValueByIndex(ctx, index);
+      }
+      const dataset = chart.data.datasets[chart.data.datasets.length - 1];
       return dataset.data[index] as number;
     },
+    
+    barAnnotationString(data: number): string {
+      if (this.barAnnotationLabel) {
+        return this.barAnnotationLabel(data);
+      }
+      return data.toFixed(2);
+    },
+    
+    stackedBarValueByIndex(ctx: ChartContext, index:number): number {
+      const chart = ctx.chart;
+      let val = 0;
+      for (let i=0; i<chart.data.datasets.length; i++) {
+        val += chart.data.datasets[i].data[index] as number;
+      }
+      return val;
+    }
         
   },
   

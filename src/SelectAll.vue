@@ -1,6 +1,6 @@
 <template>
   <v-container class="pa-0">
-    <v-col class="ma-0">
+    <v-col v-if="!useRadio" class="ma-0">
       <v-checkbox
         v-if="selectAllTop"
         label="Select All"
@@ -22,13 +22,33 @@
       ></v-checkbox>
       <v-checkbox
         v-if="!selectAllTop"
-        label="Select All"
+        :label="selectAllLabel"
         v-model="selectAll"
         @change="() => handleSelectAll(selectAll)"
         hide-details
         :density="density"
         v-bind="$attrs"
       ></v-checkbox>
+    </v-col>
+    <v-col v-else class="ma-0">
+      <v-radio-group v-model="selected" v-bind="$attrs">
+        <v-radio
+          :label="selectAllLabel"
+          value="selectAll"
+          hide-details
+          :density="density"
+          @change="() => handleSelectAll(selected === 'selectAll')"
+        ></v-radio>
+        <v-radio
+          v-for="(option, index) in options"
+          :key="index"
+          :label="option.label"
+          :value="option.key"
+          hide-details
+          :density="density"
+          @change="() => handleOptionChange(index)"
+        ></v-radio>
+      </v-radio-group>
     </v-col>
   </v-container>
 </template>
@@ -55,6 +75,14 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    selectAllLabel: {
+      type: String,
+      default: 'Select All',
+    },
+    useRadio: {
+      type: Boolean,
+      default: false,
+    },
   },
   
   // emits: ['selected', 'selectAll'],
@@ -68,14 +96,22 @@ export default defineComponent({
     return {
       options: this.getOptions() as Options,
       selectAll: false,
+      selected: '',
     };
+  },
+  
+  mounted() {
+    // set selectAll = true
+    this.selected = 'selectAll';
+    this.handleSelectAll(true);
+    
   },
   
 
 
   methods: {
     getOptions(): Options {
-      return Array.from(this.optionsMap).map(([key, value]) => {
+      return Array.from(this.optionsMap).map(([key, value], _index) => {
         return {key: key, label: value, selected: false };
       });
     },
@@ -120,6 +156,13 @@ export default defineComponent({
     selectAll: {
       handler(newSelectAll) {
         console.log('selectAll', newSelectAll);
+      },
+    },
+    
+    selected: {
+      handler(newSelected) {
+        console.log('selected', newSelected);
+        this.$emit('selected', [newSelected]);
       },
     },
     
