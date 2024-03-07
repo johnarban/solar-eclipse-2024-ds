@@ -234,8 +234,7 @@ export default defineComponent({
           
           // https://www.chartjs.org/chartjs-plugin-annotation/latest/guide/usage.html
           annotation: {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            annotations: this.annotations as any
+            annotations: this.annotations
           }
         },
       };

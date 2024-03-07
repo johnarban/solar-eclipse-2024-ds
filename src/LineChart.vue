@@ -6,14 +6,25 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import Chart from "chart.js/auto"; 
+import { PointStyle } from "chart.js";
 import {customCanvasBackgroundColor} from './ChartPlugins';
 import 'chartjs-adapter-date-fns';
+import annotationPlugin from 'chartjs-plugin-annotation';
 
-Chart.register(customCanvasBackgroundColor);
+
+Chart.register(customCanvasBackgroundColor, annotationPlugin);
 
 type OrderedPair = { 
   x: Date | number,
   y: number 
+};
+
+type SubsetStyle = {
+  backgroundColor?: string,
+  borderColor?: string,
+  borderWidth?: number,
+  radius?: number,
+  pointStyle?: PointStyle,
 };
 
 export default defineComponent({
@@ -201,6 +212,24 @@ export default defineComponent({
       default: (value: number) => value,
     },
     
+    annotations: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+    
+    subsets: {
+      type: Array<boolean[]>,
+      required: false,
+      default: () => [],
+    },
+    
+    subsetStyles: {
+      type: Array<SubsetStyle>,
+      required: false,
+      default: () => [],
+    },
+    
   },
   mounted() {
     this.draw();
@@ -251,6 +280,7 @@ export default defineComponent({
 
     },
     
+    
   },
 
   computed: {
@@ -291,6 +321,40 @@ export default defineComponent({
       return [{ x: null, y: null}];
     },
     
+    
+    defaultScatterStyle() {
+      return {
+        color: 'red',
+        backgroundColor: this.color,
+        borderColor: this.borderColor,
+        borderWidth: this.borderWidth,
+        radius: 3,
+        pointStyle: 'circle',
+      };
+    },
+    
+    styleBySubset() {
+      const styles = this.computedScatterData.map((_d, i) => {
+        if ((this.subsets.length > 0) ) {
+          const index = this.subsets.map((subset) => subset[i]).indexOf(true);
+          if (index >= 0) {
+            console.log(this.subsetStyles[index]);
+            return {...this.defaultScatterStyle, ...this.subsetStyles[index]};
+          }
+        }
+        return this.defaultScatterStyle;
+      });
+      
+      return {
+        backgroundColor: styles.map(s => s.backgroundColor),
+        borderColor: styles.map(s => s.borderColor),
+        borderWidth: styles.map(s => s.borderWidth),
+        radius: styles.map(s => s.radius),
+        pointStyle: styles.map(s => s.pointStyle),
+      };
+      
+    },
+    
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     chartData(): any {
@@ -299,11 +363,7 @@ export default defineComponent({
         type: 'scatter',
         label: this.scatterLabel,
         data: this.computedScatterData,
-        radius: 3, // Chart.js default
-        pointStyle: 'circle', // Chart.js default
-        backgroundColor: this.color,
-        borderColor: this.borderColor,
-        borderWidth: this.borderWidth,
+        ...this.styleBySubset,
         ...this.scatterOptions
       };
       const lineData = {
@@ -380,6 +440,10 @@ export default defineComponent({
           tooltip: {
             enabled: this.showTooltip
           },
+          
+          annotation: {
+            annotations: this.annotations
+          }
           
           
         }
