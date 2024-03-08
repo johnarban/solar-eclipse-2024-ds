@@ -72,23 +72,47 @@
                 @click="updateData()">Show on Map</v-btn>
               </v-col>
             </v-row>
-          
-            <v-row>
+            
+            <v-row id="chart-intro" v-if="!displayCharts && displayData">
+              <hr style="width:100%">
+              <h3>Show cloud cover statistics for currently selected location: <strong class="attention">{{ locationName }}</strong></h3>
+              <v-btn 
+                size="large"
+                color="#eac402"
+                @click="displayCharts = true">Show Cloud Cover Charts</v-btn>
+            </v-row>
+            <v-row v-if="displayCharts">
+              <h3>Cloud Cover for <strong class="attention">{{ locationName }}</strong>:</h3>
               <div id="awv-cloud-cover-display" class="">
-                Cloud Cover for {{ locationName }} for {{ mapSubsets.get(dataSubset) }}:
-                <div class="awv-cloud-cover-container">
-                  <div class="awv-cloud-cover-label"> Median: </div>
-                  <div class="awv-cloud-cover-icon"><v-icon size="35">{{ cloudIcon(locationMedian) }}</v-icon></div>
-                  <div class="awv-cloud-cover-label-value">{{ Math.ceil(locationMedian * 100) }} % </div>
-                  <div class="awv-cloud-cover-label-text"> {{ getCloudCoverText(locationMedian)[1] }} </div>
-                </div>
+                <!-- cloud cover for all years at location -->
+                <cloud-cover-line
+                  :value="median(cloudDataNearLocation)"
+                  label="Median"
+                  :codes="skyCoverCodes"
+                  :ranges="skyCoverCodeRanges"
+                  :icons="skyCoverIcons"
+                  />
                 
-                <div class="awv-cloud-cover-container">
-                  <div class="awv-cloud-cover-label"> Mean: </div>
-                  <v-icon size="35">{{ cloudIcon(locationMean) }}</v-icon>
-                  <div class="awv-cloud-cover-label-value">{{ Math.ceil(locationMean * 100) }} % </div>
-                  <div class="awv-cloud-cover-label-text"> {{ getCloudCoverText(locationMean)[1] }} </div>
-                </div>
+                <cloud-cover-line
+                  :value="mean(cloudDataNearLocation)"
+                  label="Mean"
+                  :codes="skyCoverCodes"
+                  :ranges="skyCoverCodeRanges"
+                  :icons="skyCoverIcons"
+                  />
+                  <div v-if="dataSubset != 'allYears'">
+                    <hr>
+                    <h3 v-if="selectedStat !== 'singleyear'"> {{ statText.get(selectedStat) }} Cloud Cover for {{ locationName }} for {{ mapSubsets.get(dataSubset) }}:</h3>
+                    <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
+
+                    <cloud-cover-line
+                      :value="locationValue"
+                      :label="selectedStat === 'singleyear' ? 'Cloud Cover' : statText.get(selectedStat) ?? 'Cloud Cover'"
+                      :codes="skyCoverCodes"
+                      :ranges="skyCoverCodeRanges"
+                      :icons="skyCoverIcons"
+                      />
+                  </div>
               </div>
             </v-row>
               
@@ -105,8 +129,9 @@
               :selected-circle-options="selectedCircleOptions"
               :selected-cloud-cover="displayedCloudData"
               :rectangle-degrees="0.5"
-              show-cloud-cover
-              @dataclick="selectedDataIndex = $event.index"
+              :show-cloud-cover="displayData"
+              @dataclick="selectedDataIndex = $event.index; selectedDataCloudCover = $event.cloudCover"
+              :cloud-cover-opacity-function="transferFunction"
               />
               
               <v-radio-group 
@@ -131,27 +156,28 @@
           </v-col>  
         </v-row>
         
-        
-        <v-row class="">
+        <v-row v-if="displayCharts" class="">
           <v-col cols="12" sm="6" class="graph-col">
           <bar-chart
             id="cloud-histogram"
             class="elevation-5"
             :labels="skyCoverCodes"
-            data-label="All Years"
+            :data-label="dataSubset === 'allYears' ? 'All Years' : 'Other Years'"
             :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
-            :colors="colorMap"
+            :colors="dataSubset === 'allYears' ? colorMap : ['#aaa']"
             :options = "{scales: {y: {beginAtZero: true, max:20}}}"
-            :bar-annotations="true"
+            :bar-annotations="false"
             :bar-offset="1"
             :barAnnotationLabel="(v:number) => (v * 100/20).toFixed(0) + '%'"
             stacked
-            :title="`Cloud Conditions for ${allYears[0]} - ${allYears[allYears.length - 1]}`"
+            :title="`Cloud Conditions for ${locationName} ${allYears[0]} - ${allYears[allYears.length - 1]}`"
             :other-datasets="dataSubset === 'allYears' ? [] : [
               {
                 label: mapSubsets.get(dataSubset),
                 data: locationHistogram,
-                backgroundColor: '#c51b8a',
+                backgroundColor: colorMap, //'#c51b8a',
+                borderColor: 'black', //'#c51b8a',
+                borderWidth: 1,
               }
             ]"
             />
@@ -159,6 +185,7 @@
           <v-col cols="12" sm="6" class="graph-col">
           <line-chart
             class="elevation-5"
+            :title="`Percent Cloud Cover for ${locationName}`"
             :scatter-data="cloudDataNearLocation"
             :scatter-options="{radius: 4 }"
             :subsets="dataSubset === 'allYears' ? [] :
@@ -221,12 +248,13 @@ import { defineComponent, PropType } from 'vue';
 import BarChart from './BarChart.vue';
 import LineChart from './LineChart.vue';
 import LocationSelector from './LocationSelector.vue';
+import CloudCoverLine from './CloudCoverLine.vue';
 
 
 import {isNumber, OrderedPair, textForLocation} from './utils';
 // isNumber is a utility function that checks if a value is a number
 // We need to use Ordered Pairs as that is the data format that Chart.js expects
-type LineGraphData = OrderedPair<number | Date, number>[];
+type LineGraphData = OrderedPair<Date, number>[];
 import { csvParseRows } from "d3-dsv";
 
 type CityLocation = {
@@ -270,7 +298,7 @@ function getStat(val: CloudSummaryData, stat: Exclude<Statistics,'singleyear'>):
 
 const mapSubsets = new Map([
   ['elNino', 'El Niño Years'],
-  ['neutral', 'Non El Niño Years'],
+  ['neutral', 'Neutral Years'],
   ['laNina', 'La Niña Years'],
   ['allYears', 'All Years'],
 ]) as Map<DataSubset, string>;
@@ -323,6 +351,7 @@ export default defineComponent({
     'bar-chart': BarChart,
     'line-chart': LineChart,
     'location-selector': LocationSelector,
+    'cloud-cover-line': CloudCoverLine,
   },
   
   emits: ['update:modelValue','close'],
@@ -406,21 +435,26 @@ export default defineComponent({
       elNinoYearsSummary: [] as CloudSummaryData[],
       laNinaYearsSummary: [] as CloudSummaryData[], 
       selectedDataIndex: null as number | null,
+      selectedDataCloudCover: null as number | null,
       mapDescriptionText: '',
-      locationName: ''
+      locationName: '',
+      inBounds: false,
+      displayData: false,
+      displayCharts: false,
       
     };
   },
   
   mounted() {
     console.log('Advanced Weather View mounted');
+    this.needToUpdate = true;
     // create a time to simulate data loading
     this.updateLocationName();
     if (this.modelValue) {
       this.loadCloudData().then(() => {
         console.log('preloading data');
         this.dataloaded = true;
-        this.updateData();
+        this.updateData(false);
         this.updateMapDescriptionText();
       });
     }
@@ -447,19 +481,20 @@ export default defineComponent({
     cloudDataNearLocation(): LineGraphData | undefined {
       // get the cloud data nearest to the location for all years
       const allData = [] as LineGraphData;
+      if (!this.inBounds) {return undefined;}
       if (this.allYears.length === 0) {
         console.log('no years');
-        return undefined;
+        return [];
       }
       
       if (Object.keys(this.allCloudData).length != this.allYears.length) {
         console.log('all data not yet loaded');
-        return undefined;
+        return [];
       }
       
       const index = this.selectedDataIndex ?? this.getLatLonIndex(this.location.latitudeDeg, this.location.longitudeDeg);
       if (index === -1 || index === null) {
-        return undefined;
+        return [];
       }
 
       // show the lat lon of index
@@ -486,11 +521,11 @@ export default defineComponent({
       }, [] as number[]);
       return hist;
     },
-      
     
     yearForLocation(): LineGraphData {
       // get the all cloud data for this location for all years
       const allData = [] as LineGraphData;
+      if (!this.inBounds) {return allData;}
       if (this.allYears.length === 0) {
         return allData;
       }
@@ -520,7 +555,7 @@ export default defineComponent({
           return;
         }
         const index = this.selectedDataIndex ?? this.getLatLonIndex(this.location.latitudeDeg, this.location.longitudeDeg);
-        if (index === -1) {
+        if (index === -1 || index === null) {
           return;
         }
         allData.push({'x':new Date(year, 4, 8), 'y':data[index].cloudCover});
@@ -537,16 +572,36 @@ export default defineComponent({
       return this.getHistogram(this.yearForLocation.map(d => d.y), 'none');
     },
     
-    locationMean(): number {
+    locationMean(): number | null {
       // get the mean cloud cover for the location
       return this.mean(this.yearForLocation.map(d => d.y));
     },
     
-    locationMedian(): number {
+    locationMedian(): number | null {
       // get the median cloud cover for the location
       return this.median(this.yearForLocation.map(d => d.y));
     },
     
+    locationValue: {
+      get() {
+        if (this.selectedDataCloudCover) {
+          return this.selectedDataCloudCover;
+        }
+        if (this.selectedStat === 'mean') {
+          return this.locationMean;
+        }
+        if (this.selectedStat === 'median') {
+          return this.locationMedian;
+        }
+        if (this.selectedStat === 'singleyear') {
+          return this.cloudDataNearLocation?.filter( v => v.x.getFullYear() === this.selectedYear)[0].y ?? null;
+        }
+        return null;
+      },
+      set(value: number) {
+        this.selectedDataCloudCover = value;
+      },
+    },
     
     elNinoData(): CloudData | undefined {
       if (this.selectedStat === 'singleyear') {
@@ -605,6 +660,16 @@ export default defineComponent({
   
   
   methods: {
+    
+    transferFunction(val: number | null): number {
+      if (val === null) {
+        return 0;
+      }
+      // return sigmoid
+      const y = (val - 0.5) / .12;
+      const z = Math.exp(y);
+      return z / (1 + z);
+    },
     
     getHistogram(arr: number[], norm: 'none' | 'fraction' | 'percent' = 'none'): number[] {
       // get the histogram data for the cloud cover)
@@ -734,12 +799,14 @@ export default defineComponent({
     getDataForYears(years: number[]): CloudData {
       // get the cloud data for a location for a set of years
       const data = [] as CloudData;
+      if (!this.inBounds) {return data;}
+      
       years.map((year) => {
         if (this.allCloudData[year] === undefined) {
           return;
         }
         const index = this.selectedDataIndex ?? this.getLatLonIndex(this.location.latitudeDeg, this.location.longitudeDeg);
-        if (index === -1) {
+        if (index === -1 || index === null) {
           return;
         }
         data.push(this.allCloudData[year][index]);
@@ -778,6 +845,17 @@ export default defineComponent({
       return arrays[0].map((_, i) => arrays.map((array) => array[i]));
     },
     
+    async checkInBounds(location: CityLocation) {
+      // check if a location is approximately within bounds
+      // of the data. This will include a small area just outside
+      const lat = location.latitudeDeg;
+      const lon = location.longitudeDeg;
+      // small angle approximation correct longitude by cos(lat)
+      const distances = this.latitudes.map((lat2, i) => Math.sqrt((lat - lat2) ** 2 +  (Math.cos(((lat + lat2)/2)  * Math.PI/180) * (lon - this.longitudes[i])) ** 2));
+      console.log('distances', Math.min(...distances));
+      return Math.floor(Math.min(...distances) * 100) <= 25 * Math.sqrt(2);
+    },
+    
     getLatLonIndex(lat: number, lon: number): number {
       if (this.latitudes.length === 0) {
         return -1;
@@ -785,17 +863,27 @@ export default defineComponent({
       if (this.longitudes.length === 0) {
         return -1;
       }
+      
+      if (!this.inBounds) {
+        console.log('getLatLonIndex: out of bounds');
+        return -1;
+      }
+      
       // binary search using distance
       const distances = this.latitudes.map((lat2, i) => Math.sqrt((lat - lat2) ** 2 + (lon - this.longitudes[i]) ** 2));
       const minIndex = distances.indexOf(Math.min(...distances));
+      // this.selectedDataIndex = minIndex;
       return minIndex;
     },
     
     
     
-    updateData() {
+    updateData(display = true) {
       // simulate data loading
-      this.needToUpdate = false;
+      this.displayData = display;
+      if (display){
+        this.needToUpdate = false;
+      }
       this.updateMapDescriptionText();
       if (this.selectedStat === 'singleyear') {
         this.displayedCloudData = this.allCloudData[this.selectedYear];
@@ -865,14 +953,33 @@ export default defineComponent({
       return  word.charAt(0).toUpperCase() + word.slice(1);
     },
     
+    isLineGraphData(data: LineGraphData | (number | null)[]): data is LineGraphData {
+      return (data && data[0]!=null && typeof data[0] === 'object' && 'x' in data[0]);
+    },
     
     // stats methods
-    mean(array: (number | null)[]): number {
+    mean(array: (number | null)[] | LineGraphData | undefined): number | null {
+      if (array === undefined) {
+        return null;
+      }
+
+      if (this.isLineGraphData(array)) {
+        array = array.map((d) => d.y);
+      }
+      
       const arr = array.filter((v) => isNumber(v)) as number[];
       return arr.reduce((a, b) => a + b, 0) / arr.length;
     },
     
-    median(array: (number | null)[]): number {
+    median(array: (number | null)[] | LineGraphData | undefined): number | null {
+      if (array === undefined) {
+        return null;
+      }
+
+      if (this.isLineGraphData(array)) {
+        array = array.map((d) => d.y);
+      }
+      
       const arr = array.filter((v) => isNumber(v)) as number[];
       const mid = Math.floor(arr.length / 2);
       const nums = [...arr].sort((a, b) => a - b);
@@ -922,13 +1029,20 @@ export default defineComponent({
         this.loadCloudData().then(() => {
           console.log('finished loading data');
           this.dataloaded = true;
-          this.updateData();
+          this.updateData(this.displayData);
         });
+      } else {
+        this.displayData = false;
       }
     }, 
     
     selectedStat(value: Statistics) {
       console.log('selectedStat', value);
+      this.needToUpdate = true;
+    },
+    
+    selectedYear(value: number) {
+      console.log('selectedYear', value);
       this.needToUpdate = true;
     },
     
@@ -944,6 +1058,11 @@ export default defineComponent({
     location(value: CityLocation) {
       console.log('location', value);
       this.updateLocationName();
+      
+      this.checkInBounds(value).then((inBounds) => {
+        this.inBounds = inBounds;
+      });
+      
     },
   },
   
@@ -966,7 +1085,16 @@ export default defineComponent({
   p.intro {
     font-size: 1.2em;
   }
-
+  
+  strong.attention {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--color);
+  }
+  
+  #chart-intro {
+    
+  }
     
   .graph-col {
     height: 300px;
@@ -979,7 +1107,7 @@ export default defineComponent({
   }
   .map-container {
     contain: strict;
-    aspect-ratio: 1;
+    aspect-ratio: 2;
   }
   
   .slider-underside-thumb-label {

@@ -142,6 +142,11 @@ export default defineComponent({
       default: null
     },
     
+    cloudCoverOpacityFunction: {
+      type: Function,
+      default: (c: number) => c >= 0.05 ? 0.2 + Math.pow(c,1.5) * .8 : c
+    },
+    
     rectangleDegrees: {
       type: Number,
       default: 1
@@ -215,7 +220,7 @@ export default defineComponent({
         weight: .01,
         opacity: cloudCover,
         fillColor: color,
-        fillOpacity: cloudCover > .05 ? 0.2 + Math.pow(cloudCover,3) * .9 : cloudCover
+        fillOpacity: this.cloudCoverOpacityFunction(cloudCover)
       });
       rect.on('click', () => {
         console.log('dataclick', { lat, lon, cloudCover, index});

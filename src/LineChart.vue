@@ -230,6 +230,12 @@ export default defineComponent({
       default: () => [],
     },
     
+    title: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    
   },
   mounted() {
     this.draw();
@@ -443,7 +449,15 @@ export default defineComponent({
           
           annotation: {
             annotations: this.annotations
-          }
+          },
+          
+          title: {
+            display: this.title !== "",
+            text: this.title,
+            font: {
+              size: 12
+            }
+          },
           
           
         }
