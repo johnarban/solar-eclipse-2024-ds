@@ -1393,8 +1393,6 @@ type LearnerPath = "Location" | "Clouds" | "Learn";
 type ViewerMode = "Horizon";
 type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | `moon-sky-blue-overlay-${number}.png` | "empty.png";
 
-interface SendDataOptions { flush: boolean }
-
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
 
@@ -1540,27 +1538,6 @@ function parseEclipsePath(csv: string) {
 
 const eclipsePath = parseEclipsePath(eclipse);
 
-// convert the eclipse path to a GeoJson feature collection
-const _eclipsePathGeoJson = {
-  "name": "Eclipse Path",
-  "type": "FeatureCollection",
-  "features": eclipsePath.map((d) => {
-    return {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [d.centerLine.longitudeDeg, d.centerLine.latitudeDeg]
-      },
-      "properties": {
-        "utc": d.utc,
-        "eclipseDuration": d.eclipseDuration,
-        "popupContent": d.popupContent,
-        // "absoluteRadius": 5000, //d.pathWidth * 1000 / 2
-      }
-    };
-  })
-};
-
 
 /** PARSE CLOUD COVERAGE DATA **/
 import cloudCover from "./assets/cloud_cover.csv";
@@ -1653,9 +1630,8 @@ export default defineComponent({
       uuid,
       existingUser,
       infoTimeMs: 0,
-      appTimeMs: 0,
       appStartTimestamp: Date.now(),
-      dateStartTimestamp: null as number | null,
+      infoStartTimestamp: null as number | null,
       responseOptOut: responseOptOut as boolean | null,
 
       showSplashScreen: queryData.splash ?? true, 
@@ -1933,7 +1909,7 @@ export default defineComponent({
 
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "hidden") {
-          this.sendUpdateData({ flush: true });
+          this.sendUpdateData();
         } else {
           this.clearData();
         }
@@ -2733,6 +2709,9 @@ export default defineComponent({
     },
 
     createUserEntry() {
+      if (this.responseOptOut) {
+        return;
+      }
       fetch(`${API_BASE_URL}/solar-eclipse-2024/data`, {
         method: "PUT",
         headers: {
@@ -2756,15 +2735,15 @@ export default defineComponent({
     clearData() {
       this.userSelectedLocations = [];
       this.cloudCoverSelectedLocations = [];
-      this.appTimeMs = 0;
       this.infoTimeMs = 0;
+      this.appStartTimestamp = Date.now();
     },
 
-    sendUpdateData(options: SendDataOptions) {
+    sendUpdateData() {
       if (this.responseOptOut) {
         return;
       }
-      fetch(`${API_BASE_URL}/solar-eclipse-2024/data`, {
+      fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -2773,19 +2752,15 @@ export default defineComponent({
         },
         body: JSON.stringify({
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          user_uuid: this.uuid, 
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           user_selected_locations: toRaw(this.userSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          info_time_ms: 0, app_time_ms: 0,
+          delta_info_time_ms: this.infoTimeMs, delta_app_time_ms: Date.now() - this.appStartTimestamp
         }),
         keepalive: true,
       }).then(() => {
-        if (options.flush) {
-          this.clearData();
-        }
+        this.clearData();
       });
     },
 
@@ -3493,6 +3468,17 @@ export default defineComponent({
     showSplashScreen(val: boolean) {
       if (!val) {
         this.inIntro = true; 
+      }
+    },
+
+    showInfoSheet(show: boolean) {
+      // Keep track of how long the user has the book open/closed
+      if (show) {
+        this.infoStartTimestamp = Date.now();
+      } else if (this.infoStartTimestamp !== null) {
+        const timestamp = Date.now();
+        this.infoTimeMs += (timestamp - this.infoStartTimestamp);
+        this.infoStartTimestamp = null;
       }
     },
     
