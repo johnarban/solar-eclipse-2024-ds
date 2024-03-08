@@ -1617,9 +1617,11 @@ export default defineComponent({
     }
 
     const maybeUUID = window.localStorage.getItem(UUID_KEY);
-    const existingUser = maybeUUID === null;
+    const existingUser = maybeUUID !== null;
     const uuid = maybeUUID ?? v4();
-    window.localStorage.setItem(UUID_KEY, uuid);
+    if (!existingUser) {
+      window.localStorage.setItem(UUID_KEY, uuid);
+    }
 
     const storedOptOut = window.localStorage.getItem(OPT_OUT_KEY);
     const responseOptOut = typeof storedOptOut === "string" ? storedOptOut === "true" : null;
