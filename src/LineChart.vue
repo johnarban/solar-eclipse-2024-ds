@@ -330,6 +330,7 @@ export default defineComponent({
         borderWidth: this.borderWidth,
         radius: 3,
         pointStyle: 'circle',
+        ...this.scatterOptions,
       };
     },
     
@@ -364,7 +365,6 @@ export default defineComponent({
         label: this.scatterLabel,
         data: this.computedScatterData,
         ...this.styleBySubset,
-        ...this.scatterOptions
       };
       const lineData = {
         type: 'line',

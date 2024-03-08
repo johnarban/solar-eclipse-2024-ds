@@ -215,9 +215,10 @@ export default defineComponent({
         weight: .01,
         opacity: cloudCover,
         fillColor: color,
-        fillOpacity: cloudCover > .05 ? .2 + Math.pow(cloudCover,1.5) * .8 : cloudCover
+        fillOpacity: cloudCover > .05 ? 0.2 + Math.pow(cloudCover,3) * .9 : cloudCover
       });
       rect.on('click', () => {
+        console.log('dataclick', { lat, lon, cloudCover, index});
         this.$emit('dataclick', { lat, lon, cloudCover, index});
       });
       return rect;

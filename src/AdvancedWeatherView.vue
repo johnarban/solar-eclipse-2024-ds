@@ -7,7 +7,7 @@
     <v-card id="advanced-weather-view">
       <v-card-text>
         <h1 style="padding:0.5em 0.5em">Just how cloudy is it in {{ locationName }} in April?</h1>
-        <p>
+        <p class="intro">
           NASA's <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS Aqua and Terra</a> satellites 
           provide daily views of the entire surface of the Earth and measure the cloud cover.
           This is provided as the <strong>cloud cover fraction - <em>the percentage of the sky at a given location that is covered 
@@ -18,11 +18,11 @@
         <!-- top row -->
         <v-row class="">
           
-          <v-col sm="12" md="6" >
+          <v-col cols="5" >
             <v-row>              
               <v-col cols="12">
                 
-                <v-col class="sentence" col="12">
+                <v-col class="sentence-query" col="12">
                   <label for="statistics">Show me</label>
                   <select 
                     class="select-box"
@@ -37,17 +37,25 @@
                   </select>
                     <label for="years">of the cloud cover for </label>
                     <select 
+                      v-if="selectedStat !== 'singleyear'"
                       class="select-box"
                       name="years" 
                       id="select-years" 
                       v-model="dataSubset"
                       >
                       <option disabled value="">Select one</option>
-                      <!-- eslint-disable-next-line vue/no-use-v-if-with-v-for -->
-                      <option v-if="selectedStat !== 'singleyear'"
+                      <option
                         v-for="[key, value] in mapSubsets" :key="key" :value="key">{{ value }}</option>
-                      <!-- eslint-disable-next-line vue/no-use-v-if-with-v-for -->
-                      <option v-else
+                    </select>
+                    <select 
+                      v-else
+                      class="select-box"
+                      name="years" 
+                      id="select-years" 
+                      v-model="selectedYear"
+                      >
+                      <option disabled value="">Select one</option>
+                      <option
                         v-for="year in availableYears" :key="year" :value="year">{{ year }}
                       </option>
                     </select>
@@ -68,34 +76,28 @@
             <v-row>
               <div id="awv-cloud-cover-display" class="">
                 Cloud Cover for {{ locationName }} for {{ mapSubsets.get(dataSubset) }}:
+                <div class="awv-cloud-cover-container">
+                  <div class="awv-cloud-cover-label"> Median: </div>
+                  <div class="awv-cloud-cover-icon"><v-icon size="35">{{ cloudIcon(locationMedian) }}</v-icon></div>
+                  <div class="awv-cloud-cover-label-value">{{ Math.ceil(locationMedian * 100) }} % </div>
+                  <div class="awv-cloud-cover-label-text"> {{ getCloudCoverText(locationMedian)[1] }} </div>
+                </div>
                 
-
-                  <div class="awv-cloud-cover-container">
-                    <div class="awv-cloud-cover-label"> Median: </div>
-                    <div class="awv-cloud-cover-icon"><v-icon size="35">{{ cloudIcon(locationMedian) }}</v-icon></div>
-                    <div class="awv-cloud-cover-label-value">{{ Math.ceil(locationMedian * 100) }} % </div>
-                    <div class="awv-cloud-cover-label-text"> {{ getCloudCoverText(locationMedian)[1] }} </div>
-                  </div>
-                  
-                  <div class="awv-cloud-cover-container">
-                    <div class="awv-cloud-cover-label"> Mean: </div>
-                    <v-icon size="35">{{ cloudIcon(locationMean) }}</v-icon>
-                    <div class="awv-cloud-cover-label-value">{{ Math.ceil(locationMean * 100) }} % </div>
-                    <div class="awv-cloud-cover-label-text"> {{ getCloudCoverText(locationMean)[1] }} </div>
-                  </div>
-                  
-            
-              
+                <div class="awv-cloud-cover-container">
+                  <div class="awv-cloud-cover-label"> Mean: </div>
+                  <v-icon size="35">{{ cloudIcon(locationMean) }}</v-icon>
+                  <div class="awv-cloud-cover-label-value">{{ Math.ceil(locationMean * 100) }} % </div>
+                  <div class="awv-cloud-cover-label-text"> {{ getCloudCoverText(locationMean)[1] }} </div>
+                </div>
               </div>
-              
             </v-row>
               
           </v-col>
           
-          <v-col cols="6">
+          <v-col cols="7">
             <v-container aspect-ratio="1">
+            <span id="awv-map-description"> {{ mapDescriptionText }} </span>
             <location-selector
-              v-if="false"
               v-model="location"
               label="Location"
               :map-options="mapOptions"
@@ -140,10 +142,9 @@
             :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
             :colors="colorMap"
             :options = "{scales: {y: {beginAtZero: true, max:20}}}"
-            show-tooltip
             :bar-annotations="true"
             :bar-offset="1"
-            :barAnnotationLabel="(v:number) => (v * 100/20).toFixed(0)"
+            :barAnnotationLabel="(v:number) => (v * 100/20).toFixed(0) + '%'"
             stacked
             :title="`Cloud Conditions for ${allYears[0]} - ${allYears[allYears.length - 1]}`"
             :other-datasets="dataSubset === 'allYears' ? [] : [
@@ -159,10 +160,10 @@
           <line-chart
             class="elevation-5"
             :scatter-data="cloudDataNearLocation"
-            :subsets="[allYears.map((year) => elNinoYears.includes(year)),
-                      allYears.map((year) => neutralYears.includes(year)),
-                      allYears.map((year) => laNinaYears.includes(year))]"
-            :subset-styles="[{backgroundColor: 'red'}, {backgroundColor: 'blue'}, {backgroundColor: 'green'}]"
+            :scatter-options="{radius: 4 }"
+            :subsets="dataSubset === 'allYears' ? [] :
+              [allYears.map((year) => selectedYears.includes(year))]"
+            :subset-styles="[{backgroundColor: 'red', radius: 5}]"
             :y-range="[-.1,1.1]"
             :x-range="[new Date(2003, 1, 8), new Date(2023, 7, 8)]"
 
@@ -172,7 +173,7 @@
                         return (value * 100).toFixed(0) + '%';
                         }}}"
             timeseries
-            color="blue"
+            color="grey"
             show-scatter
             :annotations="[...skyCoverCodeRanges.map(([_,[min,max]],i) => {
               return {
@@ -360,7 +361,6 @@ export default defineComponent({
       laNinaYears: [2000, 2008, 2011, 2012, 2021, 2022],
       neutralYears: [2001, 2002, 2004, 2005, 2006, 2009, 2013, 2014, 2015, 2017, 2018],
       selectedYear: 2021,
-      selectedYearRange: [2001, 2022],
       selectedStat: 'median' as Statistics,
       dataSubset: 'allYears' as DataSubset,
       // https://www.weather.gov/media/notification/dir/AFM_Specifications.pdf
@@ -406,7 +406,7 @@ export default defineComponent({
       elNinoYearsSummary: [] as CloudSummaryData[],
       laNinaYearsSummary: [] as CloudSummaryData[], 
       selectedDataIndex: null as number | null,
-      
+      mapDescriptionText: '',
       locationName: ''
       
     };
@@ -415,13 +415,13 @@ export default defineComponent({
   mounted() {
     console.log('Advanced Weather View mounted');
     // create a time to simulate data loading
-    console.log('all cloud data', this.allCloudData);
     this.updateLocationName();
     if (this.modelValue) {
       this.loadCloudData().then(() => {
         console.log('preloading data');
         this.dataloaded = true;
         this.updateData();
+        this.updateMapDescriptionText();
       });
     }
   },
@@ -462,9 +462,12 @@ export default defineComponent({
         return undefined;
       }
 
+      // show the lat lon of index
+      
       this.allYears.map((year) => {
         allData.push({'x': new Date(year, 4, 8), 'y':this.allCloudData[year][index].cloudCover});
       });
+      // console.log('index', index, this.latitudes[index], this.longitudes[index], allData.map(d => d.y));
       return allData;
     },
     
@@ -528,7 +531,6 @@ export default defineComponent({
     
     locationHistogram(): number[] {
       // get the histogram data for the cloud cover)
-      console.log(this.dataSubset);
       if (this.dataSubset === 'allYears' || this.selectedStat == 'singleyear') {
         return [];
       }
@@ -572,6 +574,30 @@ export default defineComponent({
         return;
       }
       return this.getStat(this.allYearsSummary, this.selectedStat);
+    },
+    
+    selectedYears(): number[] {    
+      if (this.selectedStat === 'singleyear') {
+        return [this.selectedYear];
+      }
+      
+      if (this.dataSubset === 'elNino') {
+        return this.elNinoYears;
+      }
+      
+      if (this.dataSubset === 'neutral') {
+        return this.neutralYears;
+      }
+      
+      if (this.dataSubset === 'laNina') {
+        return this.laNinaYears;
+      }
+      
+      if (this.dataSubset === 'allYears') {
+        return this.allYears;
+      }
+      
+      return [];
     },
     
   },
@@ -635,7 +661,7 @@ export default defineComponent({
     
     async getElNinoData() {
       console.log('loading el nino data');
-      return import('./assets/ucm_boundary_data/nino_ucm.csv').then((module) => {
+      return import('./assets/modis_eight_day/nino_ucm.csv').then((module) => {
         this.elNinoYearsSummary = csvParseRows(module.default, (row, i) => {
           if (i === 0) {return;}
           return {
@@ -653,7 +679,7 @@ export default defineComponent({
     
     async getNeutralData() {
       console.log('loading neutral data');
-      await import('./assets/ucm_boundary_data/neutral_ucm.csv').then((module) => {
+      await import('./assets/modis_eight_day/neutral_ucm.csv').then((module) => {
         this.neutralYearsSummary = csvParseRows(module.default, (row, i) => {
           if (i === 0) {return;}
           return {
@@ -671,7 +697,7 @@ export default defineComponent({
     
     async getLaNinaData() {
       console.log('loading la nina data');
-      await import('./assets/ucm_boundary_data/nina_ucm.csv').then((module) => {
+      await import('./assets/modis_eight_day/nina_ucm.csv').then((module) => {
         // get number of rows in the csv
         this.laNinaYearsSummary = csvParseRows(module.default, (row, i) => {
           if (i === 0) {return;}
@@ -689,7 +715,7 @@ export default defineComponent({
     },
     
     async getAllYearsData() {
-      await import('./assets/ucm_boundary_data/all_years_ucm.csv').then((module) => {
+      await import('./assets/modis_eight_day/all_years_ucm.csv').then((module) => {
         this.allYearsSummary = csvParseRows(module.default, (row, i) => {
           if (i === 0) {return;}
           return {
@@ -726,9 +752,9 @@ export default defineComponent({
       console.log('awv: loading cloud data');
       this.dataLoadingProgress = 0;
       this.allYears.map((val: number, index) => {
-        import(`./assets/ucm_boundary_data/${val}_cloud_cover.csv`).then((module) => {
+        import(`./assets/modis_eight_day/${val}_cloud_cover.csv`).then((module) => {
           const data = csvParseRows(module.default, (row, i) => {
-            if (i === 0) {return;}
+            if (i === 0) {return {} as CloudDataElement;}
             if (index == 0) {
               this.latitudes.push(+row[0]);
               this.longitudes.push(+row[1]);
@@ -770,6 +796,7 @@ export default defineComponent({
     updateData() {
       // simulate data loading
       this.needToUpdate = false;
+      this.updateMapDescriptionText();
       if (this.selectedStat === 'singleyear') {
         this.displayedCloudData = this.allCloudData[this.selectedYear];
         return;
@@ -841,7 +868,6 @@ export default defineComponent({
     
     // stats methods
     mean(array: (number | null)[]): number {
-      // null + x, undefined +x = NaN. 
       const arr = array.filter((v) => isNumber(v)) as number[];
       return arr.reduce((a, b) => a + b, 0) / arr.length;
     },
@@ -856,12 +882,18 @@ export default defineComponent({
     updateLocationName() {
       textForLocation(this.location.longitudeDeg, this.location.latitudeDeg)
         .then((name) => {
-          console.log('this name');
           this.locationName = name;
         })
         .catch((e) => {
           console.error('error getting location name', e);
         });
+    },
+    
+    updateMapDescriptionText() {
+      // Displaying {{ selectedStat === 'singleyear' ? '' : statText.get(selectedStat)?.toLowerCase() }}  cloud cover for {{ selectedStat === 'singleyear' ? selectedYear : mapSubsets.get(dataSubset) }}.
+      const stat = this.selectedStat === 'singleyear' ? '' : this.statText.get(this.selectedStat)?.toLowerCase();
+      const subset = this.selectedStat === 'singleyear' ? this.selectedYear : this.mapSubsets.get(this.dataSubset);
+      this.mapDescriptionText = `Displaying ${stat} cloud cover for ${subset}.`;
     },
     
     getCloudCoverText(val: number | null): [number | null, string | undefined] {
@@ -885,7 +917,6 @@ export default defineComponent({
   
   watch: {
     modelValue(value: boolean) {
-      console.log('AdvancedWeatherView show watch', value);
       if (value) {
         console.log('loading data');
         this.loadCloudData().then(() => {
@@ -922,40 +953,36 @@ export default defineComponent({
 
 
 <style lang="less">
-#advanced-weather-view {
+
+:root {
   --color: #eac402;
+  --default-font-size: 12px;
+  font-size: var(--default-font-size);
+}
+
+#advanced-weather-view {
+  font-size: var(--default-font-size);
   
-  p {
+  p.intro {
     font-size: 1.2em;
   }
-  
-  .awv-button {
-    font-size: var(--default-font-size);
-    padding: 0.125em 0.5em;
-    border-radius: 3px;
-    border: 1px solid var(--color);
-    color: black;
-    cursor: pointer;
-  }
-  .awv-button:hover, .awv-button:focus {
-    color: black;
-    font-weight: bold;
-  }
+
     
   .graph-col {
     height: 300px;
   }
 
+  #awv-map-description {
+    font-size: 1.5em;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
   .map-container {
     contain: strict;
     aspect-ratio: 1;
   }
-
-  div {
-    outline: 0px solid red;
-  }
   
-  .awv-thumb-label {
+  .slider-underside-thumb-label {
     .v-slider-thumb__label {
       background-color: var(--color);
       color: black;
@@ -974,67 +1001,69 @@ export default defineComponent({
   .thumb-label-below  .v-slider-thumb__label::before {
     bottom: calc(var(--v-slider-thumb-size) + 4px);
     transform: rotate(180deg);
-}
-  
-.sentence {
-  font-weight: bold;
-  
-  > * {
-    margin: 0.25em auto;
   }
-  
-  > label {
-    display: block;
-    font-size: 2rem;
-    color:#eac402
-  }
-  
-  > select {
-    font-size: 1.6rem;
-  }
-}
-
-.select-box {
-  border-bottom: 1px solid white;
-  appearance: auto !important;
-}
-
-#awv-cloud-cover-display {
-  font-size: 1.25rem;
-  display: grid;
-  grid-template-rows: auto auto;
-  align-items: left;
-  margin-top: 1rem;
-  
-  .awv-cloud-cover-container {
-    display: grid;
-    grid-template-columns: 10ch 50px auto auto;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .awv-cloud-cover-icon {
-    display: grid;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .awv-cloud-cover-label {
-    padding-left: 10px;
+    
+  .sentence-query {
     font-weight: bold;
-
+    
+    
+    > * {
+      margin: 0.25em auto;
+    }
+    
+    > label {
+      display: block;
+      color:#eac402;
+      font-size: calc(var(--default-font-size)*1.875);
+    }
+    
+    > select {
+      font-size: calc(var(--default-font-size)*1.5);
+    }
   }
 
-  .awv-cloud-cover-label-value {
-    /* no text wrapping */
-    white-space: nowrap;
-    font-weight: bold;
+  .select-box {
+    border-bottom: 1px solid white;
+    appearance: auto !important;
   }
-  
-  .awv-cloud-cover-label-text {
-    font-weight: normal;
+
+  #awv-cloud-cover-display {
+    font-size: calc(var(--default-font-size)*1.25);
+    display: grid;
+    grid-template-rows: auto auto;
+    align-items: left;
+    margin-top: 1rem;
+    
+    .awv-cloud-cover-container {
+      display: grid;
+      grid-template-columns: 10ch 50px auto auto;
+      gap: 5px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .awv-cloud-cover-icon {
+      display: grid;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .awv-cloud-cover-label {
+      padding-left: 10px;
+      font-weight: bold;
+
+    }
+
+    .awv-cloud-cover-label-value {
+      /* no text wrapping */
+      white-space: nowrap;
+      font-weight: bold;
+    }
+    
+    .awv-cloud-cover-label-text {
+      font-weight: normal;
+    }
   }
-}
 
 }
 </style>

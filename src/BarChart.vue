@@ -173,7 +173,7 @@ export default defineComponent({
       // We will darken the color by 50%
       const interim = Array.isArray(this.colors) ? this.colors : [this.colors];
       return interim.map((color) => {
-        return Color(color).darken(0.5).hexString();
+        return Color(color).darken(0.25).hexString();
       }) as string[];
     },
     
@@ -186,7 +186,7 @@ export default defineComponent({
           {
             label: this.dataLabel,
             backgroundColor: this.colors,
-            hoverBackgroundColor: this.hoverColors,
+            // hoverBackgroundColor: this.hoverColors,
             borderColor: this.borderColor,
             borderWidth: this.borderWidth,
             data: this.histogramData,
