@@ -158,7 +158,7 @@ export default defineComponent({
   methods: {
 
     async loadCloudCover(): Promise<void> {
-      return fetch('https://raw.githubusercontent.com/johnarban/solar-eclipse-2024-ds/use-median-cloud-cover/src/assets/one_deg_median_cc.csv')
+      return fetch('https://raw.githubusercontent.com/johnarban/solar-eclipse-2024-ds/use-median-cloud-cover/src/assets/one_deg_med_8day.csv')
         .then(response => response.text())
         .then(csvData => {
           this.parseData(csvData);
