@@ -134,11 +134,12 @@
               :selected-circle-options="selectedCircleOptions"
               :selected-cloud-cover="displayedCloudData"
               :rectangle-degrees="0.5"
-              :show-cloud-cover="displayData"
+              :show-cloud-cover="displayData && showCloudCover"
               @dataclick="selectedDataIndex = $event.index; selectedDataCloudCover = $event.cloudCover"
               :cloud-cover-opacity-function="transferFunction"
+              :geo-json-files="eclipsePaths"
               />
-              
+              <div class="d-flex align-center justify-start">
               <v-radio-group 
                 v-model="modisDataSet"  
                 inline
@@ -156,7 +157,14 @@
                   hint="MODIS Aqua Data Set"
                 ></v-radio>
               </v-radio-group>
-                
+              <v-checkbox
+                v-if="displayData"
+                v-model="showCloudCover"
+                label="Show Cloud Cover"
+                color="#eac402"
+                hint="Show the cloud cover on the map"
+                />
+            </div>
             </v-container>
           </v-col>  
         </v-row>
@@ -255,6 +263,7 @@ import BarChart from './BarChart.vue';
 import LineChart from './LineChart.vue';
 import LocationSelector from './LocationSelector.vue';
 import CloudCoverLine from './CloudCoverLine.vue';
+import eclipseUmbra from "./assets/upath_hi.json";
 
 
 import {isNumber, OrderedPair, textForLocation} from './utils';
@@ -418,6 +427,12 @@ export default defineComponent({
         templateUrl: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}",
         attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
       },
+      eclipsePaths: [{
+        geojson: eclipseUmbra as GeoJSON.GeometryCollection,
+        style: {fillColor: '#333', color:'black', weight: 1, opacity: 0.5, fillOpacity: 0.5, id:"upath"}},
+      {url: 'https://raw.githubusercontent.com/johnarban/wwt_interactives/main/images/center.json',
+        style: {color: '#ff0000', weight: 2, opacity: 1, fillOpacity: 0}
+      }],
       placeCircleOptions: {
         color: "#FF0000",
         fillColor: "#FF000088",
@@ -453,7 +468,7 @@ export default defineComponent({
       inBounds: false,
       displayData: false,
       displayCharts: false,
-      
+      showCloudCover: true,
     };
   },
   
