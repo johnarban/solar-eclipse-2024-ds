@@ -149,7 +149,7 @@
                   :key="key"
                   :label="value"
                   :value="key"
-                  :disabled="value=='1 Day'"
+                  :disabled="false"
                   color="#eac402"
                   hint="MODIS Aqua Data Set"
                 ></v-radio>
@@ -312,6 +312,11 @@ const modisTimes = new Map([
   ['8day', '8 Day'],
 ]) as Map<ModisTimeSpan, string>;
 
+const modisDirs = new Map([
+  ['1day', './assets/modis_one_day/'],
+  ['8day', './assets/modis_eight_day/'],
+]) as Map<ModisTimeSpan, string>;
+
 // https://colorbrewer2.org/#type=sequential&scheme=YlGnBu&n=6 //
 // const _colorMap = ['#ffffcc','#c7e9b4','#7fcdbb','#41b6c4','#2c7fb8','#253494'];
 // https://colorbrewer2.org/?type=sequential&scheme=YlGnBu&n=4
@@ -380,6 +385,7 @@ export default defineComponent({
       statText,
       mapSubsets,
       modisTimes,
+      modisDirs,
       modisDataSet: '8day' as ModisTimeSpan,
       location: this.defaultLocation,
       dataloaded: false,
@@ -429,15 +435,15 @@ export default defineComponent({
       scatterData: [] as LineGraphData,
       lineData: [] as LineGraphData,
       displayedCloudData: undefined as CloudData | undefined,
-      allCloudData: {} as Record<string, CloudData>,
+      allModisData: {'1day': {}, '8day': {}} as Record<ModisTimeSpan, Record<string, CloudData>>,
       needToUpdate: false,
       latitudes: [] as number[],
       longitudes: [] as number[],
       latLonIndex: new Map<[number, number], number>,
-      allYearsSummary: [] as CloudSummaryData[],
-      neutralYearsSummary: [] as CloudSummaryData[],
-      elNinoYearsSummary: [] as CloudSummaryData[],
-      laNinaYearsSummary: [] as CloudSummaryData[], 
+      allYearsSummary: {'1day': [] as CloudSummaryData[], '8day': [] as CloudSummaryData[]} as Record<ModisTimeSpan, CloudSummaryData[]>,
+      neutralYearsSummary: {'1day': [] as CloudSummaryData[], '8day': [] as CloudSummaryData[]} as Record<ModisTimeSpan, CloudSummaryData[]>,
+      elNinoYearsSummary: {'1day': [] as CloudSummaryData[], '8day': [] as CloudSummaryData[]} as Record<ModisTimeSpan, CloudSummaryData[]>,
+      laNinaYearsSummary: {'1day': [] as CloudSummaryData[], '8day': [] as CloudSummaryData[]} as Record<ModisTimeSpan, CloudSummaryData[]>,
       selectedDataIndex: null as number | null,
       selectedDataCloudCover: null as number | null,
       mapDescriptionText: '',
@@ -474,6 +480,10 @@ export default defineComponent({
         console.log('AdvancedWeatherView showValue set to', value);
         this.$emit('update:modelValue', value);
       },
+    },
+    
+    allCloudData(): Record<string, CloudData> {
+      return this.allModisData[this.modisDataSet];
     },
     
     availableYears() {
@@ -611,28 +621,28 @@ export default defineComponent({
       if (this.selectedStat === 'singleyear') {
         return;
       }
-      return this.getStat(this.elNinoYearsSummary, this.selectedStat);
+      return this.getStat(this.elNinoYearsSummary[this.modisDataSet], this.selectedStat);
     },
     
     neutralData(): CloudData | undefined {
       if (this.selectedStat === 'singleyear') {
         return;
       }
-      return this.getStat(this.neutralYearsSummary, this.selectedStat);
+      return this.getStat(this.neutralYearsSummary[this.modisDataSet], this.selectedStat);
     },
     
     laNinaData(): CloudData | undefined {
       if (this.selectedStat === 'singleyear') {
         return;
       }
-      return this.getStat(this.laNinaYearsSummary, this.selectedStat);
+      return this.getStat(this.laNinaYearsSummary[this.modisDataSet], this.selectedStat);
     },
     
     allYearsData(): CloudData | undefined {
       if (this.selectedStat === 'singleyear') {
         return;
       }
-      return this.getStat(this.allYearsSummary, this.selectedStat);
+      return this.getStat(this.allYearsSummary[this.modisDataSet], this.selectedStat);
     },
     
     selectedYears(): number[] {    
@@ -709,29 +719,10 @@ export default defineComponent({
       });
     },
     
-    async getSummaryData(path: string) {
-      console.log('loading summary data', path);
-      return import(path)
-        .then( (module) => {
-          return csvParseRows(module.default, (row, i) => {
-            if (i === 0) {return;}
-            return {
-              lat: +row[0],
-              lon: +row[1],
-              mean: +row[2],
-              median: +row[3],
-              mode: +row[4],
-              min: +row[5],
-              max: +row[6],
-            } as CloudSummaryData;
-          });
-        });
-    },
-    
     async getElNinoData() {
       console.log('loading el nino data');
-      return import('./assets/modis_eight_day/nino_ucm.csv').then((module) => {
-        this.elNinoYearsSummary = csvParseRows(module.default, (row, i) => {
+      return import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/nino_ucm.csv`).then((module) => {
+        this.elNinoYearsSummary[this.modisDataSet] = csvParseRows(module.default, (row, i) => {
           if (i === 0) {return;}
           return {
             lat: +row[0],
@@ -748,8 +739,9 @@ export default defineComponent({
     
     async getNeutralData() {
       console.log('loading neutral data');
-      await import('./assets/modis_eight_day/neutral_ucm.csv').then((module) => {
-        this.neutralYearsSummary = csvParseRows(module.default, (row, i) => {
+      // './assets/modis_eight_day/neutral_ucm.csv'
+      await import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/neutral_ucm.csv`).then((module) => {
+        this.neutralYearsSummary[this.modisDataSet] = csvParseRows(module.default, (row, i) => {
           if (i === 0) {return;}
           return {
             lat: +row[0],
@@ -765,10 +757,9 @@ export default defineComponent({
     },
     
     async getLaNinaData() {
-      console.log('loading la nina data');
-      await import('./assets/modis_eight_day/nina_ucm.csv').then((module) => {
+      await import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/nina_ucm.csv`).then((module) => {
         // get number of rows in the csv
-        this.laNinaYearsSummary = csvParseRows(module.default, (row, i) => {
+        this.laNinaYearsSummary[this.modisDataSet] = csvParseRows(module.default, (row, i) => {
           if (i === 0) {return;}
           return {
             lat: +row[0],
@@ -784,8 +775,8 @@ export default defineComponent({
     },
     
     async getAllYearsData() {
-      await import('./assets/modis_eight_day/all_years_ucm.csv').then((module) => {
-        this.allYearsSummary = csvParseRows(module.default, (row, i) => {
+      await import(`./assets/modis_${this.modisDataSet === '1day' ? 'one' : 'eight'}_day/all_years_ucm.csv`).then((module) => {
+        this.allYearsSummary[this.modisDataSet] = csvParseRows(module.default, (row, i) => {
           if (i === 0) {return;}
           return {
             lat: +row[0],
@@ -837,7 +828,7 @@ export default defineComponent({
             } as CloudDataElement;
           });
           // skip first row
-          this.allCloudData[val] = data.slice(1);
+          this.allModisData['8day'][val] = data.slice(1);
           this.dataLoadingProgress = Math.ceil(((index + 1) / this.allYears.length) * 100);
         });
       });
@@ -862,7 +853,7 @@ export default defineComponent({
             } as CloudDataElement;
           });
           // skip first row
-          this.allCloudData[val] = data.slice(1);
+          this.allModisData['1day'][val] = data.slice(1);
           this.dataLoadingProgress = Math.ceil(((index + 1) / this.allYears.length) * 100);
         });
       });
@@ -920,7 +911,7 @@ export default defineComponent({
       }
       if (this.dataSubset === 'elNino') {
         console.log('el nino');
-        if (this.elNinoYearsSummary.length === 0) {
+        if (this.elNinoYearsSummary[this.modisDataSet].length === 0) {
           console.log('loading el nino data');
           this.getElNinoData().then(() => {
             this.displayedCloudData = this.elNinoData;
@@ -933,7 +924,7 @@ export default defineComponent({
       }
       if (this.dataSubset === 'neutral') {
         console.log('no el nino');
-        if (this.neutralYearsSummary.length === 0) {
+        if (this.neutralYearsSummary[this.modisDataSet].length === 0) {
           console.log('loading neutral data');
           this.getNeutralData().then(() => {
             this.displayedCloudData = this.neutralData;
@@ -947,7 +938,7 @@ export default defineComponent({
       
       if (this.dataSubset === 'laNina') {
         console.log('la nina');
-        if (this.laNinaYearsSummary.length === 0) {
+        if (this.laNinaYearsSummary[this.modisDataSet].length === 0) {
           console.log('loading la nina data');
           this.getLaNinaData().then(() => {
             this.displayedCloudData = this.laNinaData;
@@ -961,7 +952,7 @@ export default defineComponent({
       
       if (this.dataSubset === 'allYears') {
         console.log('all years');
-        if (this.allYearsSummary.length === 0) {
+        if (this.allYearsSummary[this.modisDataSet].length === 0) {
           console.log('loading all years data');
           this.getAllYearsData().then(() => {
             this.displayedCloudData = this.allYearsData;
@@ -1064,6 +1055,18 @@ export default defineComponent({
         this.displayData = false;
       }
     }, 
+    
+    modisDataSet(value: ModisTimeSpan) {
+      console.log('modisTimespan', value);
+      if (value === '1day') {
+        if (Object.keys(this.allModisData['1day']).length === 0) {
+          this.loadOneDayData().then(() => {
+            this.needToUpdate = true;
+          });
+        }
+      }
+      this.needToUpdate = true;
+    },
     
     selectedStat(value: Statistics) {
       console.log('selectedStat', value);
