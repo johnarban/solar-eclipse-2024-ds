@@ -12,7 +12,7 @@
           provide daily views of the entire surface of the Earth and measure the cloud cover.
           This is provided as the <strong>cloud cover fraction - <em>the percentage of the sky at a given location that is covered 
           by clouds</em></strong>. The daily data can have gaps and processing artefacts, so the 8-day average 
-          provies a more reliable measure of the cloud cover for a given time,
+          provies a more reliable measure of the cloud cover for a given time.
         </p>
         
         <!-- top row -->
@@ -66,7 +66,7 @@
               <v-btn 
                 class="elevation-5"
                 variant="flat"
-                :disabled="!needToUpdate"
+                :disabled="!(needToUpdate || !showCloudCover)"
                 size="x-large"
                 color="#eac402" 
                 @click="updateData()">Show on Map</v-btn>
@@ -1035,7 +1035,7 @@ export default defineComponent({
     
     updateMapDescriptionText() {
       // Displaying {{ selectedStat === 'singleyear' ? '' : statText.get(selectedStat)?.toLowerCase() }}  cloud cover for {{ selectedStat === 'singleyear' ? selectedYear : mapSubsets.get(dataSubset) }}.
-      const stat = this.selectedStat === 'singleyear' ? '' : this.statText.get(this.selectedStat)?.toLowerCase();
+      const stat = this.selectedStat === 'singleyear' ? '' : this.statText.get(this.selectedStat);
       const subset = this.selectedStat === 'singleyear' ? this.selectedYear : this.mapSubsets.get(this.dataSubset);
       this.mapDescriptionText = `Displaying ${stat} cloud cover for ${subset}.`;
     },
