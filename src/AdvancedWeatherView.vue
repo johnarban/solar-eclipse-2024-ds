@@ -79,7 +79,9 @@
               <v-btn 
                 size="large"
                 color="#eac402"
-                @click="displayCharts = true">Show Cloud Cover Charts</v-btn>
+                append-icon="mdi-chevron-triple-right"
+                @click="displayCharts = true">Cloud cover details for location</v-btn>
+                
             </v-row>
             <v-row v-if="displayCharts">
               
