@@ -1403,6 +1403,7 @@ export interface MapBoxFeature {
   text: string;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   properties: { short_code: string; };
+  center?: [number, number];
 }
 
 export interface MapBoxFeatureCollection {
@@ -3266,6 +3267,22 @@ export default defineComponent({
         const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
         return `${lat}° ${ns}, ${lon}° ${ew}`;
       }
+    },
+
+    async locationForText(searchText: string): Promise<[number, number] | null> {
+      const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}`;
+      const mapBoxLocation = await fetch(url)
+        .then(response => response.json())
+        .then((result: MapBoxFeatureCollection) => {
+          if (result.features.length === 0) {
+            return null;
+          }
+          return result.features[0].center ?? null;
+        })
+        .catch((_err) => null);
+
+      return mapBoxLocation;
     },
     
     decreasePlaybackRate() {
