@@ -74,7 +74,7 @@
             </v-row>
             
             <v-row id="chart-intro" v-if="!displayCharts && displayData">
-              <hr style="width:100%">
+              <hr style="width:100%; margin-block: 1rem;">
               <h3>Show cloud cover statistics for currently selected location: <strong class="attention">{{ locationName }}</strong></h3>
               <v-btn 
                 size="large"
@@ -82,8 +82,9 @@
                 @click="displayCharts = true">Show Cloud Cover Charts</v-btn>
             </v-row>
             <v-row v-if="displayCharts">
-              <h3>Cloud Cover for <strong class="attention">{{ locationName }}</strong>:</h3>
+              
               <div id="awv-cloud-cover-display" class="">
+                <h3>Cloud Cover for <strong class="attention">{{ locationName }}</strong>:</h3>
                 <!-- cloud cover for all years at location -->
                 <cloud-cover-line
                   :value="median(cloudDataNearLocation)"
@@ -100,19 +101,21 @@
                   :ranges="skyCoverCodeRanges"
                   :icons="skyCoverIcons"
                   />
-                  <div v-if="dataSubset != 'allYears'">
-                    <hr>
-                    <h3 v-if="selectedStat !== 'singleyear'"> {{ statText.get(selectedStat) }} Cloud Cover for {{ locationName }} for {{ mapSubsets.get(dataSubset) }}:</h3>
-                    <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
+                <div v-if="dataSubset != 'allYears'">
+                  <hr>
+                  <h3 v-if="selectedStat !== 'singleyear'"> <strong class="attention">{{ statText.get(selectedStat) }}</strong> Cloud Cover for <strong class="attention">{{ locationName }}</strong> for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
+                  <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
 
-                    <cloud-cover-line
-                      :value="locationValue"
-                      :label="selectedStat === 'singleyear' ? 'Cloud Cover' : statText.get(selectedStat) ?? 'Cloud Cover'"
-                      :codes="skyCoverCodes"
-                      :ranges="skyCoverCodeRanges"
-                      :icons="skyCoverIcons"
-                      />
-                  </div>
+                  <cloud-cover-line
+                    :value="locationValue"
+                    :label="selectedStat === 'singleyear' ? 'Cloud Cover' : statText.get(selectedStat) ?? 'Cloud Cover'"
+                    hide-label
+                    :codes="skyCoverCodes"
+                    :ranges="skyCoverCodeRanges"
+                    :icons="skyCoverIcons"
+                    variant="bold"
+                    />
+                </div>
               </div>
             </v-row>
               
@@ -161,7 +164,7 @@
           <bar-chart
             id="cloud-histogram"
             class="elevation-5"
-            :labels="skyCoverCodes"
+            :labels="skyCoverCodes.map((v) => v.includes('/') ? [v.split('/')[0] + '/', v.split('/')[1]]: v)"
             :data-label="dataSubset === 'allYears' ? 'All Years' : 'Other Years'"
             :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
             :colors="dataSubset === 'allYears' ? colorMap : ['#aaa']"
@@ -188,6 +191,7 @@
             :title="`Percent Cloud Cover for ${locationName}`"
             :scatter-data="cloudDataNearLocation"
             :scatter-options="{radius: 4 }"
+            :scatter-label="dataSubset === 'allYears' ? 'All Years' : 'Other Years'"
             :subsets="dataSubset === 'allYears' ? [] :
               [allYears.map((year) => selectedYears.includes(year))]"
             :subset-styles="[{backgroundColor: 'red', radius: 5}]"
@@ -222,7 +226,7 @@
                   display: true,
                   color: 'black',
                   backgroundColor: 'transparent',
-                  content: label,
+                  content: skyCoverCodes[i],
                 },
                 xMin: new Date(2023, 1, 8),
                 yMin: (min + max) / 200,
@@ -451,7 +455,7 @@ export default defineComponent({
     // create a time to simulate data loading
     this.updateLocationName();
     if (this.modelValue) {
-      this.loadCloudData().then(() => {
+      this.loadEightDayData().then(() => {
         console.log('preloading data');
         this.dataloaded = true;
         this.updateData(false);
@@ -815,11 +819,36 @@ export default defineComponent({
     },
 
     
-    loadCloudData() {
+    loadEightDayData() {
       console.log('awv: loading cloud data');
       this.dataLoadingProgress = 0;
       this.allYears.map((val: number, index) => {
         import(`./assets/modis_eight_day/${val}_cloud_cover.csv`).then((module) => {
+          const data = csvParseRows(module.default, (row, i) => {
+            if (i === 0) {return {} as CloudDataElement;}
+            if (index == 0) {
+              this.latitudes.push(+row[0]);
+              this.longitudes.push(+row[1]);
+            }
+            return {
+              lat: +row[0],
+              lon: +row[1],
+              cloudCover: +row[2],
+            } as CloudDataElement;
+          });
+          // skip first row
+          this.allCloudData[val] = data.slice(1);
+          this.dataLoadingProgress = Math.ceil(((index + 1) / this.allYears.length) * 100);
+        });
+      });
+      return new Promise((resolve) => {resolve(true);});
+    },
+    
+    loadOneDayData() {
+      console.log('awv: loading cloud data');
+      this.dataLoadingProgress = 0;
+      this.allYears.map((val: number, index) => {
+        import(`./assets/modis_one_day/${val}_cloud_cover.csv`).then((module) => {
           const data = csvParseRows(module.default, (row, i) => {
             if (i === 0) {return {} as CloudDataElement;}
             if (index == 0) {
@@ -1026,7 +1055,7 @@ export default defineComponent({
     modelValue(value: boolean) {
       if (value) {
         console.log('loading data');
-        this.loadCloudData().then(() => {
+        this.loadEightDayData().then(() => {
           console.log('finished loading data');
           this.dataloaded = true;
           this.updateData(this.displayData);
@@ -1156,42 +1185,17 @@ export default defineComponent({
   }
 
   #awv-cloud-cover-display {
-    font-size: calc(var(--default-font-size)*1.25);
+    // font-size: calc(var(--default-font-size)*1.25);
     display: grid;
-    grid-template-rows: auto auto;
+    grid-template-rows: auto auto auto;
     align-items: left;
     margin-top: 1rem;
-    
-    .awv-cloud-cover-container {
-      display: grid;
-      grid-template-columns: 10ch 50px auto auto;
-      gap: 5px;
-      align-items: center;
-      justify-content: space-between;
-    }
-    
-    .awv-cloud-cover-icon {
-      display: grid;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .awv-cloud-cover-label {
-      padding-left: 10px;
-      font-weight: bold;
-
-    }
-
-    .awv-cloud-cover-label-value {
-      /* no text wrapping */
-      white-space: nowrap;
-      font-weight: bold;
-    }
-    
-    .awv-cloud-cover-label-text {
-      font-weight: normal;
-    }
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+    font-size: 1.25em;
   }
+  
+  
 
 }
 </style>

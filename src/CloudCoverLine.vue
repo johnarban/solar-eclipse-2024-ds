@@ -1,9 +1,9 @@
 <template>
-  <div v-if="value != null" class="label-icon-value-text-container">
-    <div class="label-icon-value-text-label"> <slot>{{ label }}:</slot> </div>
-    <div class="label-icon-value-text-icon"><v-icon size="35">{{ cloudIcon(value) }}</v-icon></div>
-    <div class="label-icon-value-text-label-value">{{ Math.ceil(value * 100) }} % </div>
-    <div class="label-icon-value-text-label-text"> {{ getText(value)[1] }} </div>
+  <div v-if="value != null" :class='["label-icon-value-text-container",variant]'>
+    <div v-if="!hideLabel" class="label-icon-value-text-label"> <slot>{{ label }}:</slot> </div>
+    <div v-if="!hideIcon" class="label-icon-value-text-icon"><v-icon size="35">{{ cloudIcon(value) }}</v-icon></div>
+    <div v-if="!hideValue" class="label-icon-value-text-label-value">{{ Math.ceil(value * 100) }} % </div>
+    <div v-if="!hideText" class="label-icon-value-text-label-text"> {{ getText(value)[1] }} </div>
   </div>
 </template>
 
@@ -23,13 +23,35 @@ export default defineComponent({
     
     label: {
       type: String,
+      default:"",
       required: true,
+    },
+    
+    hideLabel: {
+      type: Boolean,
+      default: false,
+    },
+    
+    hideIcon: {
+      type: Boolean,
+      default: false,
+    },
+    
+    hideValue: {
+      type: Boolean,
+      default: false,
+    },
+    
+    hideText: {
+      type: Boolean,
+      default: false,
     },
     
     codes: {
       type: Array<string>,
       required: true,
     },
+    
     
     ranges: {
       type: Array<Range>,
@@ -39,6 +61,11 @@ export default defineComponent({
     icons: {
       type: Array<string>,
       required: true,
+    },
+    
+    variant: {
+      type: String as PropType<'bold' | 'normal'>,
+      default: "normal",
     },
     
   },
@@ -67,33 +94,42 @@ export default defineComponent({
 
 <style scoped lang="less">
 
-.label-icon-value-text-container {
-  display: grid;
-  grid-template-columns: 10ch 50px auto auto;
-  gap: 5px;
-  align-items: center;
-  justify-content: space-between;
-}
+  .label-icon-value-text-container {
+    display: grid;
+    grid-template-columns: 10ch 50px auto auto;
+    gap: 5px;
+    align-items: center;
+    justify-content: space-between;
+  }
 
-.label-icon-value-text-icon {
-  display: grid;
-  align-items: center;
-  justify-content: center;
-}
+  .label-icon-value-text-icon {
+    display: grid;
+    align-items: center;
+    justify-content: center;
+  }
 
-.label-icon-value-text-label {
-  padding-left: 10px;
-  font-weight: bold;
+  .label-icon-value-text-label {
+    padding-left: 10px;
+    font-weight: bold;
 
-}
+  }
 
-.label-icon-value-text-label-value {
-  /* no text wrapping */
-  white-space: nowrap;
-  font-weight: bold;
-}
+  .label-icon-value-text-label-value {
+    /* no text wrapping */
+    white-space: nowrap;
+    font-weight: bold;
+  }
 
-.label-icon-value-text-label-text {
-  font-weight: normal;
-}
+  .label-icon-value-text-label-text {
+    font-weight: normal;
+  }
+
+  .bold {
+    font-size: 1.1em;
+  }
+
+
+  .bold > .label-icon-value-text-label-text {
+    font-weight: bold;
+  }
 </style>

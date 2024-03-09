@@ -69,7 +69,7 @@ export default defineComponent({
     },
     
     labels: {
-      type: Array<string>,
+      type: Array<string | string[]>,
       default: [],
       required: false
     },
@@ -180,7 +180,7 @@ export default defineComponent({
     // ChartData<chart-type, data-format, label-format>
     chartData():  ChartDataType {
       return {
-        labels: this.labels,
+        labels: this.labels as string[],
         datasets: [
           ...this.otherDatasets,
           {

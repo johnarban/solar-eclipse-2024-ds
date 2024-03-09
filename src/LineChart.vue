@@ -6,6 +6,7 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import Chart from "chart.js/auto"; 
+import { ChartData } from "chart.js";
 import { PointStyle } from "chart.js";
 import {customCanvasBackgroundColor} from './ChartPlugins';
 import 'chartjs-adapter-date-fns';
@@ -51,6 +52,12 @@ export default defineComponent({
 
     lineData: {
       type: Array as PropType<OrderedPair[]>,
+      required: false,
+      default: () => [],
+    },
+    
+    otherData: {
+      type: Array as PropType<ChartData[]>,
       required: false,
       default: () => [],
     },
@@ -135,6 +142,12 @@ export default defineComponent({
     },
     
     showTooltip: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    
+    showLegend: {
       type: Boolean,
       required: false,
       default: false,
@@ -399,6 +412,8 @@ export default defineComponent({
         outData = [scatterData, lineData];
       }
       
+      outData = [...outData, ...this.otherData];
+      
       return { datasets: outData };
 
     },
@@ -438,7 +453,7 @@ export default defineComponent({
 
         plugins: {
           legend: {
-            display: false
+            display: this.showLegend
           },
           customCanvasBackgroundColor: {
             color: 'white'
