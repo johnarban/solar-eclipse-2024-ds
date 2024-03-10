@@ -142,13 +142,8 @@
                   <div>
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
-                    /><select v-model="selectedCloudCoverVariable">
-                        <option value="median">Median Cloud Cover</option>
-                        <option value="mean">Mean Cloud Cover</option>
-                        <option value="mode">Mode Cloud Cover</option>
-                        <option value="min">Minimum Cloud Cover</option>
-                        <option value="max">Maximum Cloud Cover</option>
-                      </select>
+                    />
+                    Open the <v-btn @click="showAdvancedWeather = true">Advance Weather View</v-btn>.
                   </div>
                 </div>
               </span>
@@ -639,22 +634,6 @@
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
-        <icon-button
-          v-model="showAdvancedWeather"
-          id="showAdvancedWeather"
-          :color="accentColor"
-          :focus-color="accentColor"
-          :box-shadow="false"
-          tooltip-text="Share Advanced Weather View"
-          :show-tooltip="!mobile"
-          @activate="() => {
-            playing = false;
-          }"
-        >
-        <template #button>
-          <span> Advanced Weather </span>
-        </template>
-      </icon-button>
       
         <icon-button
           id="share"
@@ -1630,6 +1609,9 @@ let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
 // lon and lat are first col and row (dropping the first value)
 const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
 const minLon = Math.min(...cloudData[0].slice(1));
+const dLon = (cloudData[0][2] - cloudData[0][1]);
+const dLat = Math.abs(cloudData[2][0] - cloudData[1][0]);
+console.log("minLat, minLon, dLat, dLon", minLat, minLon, dLat, dLon);
 // get just the inner data grid
 cloudData = cloudData.slice(1).map(row => row.slice(1));
 
@@ -1638,8 +1620,8 @@ const cloudDataArray: CloudData[] = [];
 cloudData.forEach((row, i) => {
   row.forEach((cloudCover, j) => {
     cloudDataArray.push({
-      lat: minLat + i ,
-      lon: minLon + j ,
+      lat: minLat + dLat * i,
+      lon: minLon + dLon * j,
       cloudCover
     });
   });
