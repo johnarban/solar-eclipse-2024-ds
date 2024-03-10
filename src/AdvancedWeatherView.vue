@@ -126,6 +126,7 @@
           <v-col cols="7">
             <v-container aspect-ratio="1">
             <span id="awv-map-description"> {{ mapDescriptionText }} </span>
+            <div class="map-colorbar">
             <location-selector
               v-model="location"
               label="Location"
@@ -139,6 +140,13 @@
               :cloud-cover-opacity-function="transferFunction"
               :geo-json-files="eclipsePaths"
               />
+              <color-bar
+                name="cloud-cover"
+                :nsteps="20"
+                label=" Cloud Cover"
+                :cmap="(x: number) => [`hsla(0,0%,100%, 1)`, x]"
+                />
+            </div>
               <div class="d-flex align-center justify-start">
               <v-radio-group 
                 v-model="modisDataSet"  
@@ -263,6 +271,7 @@ import BarChart from './BarChart.vue';
 import LineChart from './LineChart.vue';
 import LocationSelector from './LocationSelector.vue';
 import CloudCoverLine from './CloudCoverLine.vue';
+import ColorBar from './ColorBar.vue';
 import eclipseUmbra from "./assets/upath_hi.json";
 
 
@@ -372,6 +381,7 @@ export default defineComponent({
     'line-chart': LineChart,
     'location-selector': LocationSelector,
     'cloud-cover-line': CloudCoverLine,
+    'color-bar': ColorBar,
   },
   
   emits: ['update:modelValue','close'],
@@ -1154,6 +1164,11 @@ export default defineComponent({
     font-weight: 500;
     margin-bottom: 1rem;
   }
+  
+  .map-colorbar {
+    display: flex;
+  }
+  
   .map-container {
     contain: strict;
     aspect-ratio: 2;

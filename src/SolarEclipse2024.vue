@@ -210,7 +210,7 @@
         <v-slide-y-transition
           :disabled="smAndUp"
         >
-          <div v-if="!smAndUp || smAndUp" id="map-container" >
+          <div v-if="!smAndUp || smAndUp" id="map-container">
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
@@ -225,9 +225,11 @@
               :geo-json-files="geojson"
               :selected-cloud-cover="selectedCloudCoverData"
             ></location-selector>
-            <!-- the colorbar is generated using colorbarGradient() to make a serieis of divs -->
-              <div v-show="learnerPath === 'Clouds'"  id="colorbar"></div>
-              <div v-if="learnerPath === 'Clouds'"  id="colorbar-labels">Historical Cloud Cover %</div>
+              <color-bar
+                v-if="learnerPath === 'Clouds'"
+                label="Historical Cloud Cover %"
+                :cmap="cloudColorMap"
+                />
           </div>
         </v-slide-y-transition>
       </v-hover>
@@ -2119,7 +2121,6 @@ export default defineComponent({
       element.addEventListener("scroll", () => this.onScroll());
     }
     
-    this.colorbarGradient();
   },
 
   computed: {
@@ -2473,23 +2474,12 @@ export default defineComponent({
       }
     },
     
-    colorbarGradient() {
-      const colorbar = document.getElementById('colorbar');
-      if (!colorbar) {
-        return;
-      }
-      const n = 20;
-      for (let i=n; i >= 0; i--) {
-        const cc = i/n > .05 ? .2 + Math.pow(i/n,1.5) * .8 : i/n;
-        const color = `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
-        const div = document.createElement('div');
-        div.style.backgroundColor = color;
-        div.style.height = `${100/(n+1)}%`;
-        colorbar.appendChild(div);
-      }
-      
-      
+    cloudColorMap(v: number) {
+      const cc = v > .05 ? .2 + Math.pow(v,1.5) * .8 : v;
+      return `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
     },
+    
+    
     
     async trackSun(): Promise<void> {
       this.sunOffset = null;
@@ -4961,45 +4951,6 @@ video, #info-video {
     width: 100%;
     
     display: flex;
-    
-    #colorbar {
-      height: 100%;
-      width: 1.25em;
-      outline: 1px solid white;
-      margin-left: 5px;
-      margin-right: 1em;
-      background: #5c5229;
-      // background: linear-gradient(to top, transparent, white)
-    }
-    
-    #colorbar:before {
-      content:"100%";
-      position: absolute;
-      top: 0;
-      right: 0;
-      transform-origin: center;
-      color: black;
-      transform: rotate(-90deg) translateX(-25%) translateX(-0.25em);
-    }
-    
-    #colorbar:after {
-      content:"0%";
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      color: white;
-      transform-origin: center;
-      transform: rotate(-90deg) translateY(-50%) translateX(0.5em);
-    }
-    
-    #colorbar-labels {
-        position: absolute;
-        top: 50%;
-        right: 0.25em;
-        transform-origin: center center;
-        transform:  translateX(50%) rotate(-90deg);
-        
-      }
     
     
     .map-container {
