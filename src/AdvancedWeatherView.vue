@@ -67,7 +67,7 @@
                 class="elevation-5"
                 variant="flat"
                 :disabled="!(needToUpdate || !showCloudCover)"
-                size="x-large"
+                size="large"
                 color="#eac402" 
                 @click="updateData()">Show on Map</v-btn>
               </v-col>
@@ -78,9 +78,10 @@
               <h3>Show cloud cover statistics for currently selected location: <strong class="attention">{{ locationName }}</strong></h3>
               <v-btn 
                 size="large"
+                density="compact"
                 color="#eac402"
                 append-icon="mdi-chevron-triple-right"
-                @click="displayCharts = true">Cloud cover details for location</v-btn>
+                @click="displayCharts = true">Show details</v-btn>
                 
             </v-row>
             <v-row v-if="displayCharts">
@@ -1176,7 +1177,7 @@ export default defineComponent({
   font-size: var(--default-font-size);
   
   p.intro {
-    font-size: 1.2em;
+    font-size: 1em;
   }
   
   strong.attention {
@@ -1194,7 +1195,7 @@ export default defineComponent({
   }
 
   #awv-map-description {
-    font-size: 1.5em;
+    font-size: 1.25em;
     font-weight: 500;
     margin-bottom: 1rem;
   }
@@ -1240,11 +1241,11 @@ export default defineComponent({
     > label {
       display: block;
       color:#eac402;
-      font-size: calc(var(--default-font-size)*1.875);
+      font-size: calc(var(--default-font-size)*1.5);
     }
     
     > select {
-      font-size: calc(var(--default-font-size)*1.5);
+      font-size: calc(var(--default-font-size)*1.25);
     }
   }
 
@@ -1261,7 +1262,7 @@ export default defineComponent({
     margin-top: 1rem;
     margin-left: 1rem;
     margin-bottom: 1rem;
-    font-size: 1.25em;
+    font-size: 1.1em;
   }
   
   
