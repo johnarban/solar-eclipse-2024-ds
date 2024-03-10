@@ -791,6 +791,9 @@
               /> View historical cloud data
             </v-col>
             <v-col cols="12">
+            <img class="svg-inline--fa rounded-lg bg-red"  style="height:1.2em;margin-inline:10px" src="./assets/new-rectangle-solid-svgrepo-com.svg"> <span class="text-red">Detailed Cloud Data View</span>
+            </v-col>
+            <v-col cols="12">
               <font-awesome-icon
                 icon="book-open"
               />
@@ -878,7 +881,7 @@
                   <template v-slot:prepend>
                     <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                    <strong>View historical cloud data</strong> for April 8th from 2001&#8211;2023.
+                    <strong>View historical cloud data</strong> for April 8th from 2001&#8211;2023. <span class="text-red">New</span>: View detailed 0.5<sup>o</sup> cloud data including by presence of  El Niño/La Niña climate patterns.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
