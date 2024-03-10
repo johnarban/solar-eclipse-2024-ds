@@ -1411,6 +1411,11 @@ export interface MapBoxFeatureCollection {
   features: MapBoxFeature[];
 }
 
+export interface ForwardGeocodingInfo {
+  location: [number, number];
+  text: string;
+}
+
 
 // number of milliseconds since January 1, 1970, 00:00:00 UTC
 // month is indexed from 0..?!
@@ -3269,20 +3274,24 @@ export default defineComponent({
       }
     },
 
-    async locationForText(searchText: string): Promise<[number, number] | null> {
+    async geocodingInfoForSearch(searchText: string): Promise<ForwardGeocodingInfo | null> {
       const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}`;
-      const mapBoxLocation = await fetch(url)
+      const geocodingInfo = await fetch(url)
         .then(response => response.json())
         .then((result: MapBoxFeatureCollection) => {
-          if (result.features.length === 0) {
+          const center = result.features[0]?.center;
+          if (result.features.length === 0 || !center) {
             return null;
           }
-          return result.features[0].center ?? null;
+          return {
+            location: center,
+            text: this.mapboxLocationText(result)
+          };
         })
         .catch((_err) => null);
 
-      return mapBoxLocation;
+      return geocodingInfo;
     },
     
     decreasePlaybackRate() {
