@@ -143,7 +143,7 @@
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
                     />
-                    Open the <v-btn @click="showAdvancedWeather = true">Advance Weather View</v-btn>.
+                    <div class="my-2">Open the <v-btn :color="accentColor" density="compact" variant="tonal" @click="showAdvancedWeather = true">Advanced Weather View</v-btn></div>
                   </div>
                 </div>
               </span>
