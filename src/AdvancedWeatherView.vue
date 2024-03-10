@@ -144,7 +144,7 @@
                 name="cloud-cover"
                 :nsteps="20"
                 label=" Cloud Cover"
-                :cmap="(x: number) => [`hsla(0,0%,100%, 1)`, x]"
+                :cmap="(x: number) => [`hsla(0,0%,100%, 1)`, transferFunction(x)]"
                 />
             </div>
               <div class="d-flex align-center justify-start">
@@ -273,7 +273,8 @@ import LocationSelector from './LocationSelector.vue';
 import CloudCoverLine from './CloudCoverLine.vue';
 import ColorBar from './ColorBar.vue';
 import eclipseUmbra from "./assets/upath_hi.json";
-
+import coordsEight from './assets/modis_eight_day/coords.csv';
+import coordsOne from './assets/modis_one_day/coords.csv';
 
 import {isNumber, OrderedPair, textForLocation} from './utils';
 // isNumber is a utility function that checks if a value is a number
@@ -291,7 +292,19 @@ const cityBoston: CityLocation = {
   longitudeDeg: -71.0589,
 };
 
+let points = csvParseRows(coordsEight, (row, index) => {
+  if (index === 0) {return;}
+  return [+row[0], +row[1]];
+});
+const latitudesEightDay = points.map((p) => p[0]);
+const longitudesEightDay = points.map((p) => p[1]);
 
+points = csvParseRows(coordsOne, (row, index) => {
+  if (index === 0) {return;}
+  return [+row[0], +row[1]];
+});
+const latitudesOneDay = points.map((p) => p[0]);
+const longitudesOneDay = points.map((p) => p[1]);
 
 
 type Statistics =  'mean' | 'median' | 'max' | 'min' | 'singleyear';
@@ -464,8 +477,6 @@ export default defineComponent({
       displayedCloudData: undefined as CloudData | undefined,
       allModisData: {'1day': {}, '8day': {}} as Record<ModisTimeSpan, Record<string, CloudData>>,
       needToUpdate: false,
-      latitudes: [] as number[],
-      longitudes: [] as number[],
       latLonIndex: new Map<[number, number], number>,
       allYearsSummary: {'1day': [] as CloudSummaryData[], '8day': [] as CloudSummaryData[]} as Record<ModisTimeSpan, CloudSummaryData[]>,
       neutralYearsSummary: {'1day': [] as CloudSummaryData[], '8day': [] as CloudSummaryData[]} as Record<ModisTimeSpan, CloudSummaryData[]>,
@@ -479,6 +490,7 @@ export default defineComponent({
       displayData: false,
       displayCharts: false,
       showCloudCover: true,
+      transferFunction: this.transferFunction8,
     };
   },
   
@@ -517,6 +529,20 @@ export default defineComponent({
       // conceivably there could be years that are not available
       // we could handle that here. Otherwise this is just a passthrough
       return this.allYears;
+    },
+    
+    latitudes(): number[] {
+      if (this.modisDataSet === '1day') {
+        return latitudesOneDay;
+      }
+      return latitudesEightDay;
+    },
+    
+    longitudes(): number[] {
+      if (this.modisDataSet === '1day') {
+        return longitudesOneDay;
+      }
+      return longitudesEightDay;
     },
     
     cloudDataNearLocation(): LineGraphData | undefined {
@@ -702,7 +728,7 @@ export default defineComponent({
   
   methods: {
     
-    transferFunction(val: number | null): number {
+    transferFunction8(val: number | null): number {
       if (val === null) {
         return 0;
       }
@@ -710,6 +736,14 @@ export default defineComponent({
       const y = (val - 0.5) / .12;
       const z = Math.exp(y);
       return z / (1 + z);
+    },
+    
+    transferFunction1(val: number | null): number {
+      if (val === null) {
+        return 0;
+      }
+      
+      return val >= 0.05 ? 0.2 + Math.pow(val,1.5) * .8 : val;
     },
     
     getHistogram(arr: number[], norm: 'none' | 'fraction' | 'percent' = 'none'): number[] {
@@ -844,14 +878,10 @@ export default defineComponent({
         import(`./assets/modis_eight_day/${val}_cloud_cover.csv`).then((module) => {
           const data = csvParseRows(module.default, (row, i) => {
             if (i === 0) {return {} as CloudDataElement;}
-            if (index == 0) {
-              this.latitudes.push(+row[0]);
-              this.longitudes.push(+row[1]);
-            }
             return {
-              lat: +row[0],
-              lon: +row[1],
-              cloudCover: +row[2],
+              lat: latitudesEightDay[i-1], // minus one cuz first row is header
+              lon: longitudesEightDay[i-1],
+              cloudCover: +row[0],
             } as CloudDataElement;
           });
           // skip first row
@@ -869,14 +899,10 @@ export default defineComponent({
         import(`./assets/modis_one_day/${val}_cloud_cover.csv`).then((module) => {
           const data = csvParseRows(module.default, (row, i) => {
             if (i === 0) {return {} as CloudDataElement;}
-            if (index == 0) {
-              this.latitudes.push(+row[0]);
-              this.longitudes.push(+row[1]);
-            }
             return {
-              lat: +row[0],
-              lon: +row[1],
-              cloudCover: +row[2],
+              lat: latitudesOneDay[i-1], // minus one cuz first row is header
+              lon: longitudesOneDay[i-1],
+              cloudCover: +row[0],
             } as CloudDataElement;
           });
           // skip first row
@@ -932,6 +958,14 @@ export default defineComponent({
         this.needToUpdate = false;
       }
       this.updateMapDescriptionText();
+      
+      if (this.modisDataSet === '1day') {
+        this.transferFunction = this.transferFunction1;
+      }
+      if (this.modisDataSet === '8day') {
+        this.transferFunction = this.transferFunction8;
+      }
+      
       if (this.selectedStat === 'singleyear') {
         this.displayedCloudData = this.allCloudData[this.selectedYear];
         return;

@@ -63,7 +63,6 @@ export default defineComponent({
   methods: {
     colorbarGradient() {
       const colorbar = document.querySelector('#' + this.id + '> .colorbar');
-      console.log('MY COLORBAR',colorbar);
       if (!colorbar) {
         return;
       }
@@ -73,7 +72,6 @@ export default defineComponent({
       }
       const n = this.nsteps;
       for (let i=n; i >= 0; i--) {
-        console.log('MY I',i);
         const co = this.cmap(i/n);
         const [color, opacity] = Array.isArray(co) ? co : [co,1];
         const div = document.createElement('div');
