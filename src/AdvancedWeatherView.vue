@@ -23,6 +23,7 @@
               <v-col cols="12">
                 
                 <v-col class="sentence-query" col="12">
+                  dataSubset: {{ dataSubset }}  selectedStat: {{ selectedStat }} selectedYear: {{ selectedYear }}
                   <label for="statistics">Show me</label>
                   <select 
                     class="select-box"
@@ -184,16 +185,16 @@
             id="cloud-histogram"
             class="elevation-5"
             :labels="skyCoverCodes.map((v) => v.includes('/') ? [v.split('/')[0] + '/', v.split('/')[1]]: v)"
-            :data-label="dataSubset === 'allYears' ? 'All Years' : 'Other Years'"
+            :data-label="hideHistogramSubset ? 'All Years' : 'Other Years'"
             :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
-            :colors="dataSubset === 'allYears' ? colorMap : ['#aaa']"
+            :colors="hideHistogramSubset ? colorMap : ['#aaa']"
             :options = "{scales: {y: {beginAtZero: true, max:20}}}"
             :bar-annotations="false"
             :bar-offset="1"
             :barAnnotationLabel="(v:number) => (v * 100/20).toFixed(0) + '%'"
             stacked
             :title="`Cloud Conditions for ${locationName} ${allYears[0]} - ${allYears[allYears.length - 1]}`"
-            :other-datasets="dataSubset === 'allYears' ? [] : [
+            :other-datasets="hideHistogramSubset ? [] : [
               {
                 label: mapSubsets.get(dataSubset),
                 data: locationHistogram,
@@ -210,8 +211,8 @@
             :title="`Percent Cloud Cover for ${locationName}`"
             :scatter-data="cloudDataNearLocation"
             :scatter-options="{radius: 4 }"
-            :scatter-label="dataSubset === 'allYears' ? 'All Years' : 'Other Years'"
-            :subsets="dataSubset === 'allYears' ? [] :
+            :scatter-label="subsetSelected ? 'All Years' : 'Other Years'"
+            :subsets="subsetSelected ? [] :
               [allYears.map((year) => selectedYears.includes(year))]"
             :subset-styles="[{backgroundColor: 'red', radius: 5}]"
             :y-range="[-.1,1.1]"
@@ -530,6 +531,17 @@ export default defineComponent({
       // conceivably there could be years that are not available
       // we could handle that here. Otherwise this is just a passthrough
       return this.allYears;
+    },
+    
+    subsetSelected() {
+      return this.allYears.every(y => this.selectedYears.includes(y));
+    },
+    
+    hideHistogramSubset() {
+      const hide1 = this.dataSubset === 'allYears';
+      const hide2 = this.selectedStat === 'singleyear';
+      
+      return  hide1 || hide2;
     },
     
     latitudes(): number[] {
