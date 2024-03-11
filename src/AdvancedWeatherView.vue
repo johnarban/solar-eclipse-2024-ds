@@ -6,9 +6,9 @@
     >
     <v-card id="advanced-weather-view">
       <v-card-text>
-        <h1 style="padding:0.5em 0.5em">Just how cloudy is it in {{ locationName }} in April?
+        <h1>Just how cloudy is it in {{ locationName }} in April?
         <define-term 
-          width="80ch"
+          width="50%"
           definition='<p class="intro">
           NASAs <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS Aqua and Terra</a> satellites 
           provide daily views of the entire surface of the Earth and measure the cloud cover.
@@ -21,136 +21,97 @@
             <v-icon>mdi-help-circle</v-icon>
           </template>
         </define-term>
-      </h1>
+        </h1>
         <!-- top row -->
-        <v-row class="">
-          <v-col cols="5" >
-            <v-row>              
-              <v-col cols="12">
-                
-                <v-col class="sentence-query" col="12">
-                  <label for="statistics">Show me</label>
+        <v-row>
+          
+          <v-col cols="12" sm="4" >
+            <v-row id="query-constructor">              
+              <v-col class="sentence-query" col="12">
+                <label for="statistics">Show me</label>
+                <select 
+                  class="select-box"
+                  name="statistics" 
+                  id="select-statistics" 
+                  v-model="selectedStat"
+                  >
+                  <option disabled value="">Select one</option>
+                  <option value="mean">the Mean</option>
+                  <option value="median">the Median</option>
+                  <option value="singleyear">a Single Year</option>
+                </select>
+                  <label for="years">of the cloud cover for </label>
                   <select 
+                    v-if="selectedStat !== 'singleyear'"
                     class="select-box"
-                    name="statistics" 
-                    id="select-statistics" 
-                    v-model="selectedStat"
+                    name="years" 
+                    id="select-years" 
+                    v-model="dataSubset"
                     >
                     <option disabled value="">Select one</option>
-                    <option value="mean">the Mean</option>
-                    <option value="median">the Median</option>
-                    <option value="singleyear">a Single Year</option>
+                    <option
+                      v-for="[key, value] in mapSubsets" :key="key" :value="key">{{ value }}</option>
                   </select>
-                    <label for="years">of the cloud cover for </label>
-                    <select 
-                      v-if="selectedStat !== 'singleyear'"
-                      class="select-box"
-                      name="years" 
-                      id="select-years" 
-                      v-model="dataSubset"
-                      >
-                      <option disabled value="">Select one</option>
-                      <option
-                        v-for="[key, value] in mapSubsets" :key="key" :value="key">{{ value }}</option>
-                    </select>
-                    <select 
-                      v-else
-                      class="select-box"
-                      name="years" 
-                      id="select-years" 
-                      v-model="selectedYear"
-                      >
-                      <option disabled value="">Select one</option>
-                      <option
-                        v-for="year in availableYears" :key="year" :value="year">{{ year }}
-                      </option>
-                    </select>
-                  </v-col>
-                
-              </v-col>
-              <v-col class="d-flex align-center justify-center">
-              <v-btn 
-                class="elevation-5 force-vuetify-small-font"
-                variant="flat"
-                :disabled="!(needToUpdate || !showCloudCover)"
-                size="large"
-                color="#eac402" 
-                @click="updateData()">{{ displayData ? (needToUpdate ? 'Update Map' : 'Shown on Map') : 'Show on Map'  }}</v-btn>
-              <v-radio-group 
-                class="force-vuetify-small-font"
-                v-model="modisDataSet"  
-                inline
-                density="comfortable"
-                persistent-hint
-                hint="MODIS Aqua Data Set"
-              >
-              <v-radio
-                v-for="[key, value] in modisTimes"
-                class="force-vuetify-small-font"
-                :key="key"
-                :label="value"
-                :value="key"
-                :disabled="false"
-                color="#eac402"
-                hint="MODIS Aqua Data Set"
-              ></v-radio>
-            </v-radio-group>
+                  <select 
+                    v-else
+                    class="select-box"
+                    name="years" 
+                    id="select-years" 
+                    v-model="selectedYear"
+                    >
+                    <option disabled value="">Select one</option>
+                    <option
+                      v-for="year in availableYears" :key="year" :value="year">{{ year }}
+                    </option>
+                  </select>
               </v-col>
             </v-row>
             
-            <v-row id="chart-intro" v-if="!displayCharts && displayData">
-              <hr style="width:100%; margin-block: 1rem;">
-              <h3>Show cloud cover statistics for currently selected location: <strong class="attention">{{ locationName }}</strong></h3>
+            <v-row id="modis-radio-group">
               <v-btn 
-                size="large"
+                class="elevation-5"
+                variant="flat"
+                :disabled="!(needToUpdate || !showCloudCover)"
+                color="#eac402" 
+                @click="updateData()"
+                >
+                {{ displayData ? (needToUpdate ? 'Update Map' : 'Shown on Map') : 'Show on Map'  }}
+              </v-btn>
+                
+              <v-radio-group 
+                class="modis-radio"
+                v-model="modisDataSet"  
+                density="compact"
+                persistent-hint
+                inline
+                hint="MODIS Aqua Data Set"
+              >
+                <v-radio
+                  v-for="[key, value] in modisTimes"
+                  :key="key"
+                  :label="value"
+                  :value="key"
+                  :disabled="false"
+                  color="#eac402"
+                  density="compact"
+                  hint="MODIS Aqua Data Set"
+                ></v-radio>
+              </v-radio-group>
+            </v-row>
+            
+            <v-row id="awv-chart-placeholder" v-if="!displayCharts && displayData">
+              <hr style="width:100%; margin-block: 1rem;">
+              <h4>Show cloud cover statistics for currently selected location: <strong class="attention">{{ locationName }}</strong></h4>
+              <v-btn 
                 density="compact"
                 color="#eac402"
                 append-icon="mdi-chevron-triple-right"
                 @click="displayCharts = true">Show details</v-btn>
-                
             </v-row>
-            <v-row v-if="displayCharts">
-              
-              <div id="awv-cloud-cover-display" class="">
-                <div v-if="true">
-                  <!-- <hr> -->
-                  <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ locationName }}</strong> for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
-                  <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
-
-                  <cloud-cover-line
-                    :value="locationValue"
-                    :label="selectedStat === 'singleyear' ? 'Cloud Cover' : statText.get(selectedStat) ?? 'Cloud Cover'"
-                    :codes="skyCoverCodes"
-                    :ranges="skyCoverCodeRanges"
-                    :icons="skyCoverIcons"
-                    variant="bold"
-                    />
-                </div>
-                <hr>
-                <h3>Cloud Cover for <strong class="attention">{{ locationName }}</strong> for all years:</h3>
-                <!-- cloud cover for all years at location -->
-                <cloud-cover-line
-                  :value="median(cloudDataNearLocation)"
-                  label="Median"
-                  :codes="skyCoverCodes"
-                  :ranges="skyCoverCodeRanges"
-                  :icons="skyCoverIcons"
-                  />
-                
-                <cloud-cover-line
-                  :value="mean(cloudDataNearLocation)"
-                  label="Mean"
-                  :codes="skyCoverCodes"
-                  :ranges="skyCoverCodeRanges"
-                  :icons="skyCoverIcons"
-                  />
-              </div>
-            </v-row>
-              
           </v-col>
           
-          <v-col cols="7">
-            <v-container aspect-ratio="1">
+
+          <v-col id="awv-map" cols="12" sm="8">
             <span id="awv-map-description"> {{ mapDescriptionText }} </span>
             <div class="map-colorbar">
             <location-selector
@@ -180,89 +141,128 @@
                 v-model="showCloudCover"
                 label="Show Cloud Cover"
                 color="#eac402"
-                hint="Show the cloud cover on the map"
+                density="compact"
+                hide-details
                 />
             </div>
-            </v-container>
           </v-col>  
+          
         </v-row>
         
-        <v-row v-if="displayCharts" class="">
+        <v-row v-if="displayCharts">
+          
+          <div id="awv-cloud-cover-display" class="">
+            <div>
+              <!-- <hr> -->
+              <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
+              <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
+
+              <cloud-cover-line
+                :value="locationValue"
+                :label="selectedStat === 'singleyear' ? `${selectedYear}` : statText.get(selectedStat) ?? 'Cloud Cover'"
+                :codes="skyCoverCodes"
+                :ranges="skyCoverCodeRanges"
+                :icons="skyCoverIcons"
+                variant="bold"
+                />
+            </div>
+            <hr>
+            <h3>Cloud Cover for all years:</h3>
+            <!-- cloud cover for all years at location -->
+            <cloud-cover-line
+              :value="median(cloudDataNearLocation)"
+              label="Median"
+              :codes="skyCoverCodes"
+              :ranges="skyCoverCodeRanges"
+              :icons="skyCoverIcons"
+              />
+            
+            <cloud-cover-line
+              :value="mean(cloudDataNearLocation)"
+              label="Mean"
+              :codes="skyCoverCodes"
+              :ranges="skyCoverCodeRanges"
+              :icons="skyCoverIcons"
+              />
+          </div>
+        </v-row>
+        
+        <v-row v-if="displayCharts">
           <v-col cols="12" sm="6" class="graph-col">
-          <bar-chart
-            id="cloud-histogram"
-            class="elevation-5"
-            :labels="skyCoverCodes.map((v) => v.includes('/') ? [v.split('/')[0] + '/', v.split('/')[1]]: v)"
-            :data-label="hideHistogramSubset ? 'All Years' : 'Other Years'"
-            :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
-            :colors="hideHistogramSubset ? colorMap : ['#aaa']"
-            :options = "{scales: {y: {beginAtZero: true, max:20}}}"
-            :bar-annotations="false"
-            :bar-offset="1"
-            :barAnnotationLabel="(v:number) => (v * 100/20).toFixed(0) + '%'"
-            stacked
-            :title="`Cloud Conditions for ${locationName} ${allYears[0]} - ${allYears[allYears.length - 1]}`"
-            :other-datasets="hideHistogramSubset ? [] : [
-              {
-                label: mapSubsets.get(dataSubset),
-                data: locationHistogram,
-                backgroundColor: colorMap, //'#c51b8a',
-                borderColor: 'black', //'#c51b8a',
-                borderWidth: 1,
-              }
-            ]"
-            />
+            <bar-chart
+              id="cloud-histogram"
+              class="elevation-5"
+              :labels="skyCoverCodes.map((v) => v.includes('/') ? [v.split('/')[0] + '/', v.split('/')[1]]: v)"
+              :data-label="hideHistogramSubset ? 'All Years' : 'Other Years'"
+              :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
+              :colors="hideHistogramSubset ? colorMap : ['#aaa']"
+              :options = "{scales: {y: {beginAtZero: true, max:20}}}"
+              :bar-annotations="false"
+              :bar-offset="1"
+              :barAnnotationLabel="(v:number) => (v * 100/20).toFixed(0) + '%'"
+              stacked
+              :title="`Cloud Conditions for ${locationName} ${allYears[0]} - ${allYears[allYears.length - 1]}`"
+              :other-datasets="hideHistogramSubset ? [] : [
+                {
+                  label: mapSubsets.get(dataSubset),
+                  data: locationHistogram,
+                  backgroundColor: colorMap, //'#c51b8a',
+                  borderColor: 'black', //'#c51b8a',
+                  borderWidth: 1,
+                }
+              ]"
+              />
           </v-col>
           <v-col cols="12" sm="6" class="graph-col">
-          <line-chart
-            class="elevation-5"
-            :title="`Percent Cloud Cover for ${locationName}`"
-            :scatter-data="cloudDataNearLocation"
-            :scatter-options="{radius: 4 }"
-            :scatter-label="!subsetSelected ? 'All Years' : 'Other Years'"
-            :subsets="!subsetSelected ? [] :
-              [allYears.map((year) => selectedYears.includes(year))]"
-            :subset-styles="[{backgroundColor: 'red', radius: 5}]"
-            :y-range="[-.1,1.1]"
-            :x-range="[new Date(2003, 1, 8), new Date(2023, 7, 8)]"
+            <line-chart
+              class="elevation-5"
+              :title="`Percent Cloud Cover for ${locationName}`"
+              :scatter-data="cloudDataNearLocation"
+              :scatter-options="{radius: 4 }"
+              :scatter-label="!subsetSelected ? 'All Years' : 'Other Years'"
+              :subsets="!subsetSelected ? [] :
+                [allYears.map((year) => selectedYears.includes(year))]"
+              :subset-styles="[{backgroundColor: 'red', radius: 5}]"
+              :y-range="[-.1,1.1]"
+              :x-range="[new Date(2003, 1, 8), new Date(2023, 7, 8)]"
 
-            :y-axis-options="{
-              ticks: {callback: (value: number, index: number) => {
-                        if (value < 0 || value > 1) {return;}
-                        return (value * 100).toFixed(0) + '%';
-                        }}}"
-            timeseries
-            color="grey"
-            show-scatter
-            :annotations="[...skyCoverCodeRanges.map(([_,[min,max]],i) => {
-              return {
-                type: 'box',
-                yMin: min/100,
-                yMax: max/100,
-                backgroundColor: colorMap[i],
-                drawTime: 'beforeDraw',
-                borderColor: colorMap[i]
-              }
-            }),
-            ...skyCoverCodeRanges.map(([label,[min,max]],i) => {
-              return {
-                type: 'line',
-                borderWidth: 0,
-                drawTime: 'beforeDatasetsDraw',
-                
-                label: {
-                  display: true,
-                  color: 'black',
-                  backgroundColor: 'transparent',
-                  content: skyCoverCodes[i],
-                },
-                xMin: new Date(2023, 1, 8),
-                yMin: (min + max) / 200,
-                yMax: (min + max) / 200,
-              };
-            })
-          ]"
-            />
+              :y-axis-options="{
+                ticks: {callback: (value: number, index: number) => {
+                          if (value < 0 || value > 1) {return;}
+                          return (value * 100).toFixed(0) + '%';
+                          }}}"
+              timeseries
+              color="grey"
+              show-scatter
+              :annotations="[...skyCoverCodeRanges.map(([_,[min,max]],i) => {
+                return {
+                  type: 'box',
+                  yMin: min/100,
+                  yMax: max/100,
+                  backgroundColor: colorMap[i],
+                  drawTime: 'beforeDraw',
+                  borderColor: colorMap[i]
+                }
+              }),
+              ...skyCoverCodeRanges.map(([label,[min,max]],i) => {
+                return {
+                  type: 'line',
+                  borderWidth: 0,
+                  drawTime: 'beforeDatasetsDraw',
+                  
+                  label: {
+                    display: true,
+                    color: 'black',
+                    backgroundColor: 'transparent',
+                    content: skyCoverCodes[i],
+                  },
+                  xMin: new Date(2023, 1, 8),
+                  yMin: (min + max) / 200,
+                  yMax: (min + max) / 200,
+                  };
+                })
+              ]"
+              />
           </v-col>
         </v-row>
         
@@ -501,7 +501,7 @@ export default defineComponent({
       mapDescriptionText: '',
       locationName: '',
       inBounds: false,
-      displayData: false,
+      displayData: true,
       displayCharts: false,
       showCloudCover: true,
       transferFunction: this.transferFunction8,
@@ -1211,6 +1211,11 @@ export default defineComponent({
 #advanced-weather-view {
   --color: #eac402;
   font-size: var(--default-font-size);
+  --smaller-font: calc(0.8 * var(--default-font-size));
+  
+  h1 {
+    font-size: 1.5em;
+  }
   
   p.intro {
     font-size: 1em;
@@ -1218,16 +1223,23 @@ export default defineComponent({
   
   strong.attention {
     font-weight: bold;
-    font-size: 1em;
     color: var(--color);
   }
   
-  #chart-intro {
-    
-  }
     
   .graph-col {
     height: 300px;
+  }
+  
+  .v-btn {
+    font-size: var(--smaller-font);
+  }
+  
+  .modis-radio {
+    margin-top: 0.125em;
+  }
+  .v-label {
+    font-size: var(--smaller-font);
   }
 
   #awv-map-description {
@@ -1254,7 +1266,7 @@ export default defineComponent({
     font-size: 1.125em;
     
     
-    > * {
+    >label, >select {
       margin: 0.25em auto;
     }
     
