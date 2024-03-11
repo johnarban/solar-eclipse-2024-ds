@@ -2710,8 +2710,14 @@ export default defineComponent({
       });
     },
 
-    createUserEntry() {
+    async createUserEntry() {
       if (this.responseOptOut) {
+        return;
+      }
+      const response = await fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`);
+      const content = await response.json();
+      const exists = response.status === 200 && content.user_uuid;
+      if (exists) {
         return;
       }
       fetch(`${API_BASE_URL}/solar-eclipse-2024/data`, {
