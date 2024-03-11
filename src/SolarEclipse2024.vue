@@ -1586,7 +1586,8 @@ let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
 });
 
 // lon and lat are first col and row (dropping the first value)
-const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
+// const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
+const maxLat = Math.max(...cloudData.map(d => d[0]).slice(1));
 const minLon = Math.min(...cloudData[0].slice(1));
 // get just the inner data grid
 cloudData = cloudData.slice(1).map(row => row.slice(1));
@@ -2429,7 +2430,7 @@ export default defineComponent({
       }
       const n = 20;
       for (let i=n; i >= 0; i--) {
-        const cc = i/n > .05 ? .2 + Math.pow(i/n,1.5) * .8 : i/n;
+        const cc = this.sigmoid(i/n);
         const color = `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
         const div = document.createElement('div');
         div.style.backgroundColor = color;
@@ -2438,6 +2439,16 @@ export default defineComponent({
       }
       
       
+    },
+    
+    sigmoid(val: number | null): number {
+      if (val === null) {
+        return 0;
+      }
+      // return sigmoid
+      const y = (val - 0.5) / .12;
+      const z = Math.exp(y);
+      return z / (1 + z);
     },
     
     async trackSun(): Promise<void> {
@@ -3329,7 +3340,7 @@ export default defineComponent({
     
     getCloudCover(lat: number, lon: number): number | null {
       // convert lat/lon to row/col
-      const row = Math.floor(lat + 0.5 - minLat);
+      const row = Math.floor(maxLat - lat + 0.5);
       const col = Math.floor(lon + 0.5 - minLon);
       if (row < 0 || row >= cloudData.length || col < 0 || col >= cloudData[0].length) {
         return null;
