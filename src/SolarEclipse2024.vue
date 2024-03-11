@@ -2717,7 +2717,7 @@ export default defineComponent({
         headers: { "Authorization": process.env.VUE_APP_CDS_API_KEY ?? "" }
       });
       const content = await response.json();
-      const exists = response.status === 200 && content.user_uuid;
+      const exists = response.status === 200 && content.response.user_uuid != undefined;
       if (exists) {
         return;
       }
