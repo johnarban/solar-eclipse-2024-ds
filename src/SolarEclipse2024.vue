@@ -224,6 +224,7 @@
               class="leaflet-map"
               :geo-json-files="geojson"
               :selected-cloud-cover="selectedCloudCoverData"
+              :cloud-cover-opacity-function="cloudColorMap"
             ></location-selector>
               <color-bar
                 v-if="learnerPath === 'Clouds'"
@@ -1613,9 +1614,10 @@ let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
 
 // lon and lat are first col and row (dropping the first value)
 const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
+const maxLat = Math.max(...cloudData.map(d => d[0]).slice(1));
 const minLon = Math.min(...cloudData[0].slice(1));
-const dLon = (cloudData[0][2] - cloudData[0][1]);
-const dLat = Math.abs(cloudData[2][0] - cloudData[1][0]);
+const dLon = cloudData[0][2] - cloudData[0][1];
+const dLat = cloudData[2][0] - cloudData[1][0];
 console.log("minLat, minLon, dLat, dLon", minLat, minLon, dLat, dLon);
 // get just the inner data grid
 cloudData = cloudData.slice(1).map(row => row.slice(1));
@@ -1625,7 +1627,7 @@ const cloudDataArray: CloudData[] = [];
 cloudData.forEach((row, i) => {
   row.forEach((cloudCover, j) => {
     cloudDataArray.push({
-      lat: minLat + dLat * i,
+      lat: maxLat + dLat * i,
       lon: minLon + dLon * j,
       cloudCover
     });
@@ -3383,7 +3385,7 @@ export default defineComponent({
     
     getCloudCover(lat: number, lon: number): number | null {
       // convert lat/lon to row/col
-      const row = Math.floor(lat + 0.5 - minLat);
+      const row = Math.floor(maxLat - lat + 0.5);
       const col = Math.floor(lon + 0.5 - minLon);
       if (row < 0 || row >= cloudData.length || col < 0 || col >= cloudData[0].length) {
         return null;
