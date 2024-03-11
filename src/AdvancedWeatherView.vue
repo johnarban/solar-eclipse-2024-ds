@@ -6,7 +6,7 @@
     >
     <v-card id="advanced-weather-view">
       <v-card-text>
-        <h1 style="padding:0.5em 0.5em">Just how cloudy is it in {{ locationName }} in April?</h1>
+        <h1 style="padding:0.5em 0.5em">Just how cloudy is it in {{ locationName }} in April?
         <define-term 
           width="80ch"
           definition='<p class="intro">
@@ -20,10 +20,10 @@
           <template #term>
             <v-icon>mdi-help-circle</v-icon>
           </template>
-      </define-term>
+        </define-term>
+      </h1>
         <!-- top row -->
         <v-row class="">
-          
           <v-col cols="5" >
             <v-row>              
               <v-col cols="12">
@@ -86,6 +86,7 @@
               >
               <v-radio
                 v-for="[key, value] in modisTimes"
+                class="force-vuetify-small-font"
                 :key="key"
                 :label="value"
                 :value="key"
@@ -450,7 +451,7 @@ export default defineComponent({
       selectedStat: 'median' as Statistics,
       dataSubset: 'allYears' as DataSubset,
       // https://www.weather.gov/media/notification/dir/AFM_Specifications.pdf
-      skyCoverCodes: ['Clear/Mostly Clear', 'Parly Cloudy', 'Mostly Cloudy', 'Cloudy/Overcast'],
+      skyCoverCodes: ['Clear/Mostly Clear', 'Partly Cloudy', 'Mostly Cloudy', 'Cloudy/Overcast'],
       skyCoverIcons: ['mdi-weather-sunny', 'mdi-weather-partly-cloudy', 'mdi-weather-cloudy', 'mdi-clouds'],
       skyCoverCodeRanges: [
         ['clear', [0, 25]],
@@ -1245,7 +1246,7 @@ export default defineComponent({
   }
   
   .force-vuetify-small-font {
-    font-size: 0.8em;
+    font-size: 0.8em!important;
   }
   
   .sentence-query {
