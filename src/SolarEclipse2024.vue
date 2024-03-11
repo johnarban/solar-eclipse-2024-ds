@@ -2711,7 +2711,11 @@ export default defineComponent({
       if (this.responseOptOut) {
         return;
       }
-      const response = await fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`);
+      const response = await fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
+        method: "GET",
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        headers: { "Authorization": process.env.VUE_APP_CDS_API_KEY ?? "" }
+      });
       const content = await response.json();
       const exists = response.status === 200 && content.user_uuid;
       if (exists) {
