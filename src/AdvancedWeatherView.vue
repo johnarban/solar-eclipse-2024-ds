@@ -23,7 +23,6 @@
               <v-col cols="12">
                 
                 <v-col class="sentence-query" col="12">
-                  dataSubset: {{ dataSubset }}  selectedStat: {{ selectedStat }} selectedYear: {{ selectedYear }}
                   <label for="statistics">Show me</label>
                   <select 
                     class="select-box"
@@ -105,7 +104,7 @@
                   :ranges="skyCoverCodeRanges"
                   :icons="skyCoverIcons"
                   />
-                <div v-if="dataSubset != 'allYears'">
+                <div v-if="subsetSelected">
                   <hr>
                   <h3 v-if="selectedStat !== 'singleyear'"> <strong class="attention">{{ statText.get(selectedStat) }}</strong> Cloud Cover for <strong class="attention">{{ locationName }}</strong> for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
                   <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
@@ -212,8 +211,8 @@
             :title="`Percent Cloud Cover for ${locationName}`"
             :scatter-data="cloudDataNearLocation"
             :scatter-options="{radius: 4 }"
-            :scatter-label="subsetSelected ? 'All Years' : 'Other Years'"
-            :subsets="subsetSelected ? [] :
+            :scatter-label="!subsetSelected ? 'All Years' : 'Other Years'"
+            :subsets="!subsetSelected ? [] :
               [allYears.map((year) => selectedYears.includes(year))]"
             :subset-styles="[{backgroundColor: 'red', radius: 5}]"
             :y-range="[-.1,1.1]"
@@ -538,7 +537,8 @@ export default defineComponent({
     },
     
     subsetSelected() {
-      return this.allYears.every(y => this.selectedYears.includes(y));
+      // return !this.allYears.every(y => this.selectedYears.includes(y));
+      return (this.selectedYears.length < this.allYears.length);
     },
     
     hideHistogramSubset() {
@@ -666,6 +666,16 @@ export default defineComponent({
       return this.median(this.yearForLocation.map(d => d.y));
     },
     
+    locationSingleYear(): number | null {
+      if (this.cloudDataNearLocation) {
+        const out = this.cloudDataNearLocation.filter( v => v.x.getFullYear() === this.selectedYear);
+        if (out.length > 0) {
+          return out[0].y;
+        }
+      }
+      return null;
+    },
+    
     locationValue: {
       get() {
         if (this.selectedDataCloudCover) {
@@ -678,7 +688,7 @@ export default defineComponent({
           return this.locationMedian;
         }
         if (this.selectedStat === 'singleyear') {
-          return this.cloudDataNearLocation?.filter( v => v.x.getFullYear() === this.selectedYear)[0].y ?? null;
+          return this.locationSingleYear;
         }
         return null;
       },
@@ -963,6 +973,9 @@ export default defineComponent({
       const distances = this.latitudes.map((lat2, i) => Math.sqrt((lat - lat2) ** 2 + (lon - this.longitudes[i]) ** 2));
       const minIndex = distances.indexOf(Math.min(...distances));
       // this.selectedDataIndex = minIndex;
+      if (this.selectedDataIndex != minIndex) {
+        this.selectedDataIndex = minIndex;
+      }
       return minIndex;
     },
     
@@ -1168,10 +1181,10 @@ export default defineComponent({
     location(value: CityLocation) {
       console.log('location', value);
       this.updateLocationName();
-      
       this.checkInBounds(value).then((inBounds) => {
         this.inBounds = inBounds;
       });
+      this.getLatLonIndex(value.latitudeDeg, value.longitudeDeg);
       
     },
   },

@@ -165,7 +165,7 @@ export default defineComponent({
 
   data() {
     return {
-      eclipsePath: null as L.GeoJSON | null,
+      eclipsePath: [] as L.GeoJSON[],
       placeCircles: [] as L.CircleMarker[],
       hoveredPlace: null as Place | null,
       selectedCircle: null as L.CircleMarker | null,
@@ -380,7 +380,7 @@ export default defineComponent({
               const geoJSON = L.geoJSON(data, { style }).addTo(map);
               if (url.includes("center")) {
                 geoJSON.bringToFront();
-                this.eclipsePath = geoJSON;
+                this.eclipsePath.push(geoJSON);
               }
             })
             .catch((error) => {
@@ -407,7 +407,7 @@ export default defineComponent({
         }
       });
 
-      this.eclipsePath?.bringToFront();
+      this.eclipsePath.map(g => g.bringToFront());
       this.selectedCircle?.bringToFront();
       
       this.map = map;
@@ -429,7 +429,7 @@ export default defineComponent({
     },
 
     bringLocationAndPathToFront() {
-      this.eclipsePath?.bringToFront();
+      this.eclipsePath.map(g => g.bringToFront());
       this.selectedCircle?.bringToFront();
     },
 
