@@ -224,7 +224,7 @@
               class="leaflet-map"
               :geo-json-files="geojson"
               :selected-cloud-cover="selectedCloudCoverData"
-              :cloud-cover-opacity-function="cloudColorMap"
+              :cloud-cover-opacity-function="sigmoid"
             ></location-selector>
               <color-bar
                 v-if="learnerPath === 'Clouds'"
