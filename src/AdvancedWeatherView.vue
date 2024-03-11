@@ -7,14 +7,20 @@
     <v-card id="advanced-weather-view">
       <v-card-text>
         <h1 style="padding:0.5em 0.5em">Just how cloudy is it in {{ locationName }} in April?</h1>
-        <p class="intro">
-          NASA's <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS Aqua and Terra</a> satellites 
+        <define-term 
+          width="80ch"
+          definition='<p class="intro">
+          NASAs <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS Aqua and Terra</a> satellites 
           provide daily views of the entire surface of the Earth and measure the cloud cover.
           This is provided as the <strong>cloud cover fraction - <em>the percentage of the sky at a given location that is covered 
           by clouds</em></strong>. The daily data can have gaps and processing artefacts, so the 8-day average 
           provies a more reliable measure of the cloud cover for a given time.
-        </p>
-        
+        </p>'
+          >
+          <template #term>
+            <v-icon>mdi-help-circle</v-icon>
+          </template>
+      </define-term>
         <!-- top row -->
         <v-row class="">
           
@@ -62,14 +68,31 @@
                   </v-col>
                 
               </v-col>
-              <v-col class="align-center justify-center">
+              <v-col class="d-flex align-center justify-center">
               <v-btn 
                 class="elevation-5"
                 variant="flat"
                 :disabled="!(needToUpdate || !showCloudCover)"
                 size="large"
                 color="#eac402" 
-                @click="updateData()">Show on Map</v-btn>
+                @click="updateData()">{{ displayData ? (needToUpdate ? 'Update Map' : 'Shown on Map') : 'Show on Map'  }}</v-btn>
+              <v-radio-group 
+                v-model="modisDataSet"  
+                inline
+                density="comfortable"
+                persistent-hint
+                hint="MODIS Aqua Data Set"
+              >
+              <v-radio
+                v-for="[key, value] in modisTimes"
+                :key="key"
+                :label="value"
+                :value="key"
+                :disabled="false"
+                color="#eac402"
+                hint="MODIS Aqua Data Set"
+              ></v-radio>
+            </v-radio-group>
               </v-col>
             </v-row>
             
@@ -87,7 +110,22 @@
             <v-row v-if="displayCharts">
               
               <div id="awv-cloud-cover-display" class="">
-                <h3>Cloud Cover for <strong class="attention">{{ locationName }}</strong>:</h3>
+                <div v-if="true">
+                  <!-- <hr> -->
+                  <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ locationName }}</strong> for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
+                  <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
+
+                  <cloud-cover-line
+                    :value="locationValue"
+                    :label="selectedStat === 'singleyear' ? 'Cloud Cover' : statText.get(selectedStat) ?? 'Cloud Cover'"
+                    :codes="skyCoverCodes"
+                    :ranges="skyCoverCodeRanges"
+                    :icons="skyCoverIcons"
+                    variant="bold"
+                    />
+                </div>
+                <hr>
+                <h3>Cloud Cover for <strong class="attention">{{ locationName }}</strong> for all years:</h3>
                 <!-- cloud cover for all years at location -->
                 <cloud-cover-line
                   :value="median(cloudDataNearLocation)"
@@ -104,21 +142,6 @@
                   :ranges="skyCoverCodeRanges"
                   :icons="skyCoverIcons"
                   />
-                <div v-if="subsetSelected">
-                  <hr>
-                  <h3 v-if="selectedStat !== 'singleyear'"> <strong class="attention">{{ statText.get(selectedStat) }}</strong> Cloud Cover for <strong class="attention">{{ locationName }}</strong> for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
-                  <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
-
-                  <cloud-cover-line
-                    :value="locationValue"
-                    :label="selectedStat === 'singleyear' ? 'Cloud Cover' : statText.get(selectedStat) ?? 'Cloud Cover'"
-                    hide-label
-                    :codes="skyCoverCodes"
-                    :ranges="skyCoverCodeRanges"
-                    :icons="skyCoverIcons"
-                    variant="bold"
-                    />
-                </div>
               </div>
             </v-row>
               
@@ -149,24 +172,7 @@
                 :cmap="(x: number) => [`hsla(0,0%,100%, 1)`, transferFunction(x)]"
                 />
             </div>
-              <div class="d-flex align-center justify-start">
-              <v-radio-group 
-                v-model="modisDataSet"  
-                inline
-                density="comfortable"
-                persistent-hint
-                hint="MODIS Aqua Data Set"
-                >
-                <v-radio
-                  v-for="[key, value] in modisTimes"
-                  :key="key"
-                  :label="value"
-                  :value="key"
-                  :disabled="false"
-                  color="#eac402"
-                  hint="MODIS Aqua Data Set"
-                ></v-radio>
-              </v-radio-group>
+              <div class="d-flex align-center justify-end">
               <v-checkbox
                 v-if="displayData"
                 v-model="showCloudCover"
@@ -273,6 +279,8 @@ import BarChart from './BarChart.vue';
 import LineChart from './LineChart.vue';
 import LocationSelector from './LocationSelector.vue';
 import CloudCoverLine from './CloudCoverLine.vue';
+// import HoverTooltip from './HoverTooltip.vue';
+import DefineTerm from './DefineTerm.vue';
 import ColorBar from './ColorBar.vue';
 import eclipseUmbra from "./assets/upath_hi.json";
 import coordsEight from './assets/modis_eight_day/coords.csv';
@@ -397,6 +405,8 @@ export default defineComponent({
     'location-selector': LocationSelector,
     'cloud-cover-line': CloudCoverLine,
     'color-bar': ColorBar,
+    // 'hover-tooltip': HoverTooltip,
+    'define-term': DefineTerm,
   },
   
   emits: ['update:modelValue','close'],
@@ -1294,6 +1304,10 @@ export default defineComponent({
     font-size: 1.1em;
   }
   
+  .bold .label-icon-value-text-label {
+    color:#eac402;
+    font-size: 1.12em;
+  }
   
 
 }

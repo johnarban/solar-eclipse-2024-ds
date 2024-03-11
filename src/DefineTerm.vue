@@ -2,7 +2,7 @@
 import { tooltip } from 'leaflet';
 <template>
   <v-tooltip 
-    width="25ch"
+    :width="width"
     :open-on-click="true"
     :open-on-hover="true"
     :open-on-focus="true"
@@ -15,8 +15,10 @@ import { tooltip } from 'leaflet';
       </div>
     </template>
     
+    <slot name="definition">
     <div class="define-term-tooltip definition" v-html="definition">
     </div>
+  </slot>
 
     </v-tooltip>
 </template>
@@ -34,15 +36,20 @@ export default defineComponent({
   props: {
     term: {
       type: String,
-      required: true
+      required: false
     },
     definition: {
       type: String,
-      required: true
+      required: false
     },
     inline: {
       type: Boolean,
       default: true
+    },
+    
+    width: {
+      type: String,
+      default: '25ch'
     }
   }
 });
