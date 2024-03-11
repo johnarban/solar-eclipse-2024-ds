@@ -70,13 +70,14 @@
               </v-col>
               <v-col class="d-flex align-center justify-center">
               <v-btn 
-                class="elevation-5"
+                class="elevation-5 force-vuetify-small-font"
                 variant="flat"
                 :disabled="!(needToUpdate || !showCloudCover)"
                 size="large"
                 color="#eac402" 
                 @click="updateData()">{{ displayData ? (needToUpdate ? 'Update Map' : 'Shown on Map') : 'Show on Map'  }}</v-btn>
               <v-radio-group 
+                class="force-vuetify-small-font"
                 v-model="modisDataSet"  
                 inline
                 density="comfortable"
@@ -1216,7 +1217,7 @@ export default defineComponent({
   
   strong.attention {
     font-weight: bold;
-    font-size: 1.1em;
+    font-size: 1em;
     color: var(--color);
   }
   
@@ -1229,7 +1230,7 @@ export default defineComponent({
   }
 
   #awv-map-description {
-    font-size: 1.25em;
+    font-size: 1em;
     font-weight: 500;
     margin-bottom: 1rem;
   }
@@ -1243,29 +1244,13 @@ export default defineComponent({
     aspect-ratio: 2;
   }
   
-  .slider-underside-thumb-label {
-    .v-slider-thumb__label {
-      background-color: var(--color);
-      color: black;
-    }
-    
-    .v-slider-thumb__label::before {
-      border-top-color: var(--color);
-    }
-    
-  }
-  .thumb-label-below .v-slider-thumb__label {
-    --pos: calc(var(--v-slider-thumb-size) + 10px);
-    top: var(--pos);
+  .force-vuetify-small-font {
+    font-size: 0.8em;
   }
   
-  .thumb-label-below  .v-slider-thumb__label::before {
-    bottom: calc(var(--v-slider-thumb-size) + 4px);
-    transform: rotate(180deg);
-  }
-    
   .sentence-query {
     font-weight: bold;
+    font-size: 1.125em;
     
     
     > * {
@@ -1275,11 +1260,11 @@ export default defineComponent({
     > label {
       display: block;
       color:#eac402;
-      font-size: calc(var(--default-font-size)*1.5);
+      font-size: 1.1em;
     }
     
     > select {
-      font-size: calc(var(--default-font-size)*1.25);
+      font-size: 1em;
     }
   }
 
@@ -1289,14 +1274,13 @@ export default defineComponent({
   }
 
   #awv-cloud-cover-display {
-    // font-size: calc(var(--default-font-size)*1.25);
     display: grid;
     grid-template-rows: auto auto auto;
     align-items: left;
     margin-top: 1rem;
     margin-left: 1rem;
     margin-bottom: 1rem;
-    font-size: 1.1em;
+    font-size: 1em;
   }
   
   .bold .label-icon-value-text-label {
