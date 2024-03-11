@@ -2708,6 +2708,9 @@ export default defineComponent({
         return;
       }
       this.locationDeg = location;
+      this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg).then((text) => {
+        this.selectedLocationText = text;
+      });
     },
 
     onTimeSliderChange() {
@@ -3320,10 +3323,17 @@ export default defineComponent({
       this.playbackRate = sign * Math.pow(10, Math.abs(ezrate));
     },
     
-    
-
     async updateSelectedLocationText() {
       this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
+    },
+
+    async updateFromForwardGeocoding(searchText: string) {
+      const info = await this.geocodingInfoForSearch(searchText);
+      if (info === null) {
+        return;
+      }
+      this.locationDeg = { latitudeDeg: info.location[0], longitudeDeg: info.location[1] };
+      this.selectedLocationText = info.text;
     },
     
     niceRound(val: number) {
@@ -3458,7 +3468,6 @@ export default defineComponent({
       this.playing = false;
       // this.sunOffset = null;
       this.updateWWTLocation();
-      this.updateSelectedLocationText();
 
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
