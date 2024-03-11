@@ -1630,7 +1630,6 @@ export default defineComponent({
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
       uuid,
-      existingUser,
       infoTimeMs: 0,
       appStartTimestamp: Date.now(),
       infoStartTimestamp: null as number | null,
@@ -1813,9 +1812,7 @@ export default defineComponent({
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.updateSelectedLocationText();
     }
-    if (!this.existingUser) {
-      this.createUserEntry();
-    }
+    this.createUserEntry();
 
     this.waitForReady().then(async () => {
 
