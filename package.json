@@ -24,7 +24,7 @@
     "build": "./patch.sh; vue-cli-service build",
     "clean": "rimraf dist",
     "lint": "vue-cli-service lint src --no-fix",
-    "serve": "vue-cli-service serve"
+    "serve": "./patch.sh; vue-cli-service serve"
   },
   "devDependencies": {
     "@types/date-fns": "^2.6.0",
