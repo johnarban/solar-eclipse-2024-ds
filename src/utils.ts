@@ -5,7 +5,13 @@ export type OrderedPair<T=number, R=number> = { x: T;y: R;};
 type OrderedPairs<T=number,R=number> = OrderedPair<T,R>[];
 
 /** Checks if a value is a number */
-export const isNumber = (n: unknown): n is number => typeof n === 'number';
+
+export function isNumber(n: unknown): n is number{
+  const isnum = typeof n === 'number';
+  const isfinite = isnum && isFinite(n);
+  const notnan = isnum && !isNaN(n);
+  return isnum && isfinite && notnan;
+}
 
 /** Converts two arrays into an array of ordered pairs [ {'x': x[i], 'y' : y[i]} , ... ] . */
 export function toOrderedPairs<T,R>(x: T[], y: R[]): OrderedPairs<T,R> {
