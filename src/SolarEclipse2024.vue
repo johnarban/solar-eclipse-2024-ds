@@ -2477,12 +2477,22 @@ export default defineComponent({
       }
     },
     
+
     cloudColorMap(v: number) {
-      const cc = v > .05 ? .2 + Math.pow(v,1.5) * .8 : v;
+      const cc = this.sigmoid(v);
       return `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
     },
     
-    
+    sigmoid(val: number | null): number {
+      if (val === null) {
+        return 0;
+      }
+      // return sigmoid
+      const y = (val - 0.5) / .12;
+      const z = Math.exp(y);
+      return z / (1 + z);
+    },
+
     
     async trackSun(): Promise<void> {
       this.sunOffset = null;
