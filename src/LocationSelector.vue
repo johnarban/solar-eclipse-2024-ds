@@ -51,7 +51,7 @@ interface CloudData {
 
 export default defineComponent({
 
-  emits: ["place", "update:modelValue", "error"],
+  emits: ["place", "update:modelValue", "error", "dataclick"],
 
   props: {
     
@@ -140,11 +140,20 @@ export default defineComponent({
     selectedCloudCover: {
       type:  Array as PropType<CloudData[]>,
       default: null
+    },
+    
+    cloudCoverOpacityFunction: {
+      type: Function,
+      default: (c: number) => c >= 0.05 ? 0.2 + Math.pow(c,1.5) * .8 : c
+    },
+    
+    rectangleDegrees: {
+      type: Number,
+      default: 1
     }
   },
 
   mounted() {
-    console.log('ls mounted');
     if (this.initialPlace) {
       this.selectedPlace = this.initialPlace;
     }
@@ -156,7 +165,7 @@ export default defineComponent({
 
   data() {
     return {
-      eclipsePath: null as L.GeoJSON | null,
+      eclipsePath: [] as L.GeoJSON[],
       placeCircles: [] as L.CircleMarker[],
       hoveredPlace: null as Place | null,
       selectedCircle: null as L.CircleMarker | null,
@@ -175,7 +184,7 @@ export default defineComponent({
       if (this.cloudCoverRectangles === null) {
         return;
       }
-      result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}) => {
+      result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}, index: number) => {
         const lat = row.lat;
         const lon = row.lon;
         const cloudCover = row.cloudCover;
@@ -184,7 +193,7 @@ export default defineComponent({
           return;
         }
 
-        const rect = this.createRectangle(lat, lon, cloudCover);
+        const rect = this.createRectangle(lat, lon, cloudCover, index);
         if (rect) {
           this.cloudCoverRectangles.addLayer(rect);
         }
@@ -194,24 +203,38 @@ export default defineComponent({
         return;
       }
       this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
-      console.log('added to map', this.cloudCoverRectangles);
     },
 
     
-    createRectangle(lat: number, lon: number, cloudCover: number): L.Rectangle {
+    createRectangle(lat: number, lon: number, cloudCover: number, index: number): L.Rectangle {
       const color = this.getColor(cloudCover);
       
-      return L.rectangle([
-        [lat + 0.5, lon - 0.5],
-        [lat - 0.5, lon + 0.5],
+      const rect = L.rectangle([
+        [lat + this.rectangleDegrees / 2, lon - this.rectangleDegrees / 2],
+        [lat - this.rectangleDegrees / 2, lon + this.rectangleDegrees / 2],
       ], {
         stroke: true,
         color: color,
         weight: .01,
         opacity: cloudCover,
         fillColor: color,
-        fillOpacity: cloudCover > .05 ? .2 + Math.pow(cloudCover,1.5) * .8 : cloudCover
+        fillOpacity: this.cloudCoverOpacityFunction(cloudCover)
       });
+      rect.on('click', () => {
+        console.log('dataclick', { lat, lon, cloudCover, index});
+        this.$emit('dataclick', { lat, lon, cloudCover, index});
+      });
+      return rect;
+    },
+    
+    sigmoid(val: number | null): number {
+      if (val === null) {
+        return 0;
+      }
+      // return sigmoid
+      const y = (val - 0.5) / .12;
+      const z = Math.exp(y);
+      return z / (1 + z);
     },
 
     getColor(_cloudCover:number) {
@@ -305,9 +328,7 @@ export default defineComponent({
 
       const initialZoom = this.mapOptions.initialZoom ?? 4;
       const zoom = initial ? initialZoom : (this.map?.getZoom() ?? initialZoom);
-      console.log('LS mapContainer', mapContainer);
       const map = L.map(mapContainer, {renderer: new L.Canvas()}).setView(location, zoom);
-      console.log('LS map',map);
       
       const options = { ...defaultMapOptions, ...this.mapOptions };
       this.basemap = L.tileLayer(options.templateUrl, options);
@@ -359,7 +380,7 @@ export default defineComponent({
               const geoJSON = L.geoJSON(data, { style }).addTo(map);
               if (url.includes("center")) {
                 geoJSON.bringToFront();
-                this.eclipsePath = geoJSON;
+                this.eclipsePath.push(geoJSON);
               }
             })
             .catch((error) => {
@@ -386,7 +407,7 @@ export default defineComponent({
         }
       });
 
-      this.eclipsePath?.bringToFront();
+      this.eclipsePath.map(g => g.bringToFront());
       this.selectedCircle?.bringToFront();
       
       this.map = map;
@@ -408,7 +429,7 @@ export default defineComponent({
     },
 
     bringLocationAndPathToFront() {
-      this.eclipsePath?.bringToFront();
+      this.eclipsePath.map(g => g.bringToFront());
       this.selectedCircle?.bringToFront();
     },
 

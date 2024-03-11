@@ -142,13 +142,8 @@
                   <div>
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
-                    /><select v-model="selectedCloudCoverVariable">
-                        <option value="median">Median Cloud Cover</option>
-                        <option value="mean">Mean Cloud Cover</option>
-                        <option value="mode">Mode Cloud Cover</option>
-                        <option value="min">Minimum Cloud Cover</option>
-                        <option value="max">Maximum Cloud Cover</option>
-                      </select>
+                    />
+                    <div class="my-2">Open the <v-btn :color="accentColor" density="compact" variant="tonal" @click="showAdvancedWeather = true">Advanced Weather View</v-btn></div>
                   </div>
                 </div>
               </span>
@@ -215,7 +210,7 @@
         <v-slide-y-transition
           :disabled="smAndUp"
         >
-          <div v-if="!smAndUp || smAndUp" id="map-container" >
+          <div v-if="!smAndUp || smAndUp" id="map-container">
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
@@ -229,10 +224,13 @@
               class="leaflet-map"
               :geo-json-files="geojson"
               :selected-cloud-cover="selectedCloudCoverData"
+              :cloud-cover-opacity-function="sigmoid"
             ></location-selector>
-            <!-- the colorbar is generated using colorbarGradient() to make a serieis of divs -->
-              <div v-show="learnerPath === 'Clouds'"  id="colorbar"></div>
-              <div v-if="learnerPath === 'Clouds'"  id="colorbar-labels">Historical Cloud Cover %</div>
+              <color-bar
+                v-if="learnerPath === 'Clouds'"
+                label="Historical Cloud Cover %"
+                :cmap="cloudColorMap"
+                />
           </div>
         </v-slide-y-transition>
       </v-hover>
@@ -639,19 +637,6 @@
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
-        <icon-button
-          v-model="showAdvancedWeather"
-          id="showAdvancedWeather"
-          :color="accentColor"
-          :focus-color="accentColor"
-          :box-shadow="false"
-          tooltip-text="Share Advanced Weather View"
-          :show-tooltip="!mobile"
-        >
-        <template #button>
-          <span> Advanced Weather </span>
-        </template>
-      </icon-button>
       
         <icon-button
           id="share"
@@ -807,6 +792,9 @@
               /> View historical cloud data
             </v-col>
             <v-col cols="12">
+            <img class="svg-inline--fa rounded-lg bg-red"  style="height:1.2em;margin-inline:10px" src="./assets/new-rectangle-solid-svgrepo-com.svg"> <span class="text-red">Detailed Cloud Data View</span>
+            </v-col>
+            <v-col cols="12">
               <font-awesome-icon
                 icon="book-open"
               />
@@ -894,7 +882,7 @@
                   <template v-slot:prepend>
                     <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                    <strong>View historical cloud data</strong> for April 8th from 2001&#8211;2023.
+                    <strong>View historical cloud data</strong> for April 8th from 2001&#8211;2023. <span class="text-red">New</span>: View detailed 0.5<sup>o</sup> cloud data including by presence of  El Niño/La Niña climate patterns.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -1626,7 +1614,11 @@ let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
 
 // lon and lat are first col and row (dropping the first value)
 const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
+const maxLat = Math.max(...cloudData.map(d => d[0]).slice(1));
 const minLon = Math.min(...cloudData[0].slice(1));
+const dLon = cloudData[0][2] - cloudData[0][1];
+const dLat = cloudData[2][0] - cloudData[1][0];
+console.log("minLat, minLon, dLat, dLon", minLat, minLon, dLat, dLon);
 // get just the inner data grid
 cloudData = cloudData.slice(1).map(row => row.slice(1));
 
@@ -1635,8 +1627,8 @@ const cloudDataArray: CloudData[] = [];
 cloudData.forEach((row, i) => {
   row.forEach((cloudCover, j) => {
     cloudDataArray.push({
-      lat: minLat + i ,
-      lon: minLon + j ,
+      lat: maxLat + dLat * i,
+      lon: minLon + dLon * j,
       cloudCover
     });
   });
@@ -2134,7 +2126,6 @@ export default defineComponent({
       element.addEventListener("scroll", () => this.onScroll());
     }
     
-    this.colorbarGradient();
   },
 
   computed: {
@@ -2488,23 +2479,22 @@ export default defineComponent({
       }
     },
     
-    colorbarGradient() {
-      const colorbar = document.getElementById('colorbar');
-      if (!colorbar) {
-        return;
-      }
-      const n = 20;
-      for (let i=n; i >= 0; i--) {
-        const cc = i/n > .05 ? .2 + Math.pow(i/n,1.5) * .8 : i/n;
-        const color = `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
-        const div = document.createElement('div');
-        div.style.backgroundColor = color;
-        div.style.height = `${100/(n+1)}%`;
-        colorbar.appendChild(div);
-      }
-      
-      
+
+    cloudColorMap(v: number) {
+      const cc = this.sigmoid(v);
+      return `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
     },
+    
+    sigmoid(val: number | null): number {
+      if (val === null) {
+        return 0;
+      }
+      // return sigmoid
+      const y = (val - 0.5) / .12;
+      const z = Math.exp(y);
+      return z / (1 + z);
+    },
+
     
     async trackSun(): Promise<void> {
       this.sunOffset = null;
@@ -3395,7 +3385,7 @@ export default defineComponent({
     
     getCloudCover(lat: number, lon: number): number | null {
       // convert lat/lon to row/col
-      const row = Math.floor(lat + 0.5 - minLat);
+      const row = Math.floor(maxLat - lat + 0.5);
       const col = Math.floor(lon + 0.5 - minLon);
       if (row < 0 || row >= cloudData.length || col < 0 || col >= cloudData[0].length) {
         return null;
@@ -4976,45 +4966,6 @@ video, #info-video {
     width: 100%;
     
     display: flex;
-    
-    #colorbar {
-      height: 100%;
-      width: 1.25em;
-      outline: 1px solid white;
-      margin-left: 5px;
-      margin-right: 1em;
-      background: #5c5229;
-      // background: linear-gradient(to top, transparent, white)
-    }
-    
-    #colorbar:before {
-      content:"100%";
-      position: absolute;
-      top: 0;
-      right: 0;
-      transform-origin: center;
-      color: black;
-      transform: rotate(-90deg) translateX(-25%) translateX(-0.25em);
-    }
-    
-    #colorbar:after {
-      content:"0%";
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      color: white;
-      transform-origin: center;
-      transform: rotate(-90deg) translateY(-50%) translateX(0.5em);
-    }
-    
-    #colorbar-labels {
-        position: absolute;
-        top: 50%;
-        right: 0.25em;
-        transform-origin: center center;
-        transform:  translateX(50%) rotate(-90deg);
-        
-      }
     
     
     .map-container {
