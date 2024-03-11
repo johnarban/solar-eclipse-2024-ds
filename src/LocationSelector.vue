@@ -154,7 +154,6 @@ export default defineComponent({
   },
 
   mounted() {
-    console.log('ls mounted');
     if (this.initialPlace) {
       this.selectedPlace = this.initialPlace;
     }
@@ -204,7 +203,6 @@ export default defineComponent({
         return;
       }
       this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
-      console.log('added to map', this.cloudCoverRectangles);
     },
 
     
@@ -330,9 +328,7 @@ export default defineComponent({
 
       const initialZoom = this.mapOptions.initialZoom ?? 4;
       const zoom = initial ? initialZoom : (this.map?.getZoom() ?? initialZoom);
-      console.log('LS mapContainer', mapContainer);
       const map = L.map(mapContainer, {renderer: new L.Canvas()}).setView(location, zoom);
-      console.log('LS map',map);
       
       const options = { ...defaultMapOptions, ...this.mapOptions };
       this.basemap = L.tileLayer(options.templateUrl, options);

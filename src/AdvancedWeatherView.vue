@@ -130,6 +130,7 @@
             <span id="awv-map-description"> {{ mapDescriptionText }} </span>
             <div class="map-colorbar">
             <location-selector
+              :detect-location="false"
               v-model="location"
               label="Location"
               :map-options="mapOptions"
@@ -411,7 +412,7 @@ export default defineComponent({
     defaultLocation: {
       type: Object as PropType<CityLocation> | undefined,
       default: cityBoston,
-      required: false,
+      required: true,
     }
   },
   
@@ -499,6 +500,9 @@ export default defineComponent({
   mounted() {
     console.log('Advanced Weather View mounted');
     this.needToUpdate = true;
+    this.checkInBounds(this.location).then((inBounds) => {
+      this.inBounds = inBounds;
+    });
     // create a time to simulate data loading
     this.updateLocationName();
     if (this.modelValue) {
@@ -943,6 +947,7 @@ export default defineComponent({
     },
     
     getLatLonIndex(lat: number, lon: number): number {
+      console.log('running getLatLonIndex');
       if (this.latitudes.length === 0) {
         return -1;
       }
@@ -954,7 +959,6 @@ export default defineComponent({
         console.log('getLatLonIndex: out of bounds');
         return -1;
       }
-      
       // binary search using distance
       const distances = this.latitudes.map((lat2, i) => Math.sqrt((lat - lat2) ** 2 + (lon - this.longitudes[i]) ** 2));
       const minIndex = distances.indexOf(Math.min(...distances));
