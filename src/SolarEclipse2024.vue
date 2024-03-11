@@ -659,6 +659,24 @@
           }"
           faSize="1x"
         ></icon-button>
+        <div>
+          <v-text-field
+            v-if="showSearchInput"
+            v-model="searchText"
+            class="search-text-input"
+            label="Enter location name"
+          ></v-text-field>
+          <icon-button
+            v-if="!showSearchInput"
+            class="search-text-button"
+            :color="accentColor"
+            :focus-color="accentColor"
+            :fa-icon="showSearchInput ? 'check' : 'magnifying-glass'"
+            :box-shadow="false" 
+            :show-tooltip="!mobile"
+            @update:modelValue="showSearchInput = true"
+          ></icon-button>
+        </div>
       </div>
       <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
         <geolocation-button
@@ -1649,6 +1667,8 @@ export default defineComponent({
       positionSet: false,
       imagesetFolder: null as Folder | null,
 
+      showSearchInput: false,
+      searchText: null as string | null,
       showMapTooltip: false,
       showTextTooltip: false,
       showMapSelector: false,
