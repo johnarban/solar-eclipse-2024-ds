@@ -1206,13 +1206,8 @@ export default defineComponent({
 
 <style lang="less">
 
-:root {
-  --color: #eac402;
-  --default-font-size: 12px;
-  font-size: var(--default-font-size);
-}
-
 #advanced-weather-view {
+  --color: #eac402;
   font-size: var(--default-font-size);
   
   p.intro {
