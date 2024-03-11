@@ -2429,7 +2429,7 @@ export default defineComponent({
       }
       const n = 20;
       for (let i=n; i >= 0; i--) {
-        const cc = i/n > .05 ? .2 + Math.pow(i/n,1.5) * .8 : i/n;
+        const cc = this.sigmoid(i/n);
         const color = `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
         const div = document.createElement('div');
         div.style.backgroundColor = color;
@@ -2438,6 +2438,16 @@ export default defineComponent({
       }
       
       
+    },
+    
+    sigmoid(val: number | null): number {
+      if (val === null) {
+        return 0;
+      }
+      // return sigmoid
+      const y = (val - 0.5) / .12;
+      const z = Math.exp(y);
+      return z / (1 + z);
     },
     
     async trackSun(): Promise<void> {
