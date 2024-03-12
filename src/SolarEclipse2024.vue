@@ -628,31 +628,34 @@
         <div
           id="forward-geocoding-container"
         >
-          <v-text-field
-            v-model="searchText"
-            class="forward-geocoding-input"
-            label="Enter a location"
-            :color="accentColor"
-            bg-color="black"
-          ></v-text-field>
-          <font-awesome-icon
-            icon="magnifying-glass"
-            size="lg"
-            @click="() => {
-              if (searchText !== null && searchText.length > 0) {
-                forwardGeocodingSearch(searchText);
-              }
-            }"
-          ></font-awesome-icon>
           <div
-            id="forward-geocoding-results"
+            id="forward-geocoding-input-row"
           >
+            <v-text-field
+              v-model="searchText"
+              class="forward-geocoding-input"
+              label="Enter a location"
+              :color="accentColor"
+              bg-color="black"
+              @keyup.enter="() => performForwardGeocodingSearch()"
+            ></v-text-field>
+            <font-awesome-icon
+              icon="magnifying-glass"
+              size="lg"
+              @click="() => performForwardGeocodingSearch()"
+            ></font-awesome-icon>
             <div
-              v-for="(feature, index) in searchResults?.features ?? []"
-              :key="index"
-              @click="locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] }"
+              id="forward-geocoding-results"
+              v-if="searchResults !== null"
             >
-              {{ feature.place_name }}
+              <div
+                v-for="(feature, index) in searchResults.features"
+                class="forward-geocoding-result"
+                :key="index"
+                @click="() => setLocationFromSearchFeature(feature)"
+              >
+                {{ feature.place_name }}
+              </div>
             </div>
           </div>
         </div>
@@ -3314,7 +3317,7 @@ export default defineComponent({
 
     async geocodingInfoForSearch(searchText: string): Promise<MapBoxFeatureCollection | null> {
       const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}`;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}&types=place`;
       return fetch(url)
         .then(response => response.json())
         .then((result: MapBoxFeatureCollection) => {
@@ -3323,11 +3326,31 @@ export default defineComponent({
         .catch((_err) => null);
     },
 
-    forwardGeocodingSearch(searchText: string) {
-      this.geocodingInfoForSearch(searchText).then((info) => {
-        console.log(info);
-        this.searchResults = info;
+    performForwardGeocodingSearch() {
+      if (this.searchText === null || this.searchText.length === 0) {
+        return;
+      }
+      this.geocodingInfoForSearch(this.searchText).then((info) => {
+        if (info !== null && info.features?.length === 1) {
+          this.setLocationFromSearchFeature(info.features[0]);
+        } else {
+          this.searchResults = info;
+        }
       });
+    },
+
+    setLocationFromFeature(feature: MapBoxFeature) {
+      this.locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] };
+    },
+
+    clearSearchData() {
+      this.searchResults = null;
+      this.searchText = null;
+    },
+
+    setLocationFromSearchFeature(feature: MapBoxFeature) {
+      this.setLocationFromFeature(feature);
+      this.clearSearchData();
     },
     
     decreasePlaybackRate() {
@@ -5298,13 +5321,6 @@ a {
 
 #forward-geocoding-container {
   position: relative;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  gap: 10px;
-  padding: 0px 10px;
-  align-items: center;
-  justify-content: center;
   width: fit-content;
   color: var(--accent-color);
   background-color: black;
@@ -5313,6 +5329,37 @@ a {
 
   .v-text-field {
     width: 250px;
+    height: 75px;
+  }
+
+  #forward-geocoding-input-row {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 0px 10px;
+    align-items: center;
+  }
+
+  #forward-geocoding-results {
+    position: absolute;
+    top: 75px;
+    left: 0;
+    width: 100%;
+    background: black;
+    border: 1px solid var(--accent-color);
+    border-radius: 10px;
+    padding: 0px 10px;
+
+    .forward-geocoding-result {
+      border-bottom: 1px solid var(--accent-color);
+      border-top: 1px solid var(--accent-color);
+      font-size: 10pt;
+      pointer-events: auto;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
   }
 }
 </style>
