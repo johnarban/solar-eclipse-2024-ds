@@ -625,6 +625,26 @@
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
+        <div
+          id="forward-geocoding-container"
+        >
+          <v-text-field
+            v-model="searchText"
+            class="forward-geocoding-input"
+            label="Enter a location"
+            :color="accentColor"
+            bg-color="black"
+          ></v-text-field>
+          <font-awesome-icon
+            icon="magnifying-glass"
+            size="lg"
+            @click="() => {
+              if (searchText !== null && searchText.length > 0) {
+                updateFromSearchText(searchText);
+              }
+            }"
+          ></font-awesome-icon>
+        </div>
         <icon-button
           id="share"
           fa-icon="share-nodes"
@@ -659,11 +679,6 @@
           }"
           faSize="1x"
         ></icon-button>
-        <forward-geocoding-input
-          :color="accentColor"
-          :focusColor="accentColor"
-          @text-update="(searchText: string) => updateFromSearchText(searchText)"
-        ></forward-geocoding-input>
       </div>
       <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
         <geolocation-button
@@ -1654,7 +1669,7 @@ export default defineComponent({
       positionSet: false,
       imagesetFolder: null as Folder | null,
 
-      showSearchInput: false,
+      searchText: null as string | null,
       showMapTooltip: false,
       showTextTooltip: false,
       showMapSelector: false,
@@ -5287,5 +5302,19 @@ a {
 
 .icon-wrapper {
   width: fit-content;
+}
+
+#forward-geocoding-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  gap: 10px;
+  padding: 0px 10px;
+  align-items: center;
+  width: fit-content;
+  color: var(--accent-color);
+  background-color: black;
+  border: 1px solid var(--accent-color);
+  border-radius: 10px;
 }
 </style>
