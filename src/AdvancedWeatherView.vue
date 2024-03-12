@@ -501,7 +501,7 @@ export default defineComponent({
       mapDescriptionText: '',
       locationName: '',
       inBounds: false,
-      displayData: true,
+      displayData: false,
       displayCharts: false,
       showCloudCover: true,
       transferFunction: this.transferFunction8,
