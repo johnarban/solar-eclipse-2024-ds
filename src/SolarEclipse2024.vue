@@ -635,27 +635,29 @@
               v-model="searchText"
               class="forward-geocoding-input"
               label="Enter a location"
-              :color="accentColor"
               bg-color="black"
+              :color="accentColor"
               @keyup.enter="() => performForwardGeocodingSearch()"
+              :error-messages="searchErrorMessage"
             ></v-text-field>
             <font-awesome-icon
               icon="magnifying-glass"
               size="lg"
+              :color="searchText && searchText.length > 2 ? accentColor : 'gray'"
               @click="() => performForwardGeocodingSearch()"
             ></font-awesome-icon>
+          </div>
+          <div
+            id="forward-geocoding-results"
+            v-if="searchResults !== null"
+          >
             <div
-              id="forward-geocoding-results"
-              v-if="searchResults !== null"
+              v-for="(feature, index) in searchResults.features"
+              class="forward-geocoding-result"
+              :key="index"
+              @click="() => setLocationFromSearchFeature(feature)"
             >
-              <div
-                v-for="(feature, index) in searchResults.features"
-                class="forward-geocoding-result"
-                :key="index"
-                @click="() => setLocationFromSearchFeature(feature)"
-              >
-                {{ feature.place_name }}
-              </div>
+              {{ feature.place_name }}
             </div>
           </div>
         </div>
@@ -1687,6 +1689,8 @@ export default defineComponent({
 
       searchText: null as string | null,
       searchResults: null as MapBoxFeatureCollection | null,
+      searchErrorMessage: null as string | null,
+
       showMapTooltip: false,
       showTextTooltip: false,
       showMapSelector: false,
@@ -3303,7 +3307,9 @@ export default defineComponent({
           }
           return this.mapboxLocationText(result);
         })
-        .catch((_err) => null);
+        .catch((_err) => {
+          this.searchErrorMessage = "An error occurred while searching";
+        });
       if (mapBoxText) {
         return mapBoxText;
       } else {
@@ -3327,12 +3333,15 @@ export default defineComponent({
     },
 
     performForwardGeocodingSearch() {
-      if (this.searchText === null || this.searchText.length === 0) {
+      if (this.searchText === null || this.searchText.length < 3) {
         return;
       }
       this.geocodingInfoForSearch(this.searchText).then((info) => {
+        console.log(info);
         if (info !== null && info.features?.length === 1) {
           this.setLocationFromSearchFeature(info.features[0]);
+        } else if (info !== null && info.features?.length == 0) {
+          this.searchErrorMessage = "No matching places were found";
         } else {
           this.searchResults = info;
         }
@@ -3346,6 +3355,7 @@ export default defineComponent({
     clearSearchData() {
       this.searchResults = null;
       this.searchText = null;
+      this.searchErrorMessage = null;
     },
 
     setLocationFromSearchFeature(feature: MapBoxFeature) {
@@ -3536,6 +3546,12 @@ export default defineComponent({
         this.cloudCoverSelectedLocations.push(visitedLocation);
       } else {
         this.userSelectedLocations.push(visitedLocation);
+      }
+    },
+
+    searchText(_text: string | null) {
+      if (this.searchErrorMessage) {
+        this.searchErrorMessage = null;
       }
     },
 
@@ -5329,7 +5345,7 @@ a {
 
   .v-text-field {
     width: 250px;
-    height: 75px;
+    height: 80px;
   }
 
   #forward-geocoding-input-row {
@@ -5340,20 +5356,25 @@ a {
     align-items: center;
   }
 
+  // For some reason setting width: 100% makes the search results 2px too small
+  // It's probably some Vuetify styling thing
+  // Maybe there's a better workaround, but this gets the job done for now
   #forward-geocoding-results {
     position: absolute;
-    top: 75px;
-    left: 0;
-    width: 100%;
+    top: 70px;
+    left: -1px;
+    width: calc(100% + 2px);
     background: black;
     border: 1px solid var(--accent-color);
-    border-radius: 10px;
+    border-top: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
     padding: 0px 10px;
 
     .forward-geocoding-result {
       border-bottom: 1px solid var(--accent-color);
       border-top: 1px solid var(--accent-color);
-      font-size: 10pt;
+      font-size: 12pt;
       pointer-events: auto;
 
       &:hover {
