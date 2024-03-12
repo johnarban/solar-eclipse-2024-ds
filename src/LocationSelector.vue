@@ -237,15 +237,6 @@ export default defineComponent({
       return z / (1 + z);
     },
     
-    sigmoid(val: number | null): number {
-      if (val === null) {
-        return 0;
-      }
-      // return sigmoid
-      const y = (val - 0.5) / .12;
-      const z = Math.exp(y);
-      return z / (1 + z);
-    },
 
     getColor(_cloudCover:number) {
       // Calculate HSL color based on a gradient
