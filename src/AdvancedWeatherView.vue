@@ -135,7 +135,7 @@
                 :cmap="(x: number) => [`hsla(0,0%,100%, 1)`, transferFunction(x)]"
                 />
             </div>
-              <div class="d-flex align-center justify-end">
+              <div v-if="false" class="d-flex align-center justify-end">
               <v-checkbox
                 v-if="displayData"
                 v-model="showCloudCover"
@@ -1254,7 +1254,7 @@ export default defineComponent({
   
   .map-container {
     contain: strict;
-    aspect-ratio: 2;
+    aspect-ratio: 1.5;
   }
   
   .force-vuetify-small-font {
