@@ -136,8 +136,8 @@
               <span class="description">
                 <div class=".d-flex">
                   <div>
-                    This map shows historical cloud cover data on April 8 for the years 2001&#8211;2023 from the <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA MODIS</a> Aqua satellite.
-                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2001&#8211;2003 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
+                    This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from the <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA MODIS</a> Aqua satellite.
+                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
                   </div>
                   <div>
                     <cloud-cover
@@ -215,7 +215,6 @@
             <location-selector
               :model-value="locationDeg"
               @update:modelValue="updateLocationFromMap"
-              :initial-place="places.find(p => p.name === 'selectedLocation')"
               :place-circle-options="placeCircleOptions"
               :detect-location="false"
               :map-options="(learnerPath === 'Clouds') ? userSelectedMapOptions : initialMapOptions"
@@ -685,7 +684,6 @@
               latitudeDeg: loc.latitude, 
               longitudeDeg: loc.longitude
             };
-            selectedLocation = 'My Location';
             locationDeg = myLocation;
             showMyLocationDialog = false;
             }"
@@ -860,7 +858,7 @@
               A lucky segment of Mexico, the U.S., and Canada will witness an awe-inspiring <b>total eclipse</b>. Other parts of North America will still see a <em>partial</em> eclipse, where the Moon blocks out some, but not all of the Sun's light.
               </p>
               <p class="mb-5">
-              See what the eclipse will look like where you are, and what the historical cloud coverage has been on April 8th from 2001&#8211;2023.
+              See what the eclipse will look like where you are, and what the historical cloud coverage has been during the week of April 8th from 2003&#8211;2023.
               </p>
             </div>
           </v-window-item>
@@ -882,7 +880,7 @@
                   <template v-slot:prepend>
                     <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                    <strong>View historical cloud data</strong> for April 8th from 2001&#8211;2023. <span class="text-red">New</span>: View detailed 0.5<sup>o</sup> cloud data including by presence of  El Niño/La Niña climate patterns.
+                    <strong>View historical cloud data</strong> for the week of April 8th from 2003&#8211;2023. <span class="text-red">New</span>: View detailed 0.5<sup>o</sup> cloud data including by presence of  El Niño/La Niña climate patterns.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -1176,13 +1174,12 @@
                 id="reset"
                 :fa-icon="'rotate'"
                 @activate="() => {
-                      const _totalEclipseTimeUTC = new Date('2024-04-08T18:18:00Z');
-                    selectedTime = _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5;
-                      playbackRate = 100;
-                      playing = false;
-                      toggleTrackSun = true;
-                      forceRate = false;
-                    }"
+                  selectedTime = (new Date('2024-04-08T18:18:00Z')).getTime() - 60*60*1000*1.5;
+                  playbackRate = 100;
+                  playing = false;
+                  toggleTrackSun = true;
+                  forceRate = false;
+                }"
                 :color="accentColor"
                 :focus-color="accentColor"
                 border="none"
@@ -1388,7 +1385,7 @@
 
 <script lang="ts">
 import { defineComponent, toRaw, PropType } from "vue";
-import { MiniDSBase, BackgroundImageset, skyBackgroundImagesets, MINIDS_BASE_URL } from "@cosmicds/vue-toolkit";
+import { MiniDSBase, BackgroundImageset, skyBackgroundImagesets, API_BASE_URL } from "@cosmicds/vue-toolkit";
 import { GotoRADecZoomParams } from "@wwtelescope/engine-pinia";
 import { Classification, SolarSystemObjects } from "@wwtelescope/engine-types";
 import { Folder, Grids, LayerManager, Planets, Poly, Settings, WWTControl, Place, Texture, CAAMoon } from "@wwtelescope/engine";
@@ -1465,17 +1462,10 @@ while (t <= maxTime) {
   t += MILLISECONDS_PER_INTERVAL;
 }
 
-// const options = { timeout: 10000, enableHighAccuracy: true };
-
 type LocationRad = {
   longitudeRad: number;
   latitudeRad: number;
 };
-
-interface EclipseLocation extends LocationRad {
-  name: string;
-  eclipseFraction: number | null;
-}
 
 type LocationDeg = {
   longitudeDeg: number;
@@ -1500,11 +1490,8 @@ type OptionalFieldsShallow<T> = {
 type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean }>;
 
 let queryData: QueryData = {};
-const USER_SELECTED = "User Selected" as const;
 const UUID_KEY = "eclipse-mini-uuid" as const;
 const OPT_OUT_KEY = "eclipse-mini-optout" as const;
-const USER_SELECTED_LOCATIONS_KEY = "user-selected-locations" as const;
-const PRESET_LOCATIONS_KEY = "preset-locations" as const;
 
 const RELEVANT_FEATURE_TYPES = ["postcode", "place", "region", "country"];
 const NA_COUNTRIES = ["United States", "Canada", "Mexico"];
@@ -1577,27 +1564,6 @@ function parseEclipsePath(csv: string) {
 }
 
 const eclipsePath = parseEclipsePath(eclipse);
-
-// convert the eclipse path to a GeoJson feature collection
-const _eclipsePathGeoJson = {
-  "name": "Eclipse Path",
-  "type": "FeatureCollection",
-  "features": eclipsePath.map((d) => {
-    return {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [d.centerLine.longitudeDeg, d.centerLine.latitudeDeg]
-      },
-      "properties": {
-        "utc": d.utc,
-        "eclipseDuration": d.eclipseDuration,
-        "popupContent": d.popupContent,
-        // "absoluteRadius": 5000, //d.pathWidth * 1000 / 2
-      }
-    };
-  })
-};
 
 
 /** PARSE CLOUD COVERAGE DATA **/
@@ -1681,8 +1647,7 @@ export default defineComponent({
       initialZoom: 3.3
     };
 
-    const selections = window.localStorage.getItem(USER_SELECTED_LOCATIONS_KEY);
-    const userSelectedLocationsVisited: [number, number][] = selections ? (this.parseJSONString(selections) ?? []) : [];
+    const userSelectedLocationsVisited: [number, number][] = [];
     const [latitudeDeg, longitudeDeg] = [queryData.latitudeDeg, queryData.longitudeDeg];
     
     let initialMapOptions = initialView;
@@ -1694,13 +1659,12 @@ export default defineComponent({
       };
     }
 
-    const presets = window.localStorage.getItem(PRESET_LOCATIONS_KEY);
-    const presetLocationsVisited: string[] = presets ? (this.parseJSONString(presets) ?? []) : [];
-    const selectedLocation = queryData ? USER_SELECTED : "Greatest Eclipse";
-    presetLocationsVisited.push(selectedLocation);
-
-    const uuid = window.localStorage.getItem(UUID_KEY) ?? v4();
-    window.localStorage.setItem(UUID_KEY, uuid);
+    const maybeUUID = window.localStorage.getItem(UUID_KEY);
+    const existingUser = maybeUUID !== null;
+    const uuid = maybeUUID ?? v4();
+    if (!existingUser) {
+      window.localStorage.setItem(UUID_KEY, uuid);
+    }
 
     const storedOptOut = window.localStorage.getItem(OPT_OUT_KEY);
     const responseOptOut = typeof storedOptOut === "string" ? storedOptOut === "true" : null;
@@ -1712,6 +1676,9 @@ export default defineComponent({
       cloudCoverData: cloudDataArray as CloudData[],
       
       uuid,
+      infoTimeMs: 0,
+      appStartTimestamp: Date.now(),
+      infoStartTimestamp: null as number | null,
       responseOptOut: responseOptOut as boolean | null,
 
       showSplashScreen: queryData.splash ?? true, 
@@ -1741,7 +1708,6 @@ export default defineComponent({
       selectedTime:  _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5,
       selectedTimezone: "America/Mexico_City",
       location,
-      selectedLocation,
       selectedLocationText: "Nazas, DUR",
       locationErrorMessage: "",
       
@@ -1769,119 +1735,8 @@ export default defineComponent({
       },
       
       eclipseCenterLine: eclipsePath,
-
-      eclipsePathLocations: {
-        // locations taken from https://science.nasa.gov/eclipses/future-eclipses/eclipse-2024/where-when/
-        "Greatest Eclipse": {
-          name: "Greatest Eclipse",
-          latitudeRad: D2R * 25.2866667,
-          longitudeRad: D2R * -104.1383333,
-          eclipseFraction: 1
-        },
-
-        // "Place": {
-        //   name: "Place",
-        //   latitudeRad: D2R * latitude,
-        //   longitudeRad: D2R * longitude,
-        //   eclipseFraction: 1.0
-        // },
-        
-        "Dallas, Texas":{
-          name: "Dallas, Texas",
-          latitudeRad: D2R * 32.7767,
-          longitudeRad: D2R * -96.7970,
-          eclipseFraction: 1.0
-        },
-        
-        "Idabel, OK": {
-          name: "Idabel, OK",
-          latitudeRad: D2R * 33.8959,
-          longitudeRad: D2R * -94.8261,
-          eclipseFraction: 1.0
-        },
-        
-        "Little Rock, AR": {
-          name: "Little Rock, AR",
-          latitudeRad: D2R * 34.7465,
-          longitudeRad: D2R * -92.2896,
-          eclipseFraction: 0.99 // appears to be total but too far south for WWT to do the eclipse doohickey
-        },
-        
-        "Poplar Bluff, MO": {
-          name: "Poplar Bluff, MO",
-          latitudeRad: D2R * 36.7570,
-          longitudeRad: D2R * -90.3929,
-          eclipseFraction: 1.0
-        },
-        
-        "Paducah, KY": {
-          name: "Paducah, KY",
-          latitudeRad: D2R * 37.0834,
-          longitudeRad: D2R * -88.6000,
-          eclipseFraction: .99 // appears to be total but too far south for WWT to do the eclipse doohickey
-        },
-        
-        "Evansville, IN": {
-          name: "Evansville, IN",
-          latitudeRad: D2R * 37.9716,
-          longitudeRad: D2R * -87.5711,
-          eclipseFraction: 1.0
-        },
-        
-        "Cleveland, OH": {
-          name: "Cleveland, OH",
-          latitudeRad: D2R * 41.4993,
-          longitudeRad: D2R * -81.6944,
-          eclipseFraction: 1.0
-        },
-        
-        "Erie, PA": {
-          name: "Erie, PA",
-          latitudeRad: D2R * 42.1292,
-          longitudeRad: D2R * -80.0851,
-          eclipseFraction: 1.0
-        },
-        
-        "Buffalo, NY": {
-          name: "Buffalo, NY",
-          latitudeRad: D2R * 42.8864,
-          longitudeRad: D2R * -78.8784,
-          eclipseFraction: 1.0
-        },
-        
-        "Burlington, VT": {
-          name: "Burlington, VT",
-          latitudeRad: D2R * 44.4759,
-          longitudeRad: D2R * -73.2121,
-          eclipseFraction: 1.0
-        },
-        
-        "Lancaster, NH": {
-          name: "Lancaster, NH",
-          latitudeRad: D2R * 44.4872,
-          longitudeRad: D2R * -71.5692,
-          eclipseFraction: 0.99
-        }, // appears to be total but too far south for WWT to do the eclipse doohickey
-        
-        "Cariibou, ME": {
-          name: "Cariibou, ME",
-          latitudeRad: D2R * 46.8600,
-          longitudeRad: D2R * -68.0111,
-          eclipseFraction: 1.0
-        },
-        
-        [USER_SELECTED]: { // by default, user selected is Greatest Eclipse
-          name: USER_SELECTED,
-          latitudeRad: D2R * 25.2866667,
-          longitudeRad: D2R * -104.1383333,
-          eclipseFraction: 1.0
-        }
-      } as Record<string, EclipseLocation>,
-
       currentFractionEclipsed: 0,
 
-      places: [] as (LocationRad & { name: string })[],
-        
       placeCircleOptions: {
         color: "#0000FF",
         fillColor: "#0000FF",
@@ -1976,8 +1831,8 @@ export default defineComponent({
       ],
       
 
-      presetLocationsVisited,
-      userSelectedLocationsVisited,
+      userSelectedLocations: userSelectedLocationsVisited,
+      cloudCoverSelectedLocations: [] as [number, number][],
       eclipsePrediction: null as EclipseData<Date> | null,
       eclipseStart: 0 as number | null,
       eclipseMid: 0 as number | null,
@@ -1999,24 +1854,13 @@ export default defineComponent({
     queryData.splash = splashQuery !== "false";
   },
 
-  created() {
-    this.places = Object.entries(this.eclipsePathLocations).filter(([key, _]) => key !== USER_SELECTED)
-      .sort(([_, pl1], [__, pl2]) => pl1.longitudeRad - pl2.longitudeRad)
-      .map(([_, pl]) => {
-        return {
-          ...pl,
-          latitudeDeg: R2D * pl.latitudeRad,
-          longitudeDeg: R2D * pl.longitudeRad
-        };
-      });
-  },
-
   mounted() {
     
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.updateSelectedLocationText();
     }
-    // this.loadCloudCover();
+    this.createUserEntry();
+
     this.waitForReady().then(async () => {
 
       this.backgroundImagesets = [...skyBackgroundImagesets];
@@ -2106,6 +1950,14 @@ export default defineComponent({
       window.addEventListener('keyup', (event: KeyboardEvent) => {
         if (["Esc", "Escape"].includes(event.key) && this.showVideoSheet) {
           this.showVideoSheet = false;
+        }
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+          this.sendUpdateData();
+        } else {
+          this.clearData();
         }
       });
 
@@ -2495,7 +2347,6 @@ export default defineComponent({
       return z / (1 + z);
     },
 
-    
     async trackSun(): Promise<void> {
       this.sunOffset = null;
       return this.gotoTarget({
@@ -2897,46 +2748,11 @@ export default defineComponent({
       this.wwtSettings.set_locationLng(R2D * this.location.longitudeRad);
     },
 
-    updateLocation(location: string) {
-      if (location == null) {
-        return;
-      }
-      // console.log("updateLocation", location);
-      this.selectedLocation = location;
-      this.location = {
-        latitudeRad: this.eclipsePathLocations[location].latitudeRad,
-        longitudeRad: this.eclipsePathLocations[location].longitudeRad
-      };
-
-    },
-
     updateLocationFromMap(location: LocationDeg) {
       if (location == null) {
         return;
       }
-      // console.log("updateLocationFromMap", location);
-      this.selectedLocation = USER_SELECTED;
       this.locationDeg = location;
-
-      this.eclipsePathLocations[USER_SELECTED] = {
-        name: `User Selected: ${location.latitudeDeg.toFixed(2)}, ${location.longitudeDeg.toFixed(2)}`,
-        latitudeRad: D2R * location.latitudeDeg,
-        longitudeRad: D2R * location.longitudeDeg,
-        eclipseFraction: null
-      };
-
-      const citySelector = this.$refs.citySelector;
-      // There's got to be a way to export the component data/method definitions
-      // but that's a problem for another day
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      citySelector?.onMapSelect({
-        latlng: {
-          lat: location.latitudeDeg,
-          lng: location.latitudeDeg
-        }
-      });
-
     },
 
     onTimeSliderChange() {
@@ -2945,11 +2761,21 @@ export default defineComponent({
       });
     },
 
-    sendDataToDatabase() {
+    async createUserEntry() {
       if (this.responseOptOut) {
         return;
       }
-      fetch(`${MINIDS_BASE_URL}/solar-eclipse-2024/response`, {
+      const response = await fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
+        method: "GET",
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        headers: { "Authorization": process.env.VUE_APP_CDS_API_KEY ?? "" }
+      });
+      const content = await response.json();
+      const exists = response.status === 200 && content.response.user_uuid != undefined;
+      if (exists) {
+        return;
+      }
+      fetch(`${API_BASE_URL}/solar-eclipse-2024/data`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -2960,8 +2786,44 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           user_uuid: this.uuid, 
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          preset_locations: toRaw(this.presetLocationsVisited), user_selected_locations: toRaw(this.userSelectedLocationsVisited)
+          user_selected_locations: toRaw(this.userSelectedLocations),
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          info_time_ms: 0, app_time_ms: 0,
         })
+      });
+    },
+
+    clearData() {
+      this.userSelectedLocations = [];
+      this.cloudCoverSelectedLocations = [];
+      this.infoTimeMs = 0;
+      this.appStartTimestamp = Date.now();
+    },
+
+    sendUpdateData() {
+      if (this.responseOptOut) {
+        return;
+      }
+      fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          "Authorization": process.env.VUE_APP_CDS_API_KEY ?? ""
+        },
+        body: JSON.stringify({
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          user_selected_locations: toRaw(this.userSelectedLocations),
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_info_time_ms: this.infoTimeMs, delta_app_time_ms: Date.now() - this.appStartTimestamp
+        }),
+        keepalive: true,
+      }).then(() => {
+        this.clearData();
       });
     },
 
@@ -3375,14 +3237,6 @@ export default defineComponent({
         );
     },
 
-    parseJSONString(json: string): JSON | null {
-      try {
-        return JSON.parse(json);
-      } catch {
-        return null;
-      }
-    },
-    
     getCloudCover(lat: number, lon: number): number | null {
       // convert lat/lon to row/col
       const row = Math.floor(maxLat - lat + 0.5);
@@ -3656,24 +3510,12 @@ export default defineComponent({
     },
 
     locationDeg(loc: LocationDeg) {
-      if (this.selectedLocation === USER_SELECTED) {
-        this.userSelectedLocationsVisited.push([loc.latitudeDeg, loc.longitudeDeg]);
-        window.localStorage.setItem(USER_SELECTED_LOCATIONS_KEY, JSON.stringify(this.userSelectedLocationsVisited));
-        this.sendDataToDatabase();
+      const visitedLocation: [number, number] = [loc.latitudeDeg, loc.longitudeDeg];
+      if (this.learnerPath === "Clouds") {
+        this.cloudCoverSelectedLocations.push(visitedLocation);
+      } else {
+        this.userSelectedLocations.push(visitedLocation);
       }
-    },
-
-    selectedLocation(locname: string) {
-      if (!(locname in this.eclipsePathLocations)) {
-        // console.log(`location ${locname} not found in eclipsePathLocations`);
-        return;
-      }
-      if ((locname !== USER_SELECTED) && (locname !== 'My Location') ) {
-        this.presetLocationsVisited.push(locname);
-        window.localStorage.setItem(PRESET_LOCATIONS_KEY, JSON.stringify(this.presetLocationsVisited));
-        this.sendDataToDatabase();
-      }
-      // console.log("selected location", locname);
     },
 
     playing(play: boolean) {
@@ -3689,6 +3531,17 @@ export default defineComponent({
     showSplashScreen(val: boolean) {
       if (!val) {
         this.inIntro = true; 
+      }
+    },
+
+    showInfoSheet(show: boolean) {
+      // Keep track of how long the user has the book open/closed
+      if (show) {
+        this.infoStartTimestamp = Date.now();
+      } else if (this.infoStartTimestamp !== null) {
+        const timestamp = Date.now();
+        this.infoTimeMs += (timestamp - this.infoStartTimestamp);
+        this.infoStartTimestamp = null;
       }
     },
     
