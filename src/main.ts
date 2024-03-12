@@ -13,7 +13,6 @@ import HoverTooltip from "./HoverTooltip.vue";
 import CloudCover from "./CloudCover.vue";
 import DefineTerm from "./DefineTerm.vue";
 import PlaybackControl from "./PlaybackControl.vue";
-import ForwardGeocodingInput from "./ForwardGeocodingInput.vue";
 
 import "./polyfills";
 
@@ -146,6 +145,5 @@ createApp(SolarEclipse2023, {
   .component('cloud-cover', CloudCover)
   .component('define-term', DefineTerm)
   .component('playback-control', PlaybackControl)
-  .component('forward-geocoding-input', ForwardGeocodingInput)
   // Mount
   .mount("#app");

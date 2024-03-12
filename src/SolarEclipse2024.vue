@@ -640,10 +640,21 @@
             size="lg"
             @click="() => {
               if (searchText !== null && searchText.length > 0) {
-                updateFromSearchText(searchText);
+                forwardGeocodingSearch(searchText);
               }
             }"
           ></font-awesome-icon>
+          <div
+            id="forward-geocoding-results"
+          >
+            <div
+              v-for="(feature, index) in searchResults?.features ?? []"
+              :key="index"
+              @click="locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] }"
+            >
+              {{ feature.place_name }}
+            </div>
+          </div>
         </div>
         <icon-button
           id="share"
@@ -1420,10 +1431,12 @@ const R2D = 180 / Math.PI;
 export interface MapBoxFeature {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   place_type: string[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  place_name: string;
   text: string;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   properties: { short_code: string; };
-  center?: [number, number];
+  center: [number, number];
 }
 
 export interface MapBoxFeatureCollection {
@@ -1670,6 +1683,7 @@ export default defineComponent({
       imagesetFolder: null as Folder | null,
 
       searchText: null as string | null,
+      searchResults: null as MapBoxFeatureCollection | null,
       showMapTooltip: false,
       showTextTooltip: false,
       showMapSelector: false,
@@ -3298,34 +3312,21 @@ export default defineComponent({
       }
     },
 
-    async geocodingInfoForSearch(searchText: string): Promise<ForwardGeocodingInfo | null> {
+    async geocodingInfoForSearch(searchText: string): Promise<MapBoxFeatureCollection | null> {
       const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}`;
-      const geocodingInfo = await fetch(url)
+      return fetch(url)
         .then(response => response.json())
         .then((result: MapBoxFeatureCollection) => {
-          const center = result.features[0]?.center;
-          if (result.features.length === 0 || !center) {
-            return null;
-          }
-          console.log(result);
-          console.log(this.mapboxLocationText(result));
-          return {
-            location: center,
-            text: this.mapboxLocationText(result)
-          };
+          return result;
         })
         .catch((_err) => null);
-
-      return geocodingInfo;
     },
 
-    updateFromSearchText(searchText: string) {
+    forwardGeocodingSearch(searchText: string) {
       this.geocodingInfoForSearch(searchText).then((info) => {
         console.log(info);
-        if (info === null) { return; }
-        this.locationDeg = { longitudeDeg: info.location[0], latitudeDeg: info.location[1] };
-        this.selectedLocationText = info.text;
+        this.searchResults = info;
       });
     },
     
@@ -3359,15 +3360,6 @@ export default defineComponent({
       this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
     },
 
-    async updateFromForwardGeocoding(searchText: string) {
-      const info = await this.geocodingInfoForSearch(searchText);
-      if (info === null) {
-        return;
-      }
-      this.locationDeg = { latitudeDeg: info.location[0], longitudeDeg: info.location[1] };
-      this.selectedLocationText = info.text;
-    },
-    
     niceRound(val: number) {
       // rounding routine specifically for the playback rate
       const abs = Math.abs(val);
@@ -5305,16 +5297,22 @@ a {
 }
 
 #forward-geocoding-container {
+  position: relative;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
   gap: 10px;
   padding: 0px 10px;
   align-items: center;
+  justify-content: center;
   width: fit-content;
   color: var(--accent-color);
   background-color: black;
   border: 1px solid var(--accent-color);
   border-radius: 10px;
+
+  .v-text-field {
+    width: 250px;
+  }
 }
 </style>
