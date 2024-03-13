@@ -23,9 +23,9 @@
         </define-term>
         </h1>
         <!-- top row -->
-        <v-row>
-          
-          <v-col cols="12" sm="4" >
+        <v-row class="flex-row-reverse">
+
+          <v-col cols="12" sm="4" :order="2" :order-lg="1">
             <v-row id="query-constructor">              
               <v-col class="sentence-query" col="12">
                 <label for="statistics">Show me</label>
@@ -69,15 +69,16 @@
             
             <v-row id="modis-radio-group">
               <v-btn 
-                class="elevation-5"
+                class="elevation-5 my-2 mb-4"
                 variant="flat"
+                size="small"
                 :disabled="!(needToUpdate || !showCloudCover)"
                 color="#eac402" 
                 @click="updateData()"
                 >
                 {{ displayData ? (needToUpdate ? 'Update Map' : 'Shown on Map') : 'Show on Map'  }}
               </v-btn>
-                
+              
               <v-radio-group 
                 class="modis-radio"
                 v-model="modisDataSet"  
@@ -108,10 +109,47 @@
                 append-icon="mdi-chevron-triple-right"
                 @click="displayCharts = true">Show details</v-btn>
             </v-row>
-          </v-col>
-          
+            
+            <v-row v-if="displayCharts">  
+              <div id="awv-cloud-cover-display" class="">
+                <div>
+                  <!-- <hr> -->
+                  <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
+                  <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
 
-          <v-col id="awv-map" cols="12" sm="8">
+                  <cloud-cover-line
+                    :value="locationValue"
+                    :label="selectedStat === 'singleyear' ? `${selectedYear}` : statText.get(selectedStat) ?? 'Cloud Cover'"
+                    :codes="skyCoverCodes"
+                    :ranges="skyCoverCodeRanges"
+                    :icons="skyCoverIcons"
+                    variant="bold"
+                    />
+                </div>
+                <hr>
+                <h3>Cloud Cover for all years:</h3>
+                <!-- cloud cover for all years at location -->
+                <cloud-cover-line
+                  :value="median(cloudDataNearLocation)"
+                  label="Median"
+                  :codes="skyCoverCodes"
+                  :ranges="skyCoverCodeRanges"
+                  :icons="skyCoverIcons"
+                  />
+                
+                <cloud-cover-line
+                  :value="mean(cloudDataNearLocation)"
+                  label="Mean"
+                  :codes="skyCoverCodes"
+                  :ranges="skyCoverCodeRanges"
+                  :icons="skyCoverIcons"
+                  />
+              </div>
+            </v-row>
+          </v-col>
+
+
+          <v-col id="awv-map" cols="12" sm="8" :order="1" :order-lg="2">
             <span id="awv-map-description"> {{ mapDescriptionText }} </span>
             <div class="map-colorbar">
             <location-selector
@@ -135,9 +173,9 @@
                 :cmap="(x: number) => [`hsla(0,0%,100%, 1)`, transferFunction(x)]"
                 />
             </div>
-              <div v-if="false" class="d-flex align-center justify-end">
+              <div class="d-flex align-center justify-end">
               <v-checkbox
-                v-if="displayData"
+                v-if="displayData || true"
                 v-model="showCloudCover"
                 label="Show Cloud Cover"
                 color="#eac402"
@@ -146,46 +184,8 @@
                 />
             </div>
           </v-col>  
-          
         </v-row>
         
-        <v-row v-if="displayCharts">
-          
-          <div id="awv-cloud-cover-display" class="">
-            <div>
-              <!-- <hr> -->
-              <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
-              <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
-
-              <cloud-cover-line
-                :value="locationValue"
-                :label="selectedStat === 'singleyear' ? `${selectedYear}` : statText.get(selectedStat) ?? 'Cloud Cover'"
-                :codes="skyCoverCodes"
-                :ranges="skyCoverCodeRanges"
-                :icons="skyCoverIcons"
-                variant="bold"
-                />
-            </div>
-            <hr>
-            <h3>Cloud Cover for all years:</h3>
-            <!-- cloud cover for all years at location -->
-            <cloud-cover-line
-              :value="median(cloudDataNearLocation)"
-              label="Median"
-              :codes="skyCoverCodes"
-              :ranges="skyCoverCodeRanges"
-              :icons="skyCoverIcons"
-              />
-            
-            <cloud-cover-line
-              :value="mean(cloudDataNearLocation)"
-              label="Mean"
-              :codes="skyCoverCodes"
-              :ranges="skyCoverCodeRanges"
-              :icons="skyCoverIcons"
-              />
-          </div>
-        </v-row>
         
         <v-row v-if="displayCharts">
           <v-col cols="12" sm="6" class="graph-col">
@@ -501,8 +501,8 @@ export default defineComponent({
       mapDescriptionText: '',
       locationName: '',
       inBounds: false,
-      displayData: false,
-      displayCharts: false,
+      displayData: true,
+      displayCharts: true,
       showCloudCover: true,
       transferFunction: this.transferFunction8,
     };
@@ -1210,6 +1210,7 @@ export default defineComponent({
 
 #advanced-weather-view {
   --color: #eac402;
+  --default-font-size: clamp(0.7rem, min(1.7vh, 1.7vw), 1.1rem);
   font-size: var(--default-font-size);
   --smaller-font: calc(0.8 * var(--default-font-size));
   
