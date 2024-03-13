@@ -810,6 +810,10 @@
         <div id="splash-screen-guide">
           <v-row>
             <v-col cols="12">
+              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
+              New! Location Search
+            </v-col>
+            <v-col cols="12">
               <font-awesome-icon
                 icon="location-dot"
               /> Choose any location 
@@ -4233,9 +4237,9 @@ body {
   }
 
   #splash-screen-guide {
-    margin-block: 1.5em;
+    margin-block: 1em;
     font-size: min(5vw, 4vh);
-    line-height: 140%;
+    line-height: 160%;
     width: 75%;
 
     .v-col{
