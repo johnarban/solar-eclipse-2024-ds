@@ -53,6 +53,9 @@
                 >Choose Any Location
               </span>
               <span v-if="learnerPath=='Clouds'"
+                >View Historical Cloud Data
+              </span>
+              <span v-if="learnerPath=='CloudDetail'"
                 >Explore Historical Cloud Data
               </span>
             </div>
@@ -154,8 +157,7 @@
                 <div class=".d-flex">
                   <div>
                     <p>View different statistics for the data beyond just the 20-year median shown here.</p>
-                    <p> Explore whether phenomena like El Nino historically impacted cloud cover patterns.</p>
-                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
+                    <p> Explore whether phenomena like El Niño historically impacted cloud cover patterns.</p>
                   </div>
                   <div>
                     <div class="my-2">Open the <v-btn :color="accentColor" density="compact" variant="tonal" @click="showAdvancedWeather = true">Cloud Date Explorer</v-btn></div>
@@ -246,9 +248,9 @@
               @update:modelValue="updateLocationFromMap"
               :place-circle-options="placeCircleOptions"
               :detect-location="false"
-              :map-options="(learnerPath === 'Clouds') ? userSelectedMapOptions : initialMapOptions"
+              :map-options="(['Clouds', 'CloudDetail'].includes(learnerPath)) ? userSelectedMapOptions : initialMapOptions"
               :selected-circle-options="selectedCircleOptions"
-              :show-cloud-cover="learnerPath === 'Clouds' && cloudCoverData !== null"
+              :show-cloud-cover="['Clouds', 'CloudDetail'].includes(learnerPath) && cloudCoverData !== null"
               class="leaflet-map"
               :geo-json-files="geojson"
               :selected-cloud-cover="selectedCloudCoverData"

@@ -132,7 +132,7 @@
             <details class="faq">
               <summary> What is El Niño / La Niña?</summary>
                 You might have heard the terms El Niño or La Niña. 
-                They refer to weather patterns that are associated with a slight warming (“El Niño”) or cooling (“La Nina”) of 
+                They refer to weather patterns that are associated with a slight warming (“El Niño”) or cooling (“La Niña”) of 
                   the surface water in the Pacific Ocean relative to normal (“Neutral”). 
                 These different conditions can impact weather worldwide, so we provide the option of filtering the historical cloud data based on these classifications. 
                 <a href="https://oceanservice.noaa.gov/facts/ninonina.html" taget="_blank">Learn more about these fascinating weather phenomena</a> from the NOAA National Ocean Service. 
