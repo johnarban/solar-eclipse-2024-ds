@@ -111,6 +111,7 @@
                 class="mr-2 mb-2"
                 v-if="infoPage==1"
                 density="compact"
+                hide-details
                 :color="accentColor"
                 @click="infoPage++"
                 @keyup.enter="infoPage++"
@@ -625,6 +626,68 @@
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
+        <div
+          id="forward-geocoding-container"
+          :style="forwardGeocodingCss"
+        >
+          <div
+            id="forward-geocoding-input-row"
+          >
+            <v-text-field
+              v-show="searchOpen"
+              v-model="searchText"
+              class="forward-geocoding-input"
+              label="Enter a location"
+              bg-color="black"
+              density="compact"
+              hide-details
+              variant="solo"
+              :color="accentColor"
+              @keydown.stop
+              @keyup.enter="() => performForwardGeocodingSearch()"
+              @keyup.esc="searchResults = null"
+              @click:clear="searchResults = null"
+              :error-messages="searchErrorMessage"
+            ></v-text-field>
+            <font-awesome-icon
+              id="geocoding-search-icon"
+              icon="magnifying-glass"
+              :size="searchOpen ? 'xl' : '1x'"
+              :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
+              @click="() => {
+                if (searchOpen) {
+                  performForwardGeocodingSearch();
+                } else {
+                  searchOpen = true;
+                }
+              }"
+            ></font-awesome-icon>
+            <font-awesome-icon
+              id="geocoding-close-icon"
+              v-show="searchOpen"
+              icon="circle-xmark"
+              :size="searchOpen ? 'xl' : '1x'"
+              color="gray"
+              @click="() => {
+                searchOpen = false;
+                clearSearchData();
+              }"
+            ></font-awesome-icon>
+          </div>
+          <div
+            id="forward-geocoding-results"
+            v-if="searchResults !== null"
+          >
+            <div
+              v-for="(feature, index) in searchResults.features"
+              class="forward-geocoding-result"
+              :key="index"
+              @click="() => setLocationFromSearchFeature(feature)"
+            >
+              {{ feature.place_name }}
+            </div>
+          </div>
+        </div>
         <icon-button
           id="share"
           fa-icon="share-nodes"
@@ -767,6 +830,10 @@
         
         <div id="splash-screen-guide">
           <v-row>
+            <v-col cols="12">
+              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
+              New! Location Search
+            </v-col>
             <v-col cols="12">
               <font-awesome-icon
                 icon="location-dot"
@@ -1400,14 +1467,28 @@ const R2D = 180 / Math.PI;
 export interface MapBoxFeature {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   place_type: string[];
-  text: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  place_name: string;
+  text?: string;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   properties: { short_code: string; };
+  center: [number, number];
+  context: MapBoxContextItem[];
 }
 
 export interface MapBoxFeatureCollection {
   type: "FeatureCollection";
   features: MapBoxFeature[];
+}
+
+export interface MapBoxContextItem {
+  id: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  mapbox_id: string;
+  text: string;
+  wikidata: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  short_code?: string;
 }
 
 
@@ -1642,6 +1723,11 @@ export default defineComponent({
       layersLoaded: false,
       positionSet: false,
       imagesetFolder: null as Folder | null,
+
+      searchOpen: true,
+      searchText: null as string | null,
+      searchResults: null as MapBoxFeatureCollection | null,
+      searchErrorMessage: null as string | null,
 
       showMapTooltip: false,
       showTextTooltip: false,
@@ -2044,6 +2130,11 @@ export default defineComponent({
         '--app-content-height': this.showInfoSheet ? '100vh' : '100vh',
         '--top-content-height': this.showGuidedContent? this.guidedContentHeight : this.guidedContentHeight,
         '--moon-color': this.moonColor,
+      };
+    },
+    forwardGeocodingCss() {
+      return {
+        '--fg-container-padding': this.searchOpen ? '5px 10px 12px 10px' : '0px',
       };
     },
     wwtControl(): WWTControl {
@@ -2710,6 +2801,7 @@ export default defineComponent({
         return;
       }
       this.locationDeg = location;
+      this.updateSelectedLocationText();
     },
 
     onTimeSliderChange() {
@@ -3231,38 +3323,61 @@ export default defineComponent({
       }
       
     },
-    
 
-    mapboxLocationText(location: MapBoxFeatureCollection): string {
-      const relevantFeatures = location.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
-      const placeFeature = relevantFeatures.find(feature => feature.place_type.includes("place")) ?? (relevantFeatures.find(feature => feature.place_type.includes("postcode")) ?? null);
-      const pieces: string[] = [];
-      if (placeFeature && placeFeature.text) {
-        pieces.push(placeFeature.text);
+    findBestFeature(collection: MapBoxFeatureCollection): MapBoxFeature | null {
+      const relevantFeatures = collection.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
+      const placeFeature = relevantFeatures.find(feature => feature.place_type.includes("place")) ?? (relevantFeatures.find(feature => feature.place_type.includes("postcode")) ?? undefined);
+      if (placeFeature !== undefined) {
+        return placeFeature;
+      }
+      const regionFeature = relevantFeatures.find(feature => feature.place_type.includes("region"));
+      if (regionFeature !== undefined) {
+        return regionFeature;
       }
       const countryFeature = relevantFeatures.find(feature => feature.place_type.includes("country"));
-      if (countryFeature) {
-        let countryText: string | null = countryFeature.text;
-        if (NA_COUNTRIES.includes(countryText)) {
-          countryText = null;
-          const regionFeature = relevantFeatures.find(feature => feature.place_type.includes("region"));
-          if (regionFeature) {
-            let stateCode = regionFeature.properties.short_code as string;
-            if (stateCode) {
-              if (NA_ABBREVIATIONS.some(abbr => stateCode.startsWith(abbr))) {
-                stateCode = stateCode.substring(3);
-              }
-              pieces.push(stateCode);
-            }
+      if (countryFeature !== undefined) {
+        return countryFeature;
+      }
+      return null;
+    },
+
+    textForMapboxFeature(feature: MapBoxFeature): string {
+      const pieces: string[] = [];
+      if (feature.text) {
+        pieces.push(feature.text);
+      }
+      feature.context.forEach(item => {
+        const itemType = item.id.split(".")[0];
+        if (!RELEVANT_FEATURE_TYPES.includes(itemType)) {
+          return;
+        }
+        let text = null as string | null;
+        const shortCode = item.short_code;
+        if (itemType === "region" && shortCode != null) {
+          if (NA_ABBREVIATIONS.some(abbr => shortCode.startsWith(abbr))) {
+            text = shortCode.substring(3);
+          }
+        } else if (itemType === "country") {
+          const itemText = item.text;
+          if (!NA_COUNTRIES.includes(itemText)) {
+            text = itemText; 
           }
         }
-        if (countryText) {
-          pieces.push(countryText);
+        if (text !== null) {
+          pieces.push(text);
         }
-      }
+      });
       return pieces.join(", ");
     },
 
+    textForMapboxResults(results: MapBoxFeatureCollection): string {
+      const feature = this.findBestFeature(results);
+      if (feature === null) {
+        return "";
+      }
+      return this.textForMapboxFeature(feature);
+    },
+    
     async textForLocation(longitudeDeg: number, latitudeDeg: number): Promise<string> {
       const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitudeDeg},${latitudeDeg}.json?access_token=${accessToken}`;
@@ -3272,9 +3387,11 @@ export default defineComponent({
           if (result.features.length === 0) {
             return null;
           }
-          return this.mapboxLocationText(result);
+          return this.textForMapboxResults(result);
         })
-        .catch((_err) => null);
+        .catch((_err) => {
+          this.searchErrorMessage = "An error occurred while searching";
+        });
       if (mapBoxText) {
         return mapBoxText;
       } else {
@@ -3284,6 +3401,50 @@ export default defineComponent({
         const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
         return `${lat}° ${ns}, ${lon}° ${ew}`;
       }
+    },
+
+    async geocodingInfoForSearch(searchText: string): Promise<MapBoxFeatureCollection | null> {
+      const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}&types=place`;
+      return fetch(url)
+        .then(response => response.json())
+        .then((result: MapBoxFeatureCollection) => {
+          return result;
+        })
+        .catch((_err) => null);
+    },
+
+    performForwardGeocodingSearch() {
+      if (this.searchText === null || this.searchText.length < 3) {
+        return;
+      }
+      this.geocodingInfoForSearch(this.searchText).then((info) => {
+        if (info !== null && info.features?.length === 1) {
+          this.setLocationFromSearchFeature(info.features[0]);
+        } else if (info !== null && info.features?.length == 0) {
+          this.searchErrorMessage = "No matching places were found";
+        } else {
+          this.searchResults = info;
+        }
+      });
+    },
+
+    setLocationFromFeature(feature: MapBoxFeature) {
+      this.locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] };
+      this.textForLocation(feature.center[0], feature.center[1]).then((text) => {
+        this.selectedLocationText = text;
+      });
+    },
+
+    clearSearchData() {
+      this.searchResults = null;
+      this.searchText = null;
+      this.searchErrorMessage = null;
+    },
+
+    setLocationFromSearchFeature(feature: MapBoxFeature) {
+      this.setLocationFromFeature(feature);
+      this.clearSearchData();
     },
     
     decreasePlaybackRate() {
@@ -3312,12 +3473,10 @@ export default defineComponent({
       this.playbackRate = sign * Math.pow(10, Math.abs(ezrate));
     },
     
-    
-
     async updateSelectedLocationText() {
       this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
     },
-    
+
     niceRound(val: number) {
       // rounding routine specifically for the playback rate
       const abs = Math.abs(val);
@@ -3450,7 +3609,6 @@ export default defineComponent({
       this.playing = false;
       // this.sunOffset = null;
       this.updateWWTLocation();
-      this.updateSelectedLocationText();
 
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
@@ -3472,6 +3630,15 @@ export default defineComponent({
         this.cloudCoverSelectedLocations.push(visitedLocation);
       } else {
         this.userSelectedLocations.push(visitedLocation);
+      }
+    },
+
+    searchText(text: string | null) {
+      if (this.searchErrorMessage) {
+        this.searchErrorMessage = null;
+      }
+      if (!text || text.length === 0) {
+        this.searchResults = null;
       }
     },
 
@@ -3793,6 +3960,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: fit-content;
   
   @media (max-width: 599px) {
     top: 2.5rem;
@@ -4114,9 +4282,9 @@ body {
   }
 
   #splash-screen-guide {
-    margin-block: 1.5em;
+    margin-block: 1em;
     font-size: min(5vw, 4vh);
-    line-height: 140%;
+    line-height: 160%;
     width: 75%;
 
     .v-col{
@@ -5247,6 +5415,68 @@ a {
 @keyframes blinker {
   10% {
     opacity: 0;
+  }
+}
+
+.icon-wrapper {
+  width: fit-content;
+}
+
+#forward-geocoding-container {
+  position: relative;
+  width: fit-content;
+  color: var(--accent-color);
+  background-color: black;
+  border: 2px solid var(--accent-color);
+  border-radius: 20px;
+  padding: var(--fg-container-padding);
+
+  .v-text-field {
+    min-width: 150px;
+    width: min(200px, 20vw);
+  }
+
+  #forward-geocoding-input-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 10px;
+    align-items: center;
+  }
+
+  #geocoding-search-icon {
+    padding-inline: calc(0.3 * var(--default-line-height));
+    padding-block: calc(0.4 * var(--default-line-height));
+  }
+
+  #geocoding-search-icon:hover, #geocoding-close-icon:hover {
+    cursor: pointer;
+  }
+
+  // For some reason setting width: 100% makes the search results 2px too small
+  // It's probably some Vuetify styling thing
+  // Maybe there's a better workaround, but this gets the job done for now
+  #forward-geocoding-results {
+    position: absolute;
+    top: 42px;
+    left: -1px;
+    width: calc(100% + 2px);
+    background: black;
+    border: 1px solid var(--accent-color);
+    border-top: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding: 0px 10px;
+
+    .forward-geocoding-result {
+      border-top: 1px solid var(--accent-color);
+      font-size: 12pt;
+      pointer-events: auto;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
   }
 }
 </style>
