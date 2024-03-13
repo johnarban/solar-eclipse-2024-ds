@@ -8,19 +8,19 @@
       <v-card-text>
         <h1 style="padding:0.5em 0.5em">Just how cloudy is it in {{ locationName }} in April?
         <define-term 
+          no-click
           width="80ch"
           definition='<p class="intro">
-          NASAs <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS Aqua and Terra</a> satellites 
-          provide daily views of the entire surface of the Earth and measure the cloud cover.
-          This is provided as the <strong>cloud cover fraction - <em>the percentage of the sky at a given location that is covered 
-          by clouds</em></strong>. The daily data can have gaps and processing artefacts, so the 8-day average 
-          provies a more reliable measure of the cloud cover for a given time.
+          Click for more details about the cloud cover data, statistical terms, and the El Niño & La Niña weather patterns. 
         </p>'
           >
           <template #term>
-            <v-icon>mdi-help-circle</v-icon>
+            <v-btn icon="mdi-help-circle" @click="explainerOpen = true"></v-btn>
           </template>
         </define-term>
+        <cloud-data-explainer
+          v-model="explainerOpen"
+          />
       </h1>
         <!-- top row -->
         <v-row class="">
@@ -430,6 +430,7 @@ export default defineComponent({
   data() {
     const eps = 0.000001;
     return {
+      explainerOpen: false,
       statText,
       mapSubsets,
       modisTimes,
@@ -505,6 +506,7 @@ export default defineComponent({
       displayCharts: false,
       showCloudCover: true,
       transferFunction: this.transferFunction8,
+      
     };
   },
   

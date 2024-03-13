@@ -16,6 +16,7 @@ import DefineTerm from "./DefineTerm.vue";
 import PlaybackControl from "./PlaybackControl.vue";
 import AdvancedWeatherView from "./AdvancedWeatherView.vue";
 import ColorBar from "./ColorBar.vue";
+import CloudDataExplainer from "./CloudDataExplainer.vue";
 
 import "./polyfills";
 
@@ -150,5 +151,6 @@ createApp(SolarEclipse2023, {
   .component('playback-control', PlaybackControl)
   .component('advanced-weather-view', AdvancedWeatherView)
   .component('color-bar', ColorBar)
+  .component('cloud-data-explainer', CloudDataExplainer)
   // Mount
   .mount("#app");
