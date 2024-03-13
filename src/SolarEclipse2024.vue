@@ -155,7 +155,9 @@
                   <div>
                     <p>View different statistics for the data beyond just the 20-year median shown here.</p>
                     <p> Explore whether phenomena like El Nino historically impacted cloud cover patterns.</p>
-
+                    <cloud-data-explainer
+                      modelValue="true"
+                    />
                     {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
                   </div>
                   <div>
