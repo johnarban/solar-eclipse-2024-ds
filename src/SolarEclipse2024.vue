@@ -641,7 +641,6 @@
               bg-color="black"
               density="compact"
               hide-details
-              clearable
               variant="solo"
               :color="accentColor"
               @keydown.stop
@@ -1724,7 +1723,7 @@ export default defineComponent({
       positionSet: false,
       imagesetFolder: null as Folder | null,
 
-      searchOpen: false,
+      searchOpen: true,
       searchText: null as string | null,
       searchResults: null as MapBoxFeatureCollection | null,
       searchErrorMessage: null as string | null,
@@ -1892,10 +1891,6 @@ export default defineComponent({
     }
     const splashQuery = searchParams.get("splash");
     queryData.splash = splashQuery !== "false";
-  },
-
-  created() {
-    this.searchOpen = !this.mobile;
   },
 
   mounted() {
