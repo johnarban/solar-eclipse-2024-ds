@@ -643,6 +643,7 @@
               :color="accentColor"
               @keyup.enter="() => performForwardGeocodingSearch()"
               @keyup.esc="searchResults = null"
+              @click:clear="searchResults = null"
               :error-messages="searchErrorMessage"
             ></v-text-field>
             <font-awesome-icon
