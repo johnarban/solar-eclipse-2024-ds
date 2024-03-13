@@ -3584,9 +3584,12 @@ export default defineComponent({
       }
     },
 
-    searchText(_text: string | null) {
+    searchText(text: string | null) {
       if (this.searchErrorMessage) {
         this.searchErrorMessage = null;
+      }
+      if (!text || text.length === 0) {
+        this.searchResults = null;
       }
     },
 
