@@ -143,11 +143,29 @@
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
                     />
-                    <div class="my-2">Open the <v-btn :color="accentColor" density="compact" variant="tonal" @click="showAdvancedWeather = true">Advanced Weather View</v-btn></div>
                   </div>
                 </div>
               </span>
             </div>
+            
+            <!-- Detailed Cloud Path -->
+            <div class="instructions-text" v-if="learnerPath=='CloudDetail'">
+              <span class="description">
+                <div class=".d-flex">
+                  <div>
+                    <p>View different statistics for the data beyond just the 20-year median shown here.</p>
+                    <p> Explore whether phenomena like El Nino historically impacted cloud cover patterns.</p>
+
+                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
+                  </div>
+                  <div>
+                    <div class="my-2">Open the <v-btn :color="accentColor" density="compact" variant="tonal" @click="showAdvancedWeather = true">Cloud Date Explorer</v-btn></div>
+                  </div>
+                </div>
+              </span>
+            </div>
+            
+            
           </div>
         </div>
       <!-- </toggle-content> -->
@@ -172,11 +190,23 @@
                 fa-size="xl"
                 :color="accentColor"
                 :focus-color="accentColor"
-                :tooltip-text="'Explore historical cloud coverage'"
+                :tooltip-text="'View historical cloud coverage'"
                 :tooltip-location="'bottom'"
                 :show-tooltip="!mobile"
                 :box-shadow="false"
                 @activate="() => { learnerPath = 'Clouds'}"
+              ></icon-button>
+              <icon-button
+                :model-value="learnerPath == 'CloudDetail'"
+                fa-icon="chart-column"
+                fa-size="xl"
+                :color="accentColor"
+                :focus-color="accentColor"
+                :tooltip-text="'Explore detailed historical cloud coverage'"
+                :tooltip-location="'bottom'"
+                :show-tooltip="!mobile"
+                :box-shadow="false"
+                @activate="() => { learnerPath = 'CloudDetail'}"
               ></icon-button>
               <icon-button
                 v-model="showInfoSheet"
@@ -1416,7 +1446,7 @@ interface CloudData {
 
 
 type SheetType = "text" | "video" | null;
-type LearnerPath = "Location" | "Clouds" | "Learn";
+type LearnerPath = "Location" | "Clouds" | 'CloudDetail' | "Learn";
 type ViewerMode = "Horizon";
 type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | `moon-sky-blue-overlay-${number}.png` | "empty.png";
 
