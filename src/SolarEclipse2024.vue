@@ -111,6 +111,7 @@
                 class="mr-2 mb-2"
                 v-if="infoPage==1"
                 density="compact"
+                hide-details
                 :color="accentColor"
                 @click="infoPage++"
                 @keyup.enter="infoPage++"
@@ -636,8 +637,12 @@
               class="forward-geocoding-input"
               label="Enter a location"
               bg-color="black"
+              density="compact"
+              hide-details
+              clearable
               :color="accentColor"
               @keyup.enter="() => performForwardGeocodingSearch()"
+              @keyup.esc="searchResults = null"
               :error-messages="searchErrorMessage"
             ></v-text-field>
             <font-awesome-icon
@@ -5373,15 +5378,14 @@ a {
   border-radius: 10px;
 
   .v-text-field {
-    width: 250px;
-    height: 80px;
+    min-width: 200px;
   }
 
   #forward-geocoding-input-row {
     display: flex;
     flex-direction: row;
     gap: 10px;
-    padding: 0px 10px;
+    padding: 5px 10px;
     align-items: center;
   }
 
@@ -5390,7 +5394,7 @@ a {
   // Maybe there's a better workaround, but this gets the job done for now
   #forward-geocoding-results {
     position: absolute;
-    top: 70px;
+    top: 42px;
     left: -1px;
     width: calc(100% + 2px);
     background: black;
