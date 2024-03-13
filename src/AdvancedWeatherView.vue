@@ -25,10 +25,10 @@
         <!-- top row -->
         <v-row class="flex-row-reverse">
 
-          <v-col cols="12" sm="4" :order="2" :order-lg="1">
+          <v-col cols="12" sm="4" :order="2" :order-lg="2">
             <v-row id="query-constructor">              
-              <v-col class="sentence-query" col="12">
-                <label for="statistics">Show me</label>
+              <v-col class="sentence-query mb-2" col="12">
+                <label class="d-inline d-sm-block d-xl-inline" for="statistics">Show me</label>
                 <select 
                   class="select-box"
                   name="statistics" 
@@ -40,7 +40,7 @@
                   <option value="median">the Median</option>
                   <option value="singleyear">a Single Year</option>
                 </select>
-                  <label for="years">of the cloud cover for </label>
+                  <label class="d-inline d-sm-block d-md-inline" for="years">of the cloud cover for </label>
                   <select 
                     v-if="selectedStat !== 'singleyear'"
                     class="select-box"
@@ -67,7 +67,7 @@
               </v-col>
             </v-row>
             
-            <v-row id="modis-radio-group">
+            <v-row class="mb-2" id="modis-radio-group">
               <v-btn 
                 class="elevation-5 my-2 mb-4"
                 variant="flat"
@@ -149,7 +149,7 @@
           </v-col>
 
 
-          <v-col id="awv-map" cols="12" sm="8" :order="1" :order-lg="2">
+          <v-col id="awv-map" cols="12" sm="8" :order="1" :order-lg="1">
             <span id="awv-map-description"> {{ mapDescriptionText }} </span>
             <div class="map-colorbar">
             <location-selector
@@ -1266,6 +1266,10 @@ export default defineComponent({
     font-weight: bold;
     font-size: 1.125em;
     
+    @media (max-width: 600px) {
+      font-size: 1.25em;
+    }
+    
     
     >label, >select {
       margin: 0.25em auto;
@@ -1275,6 +1279,7 @@ export default defineComponent({
       display: block;
       color:#eac402;
       font-size: 1.1em;
+      
     }
     
     > select {
@@ -1295,6 +1300,13 @@ export default defineComponent({
     margin-left: 1rem;
     margin-bottom: 1rem;
     font-size: 1em;
+    
+    @media (max-width: 810px) {
+      .label-icon-value-text-container {
+        width: max-content;
+      }
+    }
+    
   }
   
   .bold .label-icon-value-text-label {
