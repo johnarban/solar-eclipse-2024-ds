@@ -236,6 +236,7 @@ export default defineComponent({
       const z = Math.exp(y);
       return z / (1 + z);
     },
+    
 
     getColor(_cloudCover:number) {
       // Calculate HSL color based on a gradient
