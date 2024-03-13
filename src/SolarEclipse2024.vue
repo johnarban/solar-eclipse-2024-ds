@@ -638,7 +638,6 @@
               bg-color="black"
               :color="accentColor"
               @keyup.enter="() => performForwardGeocodingSearch()"
-              @blur="searchResults = null"
               :error-messages="searchErrorMessage"
             ></v-text-field>
             <font-awesome-icon
@@ -2757,6 +2756,7 @@ export default defineComponent({
         return;
       }
       this.locationDeg = location;
+      this.updateSelectedLocationText();
     },
 
     onTimeSliderChange() {
@@ -3364,7 +3364,6 @@ export default defineComponent({
         return;
       }
       this.geocodingInfoForSearch(this.searchText).then((info) => {
-        console.log(info);
         if (info !== null && info.features?.length === 1) {
           this.setLocationFromSearchFeature(info.features[0]);
         } else if (info !== null && info.features?.length == 0) {
@@ -3377,6 +3376,9 @@ export default defineComponent({
 
     setLocationFromFeature(feature: MapBoxFeature) {
       this.locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] };
+      this.textForLocation(feature.center[0], feature.center[1]).then((text) => {
+        this.selectedLocationText = text;
+      });
     },
 
     clearSearchData() {
@@ -3552,7 +3554,6 @@ export default defineComponent({
       this.playing = false;
       // this.sunOffset = null;
       this.updateWWTLocation();
-      this.updateSelectedLocationText();
 
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
@@ -5400,7 +5401,6 @@ a {
     padding: 0px 10px;
 
     .forward-geocoding-result {
-      border-bottom: 1px solid var(--accent-color);
       border-top: 1px solid var(--accent-color);
       font-size: 12pt;
       pointer-events: auto;
