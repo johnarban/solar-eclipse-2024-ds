@@ -650,18 +650,8 @@
               :error-messages="searchErrorMessage"
             ></v-text-field>
             <font-awesome-icon
-              v-show="searchOpen"
-              icon="close"
-              :size="searchOpen ? 'xl' : '1x'"
-              :color="accentColor"
-              @click="() => {
-                searchOpen = false;
-                clearSearchData();
-              }"
-            ></font-awesome-icon>
-            <font-awesome-icon
-              id="search-icon"
-              :icon="searchOpen ? 'check' : 'magnifying-glass'"
+              id="geocoding-search-icon"
+              icon="magnifying-glass"
               :size="searchOpen ? 'xl' : '1x'"
               :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
               @click="() => {
@@ -670,6 +660,17 @@
                 } else {
                   searchOpen = true;
                 }
+              }"
+            ></font-awesome-icon>
+            <font-awesome-icon
+              id="geocoding-close-icon"
+              v-show="searchOpen"
+              icon="circle-xmark"
+              :size="searchOpen ? 'xl' : '1x'"
+              color="gray"
+              @click="() => {
+                searchOpen = false;
+                clearSearchData();
               }"
             ></font-awesome-icon>
           </div>
@@ -5425,9 +5426,13 @@ a {
     align-items: center;
   }
 
-  #search-icon {
+  #geocoding-search-icon {
     padding-inline: calc(0.3 * var(--default-line-height));
     padding-block: calc(0.4 * var(--default-line-height));
+  }
+
+  #geocoding-search-icon:hover, #geocoding-close-icon:hover {
+    cursor: pointer;
   }
 
   // For some reason setting width: 100% makes the search results 2px too small
