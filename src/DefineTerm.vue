@@ -8,7 +8,7 @@ import { tooltip } from 'leaflet';
     :open-on-focus="true"
     >
     <template v-slot:activator="{props}" >
-      <div :class="['define-term-tooltip', inline ? 'inline' : '']" v-bind="props">
+      <div :class="['define-term-tooltip', inline ? 'inline' : '', bold ? 'define-term-bold' : '', underlined ? 'define-term-underline' : '' ]" v-bind="props">
         <slot name="term">
           {{ term }}
         </slot>
@@ -55,13 +55,24 @@ export default defineComponent({
       type: Boolean,
       default: false
     }
+    
+    bold: {
+      type: Boolean,
+      default: false
+    },
+    
+    underlined: {
+      type: Boolean,
+      default: true
+    },
+    
   }
 });
 
 
 </script>
 
-<style>
+<style scoped>
 
 .v-tooltip > .v-overlay__content {
   background: #F5F5F5 !important;
@@ -70,7 +81,15 @@ export default defineComponent({
 .define-term-tooltip.inline {
   display: inline;
   pointer-events: auto;
+}
+
+.define-term-bold {
   font-weight: bold;
+}
+
+.define-term-underline {
+  text-decoration: underline;
+  text-decoration-style: dotted;
 }
 
 .define-term-tooltip.definition {
