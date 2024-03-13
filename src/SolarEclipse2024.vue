@@ -628,11 +628,13 @@
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
         <div
           id="forward-geocoding-container"
+          :style="forwardGeocodingCss"
         >
           <div
             id="forward-geocoding-input-row"
           >
             <v-text-field
+              v-show="searchOpen"
               v-model="searchText"
               class="forward-geocoding-input"
               label="Enter a location"
@@ -640,17 +642,36 @@
               density="compact"
               hide-details
               clearable
+              variant="solo"
               :color="accentColor"
+              @keydown.stop
               @keyup.enter="() => performForwardGeocodingSearch()"
               @keyup.esc="searchResults = null"
               @click:clear="searchResults = null"
               :error-messages="searchErrorMessage"
             ></v-text-field>
             <font-awesome-icon
-              icon="magnifying-glass"
-              size="lg"
-              :color="searchText && searchText.length > 2 ? accentColor : 'gray'"
-              @click="() => performForwardGeocodingSearch()"
+              v-show="searchOpen"
+              icon="close"
+              :size="searchOpen ? 'xl' : '1x'"
+              :color="accentColor"
+              @click="() => {
+                searchOpen = false;
+                clearSearchData();
+              }"
+            ></font-awesome-icon>
+            <font-awesome-icon
+              id="search-icon"
+              :icon="searchOpen ? 'check' : 'magnifying-glass'"
+              :size="searchOpen ? 'xl' : '1x'"
+              :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
+              @click="() => {
+                if (searchOpen) {
+                  performForwardGeocodingSearch();
+                } else {
+                  searchOpen = true;
+                }
+              }"
             ></font-awesome-icon>
           </div>
           <div
@@ -1703,6 +1724,7 @@ export default defineComponent({
       positionSet: false,
       imagesetFolder: null as Folder | null,
 
+      searchOpen: false,
       searchText: null as string | null,
       searchResults: null as MapBoxFeatureCollection | null,
       searchErrorMessage: null as string | null,
@@ -1870,6 +1892,10 @@ export default defineComponent({
     }
     const splashQuery = searchParams.get("splash");
     queryData.splash = splashQuery !== "false";
+  },
+
+  created() {
+    this.searchOpen = !this.mobile;
   },
 
   mounted() {
@@ -2110,6 +2136,11 @@ export default defineComponent({
         '--app-content-height': this.showInfoSheet ? '100vh' : '100vh',
         '--top-content-height': this.showGuidedContent? this.guidedContentHeight : this.guidedContentHeight,
         '--moon-color': this.moonColor,
+      };
+    },
+    forwardGeocodingCss() {
+      return {
+        '--fg-container-padding': this.searchOpen ? '5px 10px 12px 10px' : '0px',
       };
     },
     wwtControl(): WWTControl {
@@ -5382,19 +5413,26 @@ a {
   width: fit-content;
   color: var(--accent-color);
   background-color: black;
-  border: 1px solid var(--accent-color);
-  border-radius: 10px;
+  border: 2px solid var(--accent-color);
+  border-radius: 20px;
+  padding: var(--fg-container-padding);
 
   .v-text-field {
-    min-width: 200px;
+    min-width: 150px;
+    width: min(200px, 20vw);
   }
 
   #forward-geocoding-input-row {
     display: flex;
     flex-direction: row;
+    justify-content: space-around;
     gap: 10px;
-    padding: 5px 10px;
     align-items: center;
+  }
+
+  #search-icon {
+    padding-inline: calc(0.3 * var(--default-line-height));
+    padding-block: calc(0.4 * var(--default-line-height));
   }
 
   // For some reason setting width: 100% makes the search results 2px too small

@@ -62,7 +62,7 @@ import {
   faAnglesLeft,
   faAnglesRight,
   faMagnifyingGlass,
-
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(faBookOpen);
@@ -95,6 +95,7 @@ library.add(faGaugeHigh);
 library.add(faAnglesLeft);
 library.add(faAnglesRight);
 library.add(faMagnifyingGlass);
+library.add(faCheck);
 
 /** v-hide directive taken from https://www.ryansouthgate.com/2020/01/30/vue-js-v-hide-element-whilst-keeping-occupied-space/ */
 // Extract the function out, up here, so I'm not writing it twice
