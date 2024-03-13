@@ -638,6 +638,7 @@
               bg-color="black"
               :color="accentColor"
               @keyup.enter="() => performForwardGeocodingSearch()"
+              @blur="searchResults = null"
               :error-messages="searchErrorMessage"
             ></v-text-field>
             <font-awesome-icon
@@ -1438,10 +1439,11 @@ export interface MapBoxFeature {
   place_type: string[];
   // eslint-disable-next-line @typescript-eslint/naming-convention
   place_name: string;
-  text: string;
+  text?: string;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   properties: { short_code: string; };
   center: [number, number];
+  context: MapBoxContextItem[];
 }
 
 export interface MapBoxFeatureCollection {
@@ -1449,9 +1451,14 @@ export interface MapBoxFeatureCollection {
   features: MapBoxFeature[];
 }
 
-export interface ForwardGeocodingInfo {
-  location: [number, number];
+export interface MapBoxContextItem {
+  id: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  mapbox_id: string;
   text: string;
+  wikidata: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  short_code?: string;
 }
 
 
@@ -2750,9 +2757,6 @@ export default defineComponent({
         return;
       }
       this.locationDeg = location;
-      this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg).then((text) => {
-        this.selectedLocationText = text;
-      });
     },
 
     onTimeSliderChange() {
@@ -3264,38 +3268,61 @@ export default defineComponent({
       }
       
     },
-    
 
-    mapboxLocationText(location: MapBoxFeatureCollection): string {
-      const relevantFeatures = location.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
-      const placeFeature = relevantFeatures.find(feature => feature.place_type.includes("place")) ?? (relevantFeatures.find(feature => feature.place_type.includes("postcode")) ?? null);
-      const pieces: string[] = [];
-      if (placeFeature && placeFeature.text) {
-        pieces.push(placeFeature.text);
+    findBestFeature(collection: MapBoxFeatureCollection): MapBoxFeature | null {
+      const relevantFeatures = collection.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
+      const placeFeature = relevantFeatures.find(feature => feature.place_type.includes("place")) ?? (relevantFeatures.find(feature => feature.place_type.includes("postcode")) ?? undefined);
+      if (placeFeature !== undefined) {
+        return placeFeature;
+      }
+      const regionFeature = relevantFeatures.find(feature => feature.place_type.includes("region"));
+      if (regionFeature !== undefined) {
+        return regionFeature;
       }
       const countryFeature = relevantFeatures.find(feature => feature.place_type.includes("country"));
-      if (countryFeature) {
-        let countryText: string | null = countryFeature.text;
-        if (NA_COUNTRIES.includes(countryText)) {
-          countryText = null;
-          const regionFeature = relevantFeatures.find(feature => feature.place_type.includes("region"));
-          if (regionFeature) {
-            let stateCode = regionFeature.properties.short_code as string;
-            if (stateCode) {
-              if (NA_ABBREVIATIONS.some(abbr => stateCode.startsWith(abbr))) {
-                stateCode = stateCode.substring(3);
-              }
-              pieces.push(stateCode);
-            }
+      if (countryFeature !== undefined) {
+        return countryFeature;
+      }
+      return null;
+    },
+
+    textForMapboxFeature(feature: MapBoxFeature): string {
+      const pieces: string[] = [];
+      if (feature.text) {
+        pieces.push(feature.text);
+      }
+      feature.context.forEach(item => {
+        const itemType = item.id.split(".")[0];
+        if (!RELEVANT_FEATURE_TYPES.includes(itemType)) {
+          return;
+        }
+        let text = null as string | null;
+        const shortCode = item.short_code;
+        if (itemType === "region" && shortCode != null) {
+          if (NA_ABBREVIATIONS.some(abbr => shortCode.startsWith(abbr))) {
+            text = shortCode.substring(3);
+          }
+        } else if (itemType === "country") {
+          const itemText = item.text;
+          if (!NA_COUNTRIES.includes(itemText)) {
+            text = itemText; 
           }
         }
-        if (countryText) {
-          pieces.push(countryText);
+        if (text !== null) {
+          pieces.push(text);
         }
-      }
+      });
       return pieces.join(", ");
     },
 
+    textForMapboxResults(results: MapBoxFeatureCollection): string {
+      const feature = this.findBestFeature(results);
+      if (feature === null) {
+        return "";
+      }
+      return this.textForMapboxFeature(feature);
+    },
+    
     async textForLocation(longitudeDeg: number, latitudeDeg: number): Promise<string> {
       const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitudeDeg},${latitudeDeg}.json?access_token=${accessToken}`;
@@ -3305,7 +3332,7 @@ export default defineComponent({
           if (result.features.length === 0) {
             return null;
           }
-          return this.mapboxLocationText(result);
+          return this.textForMapboxResults(result);
         })
         .catch((_err) => {
           this.searchErrorMessage = "An error occurred while searching";
@@ -3525,6 +3552,7 @@ export default defineComponent({
       this.playing = false;
       // this.sunOffset = null;
       this.updateWWTLocation();
+      this.updateSelectedLocationText();
 
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
