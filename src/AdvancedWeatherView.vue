@@ -25,7 +25,7 @@
         <!-- top row -->
         <v-row class="flex-row-reverse">
 
-          <v-col cols="12" sm="4" :order="2" :order-lg="2">
+          <v-col cols="12" sm="5" :order="2" :order-lg="2">
             <v-row id="query-constructor">              
               <v-col class="sentence-query mb-2" col="12">
                 <label class="d-inline d-sm-block d-xl-inline" for="statistics">Show me</label>
@@ -149,7 +149,7 @@
           </v-col>
 
 
-          <v-col id="awv-map" cols="12" sm="8" :order="1" :order-lg="1">
+          <v-col id="awv-map" cols="12" sm="7" :order="1" :order-lg="1">
             <span id="awv-map-description"> {{ mapDescriptionText }} </span>
             <div class="map-colorbar">
             <location-selector
@@ -501,8 +501,8 @@ export default defineComponent({
       mapDescriptionText: '',
       locationName: '',
       inBounds: false,
-      displayData: true,
-      displayCharts: true,
+      displayData: false,
+      displayCharts: false,
       showCloudCover: true,
       transferFunction: this.transferFunction8,
     };
