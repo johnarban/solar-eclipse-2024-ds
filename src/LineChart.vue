@@ -6,14 +6,16 @@
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
 import Chart from "chart.js/auto"; 
-import { ChartData } from "chart.js";
+import { ChartData, ChartTypeRegistry } from "chart.js";
 import { PointStyle } from "chart.js";
 import {customCanvasBackgroundColor} from './ChartPlugins';
 import 'chartjs-adapter-date-fns';
 import annotationPlugin from 'chartjs-plugin-annotation';
 
-
 Chart.register(customCanvasBackgroundColor, annotationPlugin);
+
+export type ChartDataType = ChartData<keyof ChartTypeRegistry, OrderedPair[], string>;
+
 
 type OrderedPair = { 
   x: Date | number,
@@ -57,9 +59,9 @@ export default defineComponent({
     },
     
     otherData: {
-      type: Array as PropType<ChartData[]>,
+      type: Object as PropType<ChartDataType["datasets"]>,
       required: false,
-      default: () => [],
+      default: () => { [] as ChartDataType["datasets"];},
     },
     
     timeseries: {
@@ -411,7 +413,9 @@ export default defineComponent({
         outData = [scatterData, lineData];
       }
       
-      outData = [...outData, ...this.otherData];
+      outData = [...this.otherData, ...outData, ];
+      
+      console.log(outData);
       
       return { datasets: outData };
 

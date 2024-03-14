@@ -219,14 +219,13 @@
           </v-col>
           <v-col cols="12" sm="6" class="graph-col">
           <line-chart
+            show-legend
             class="elevation-5"
             :title="`Percent Cloud Cover for ${locationName}`"
             :scatter-data="cloudDataNearLocation"
             :scatter-options="{radius: 4 }"
             :scatter-label="!subsetSelected ? 'All Years' : 'Other Years'"
-            :subsets="!subsetSelected ? [] :
-              [allYears.map((year) => selectedYears.includes(year))]"
-            :subset-styles="[{backgroundColor: 'goldenrod', radius: 6}]"
+            :other-data="subsetData"
             :y-range="[-.1,1.1]"
             :x-range="[new Date(2003, 1, 8), new Date(2023, 7, 8)]"
 
@@ -282,7 +281,7 @@
 <script lang="ts"> // Options API
 import { defineComponent, PropType } from 'vue';
 import BarChart from './BarChart.vue';
-import LineChart from './LineChart.vue';
+import LineChart, {ChartDataType} from './LineChart.vue';
 import LocationSelector from './LocationSelector.vue';
 import CloudCoverLine from './CloudCoverLine.vue';
 // import HoverTooltip from './HoverTooltip.vue';
@@ -767,6 +766,30 @@ export default defineComponent({
       }
       
       return [];
+    },
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    subsetData(): ChartDataType['datasets'] {
+      if (!this.subsetSelected) { return [];}
+      
+      if (this.cloudDataNearLocation) {
+        const data = this.cloudDataNearLocation.filter( v => this.selectedYears.includes(v.x.getFullYear()));
+        if (data === undefined) {
+          return [];
+        }
+        return [{
+          type: 'scatter',
+          label: this.mapSubsets.get(this.dataSubset)  as string,
+          backgroundColor: data.map(_v => 'goldenrod'),
+          data: data,
+          pointRadius: 6,
+          borderColor: 'black',
+          
+        }];
+      }
+      
+      return [];
+      
     },
     
   },
