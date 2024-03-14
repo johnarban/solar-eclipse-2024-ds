@@ -1264,12 +1264,13 @@ export default defineComponent({
     
     > label {
       display: block;
-      color:#eac402;
-      font-size: 1.1em;
+      font-size:1em;
     }
     
     > select {
-      font-size: 1em;
+      font-size: 1.1em;
+      color:#eac402;
+      
     }
   }
 
