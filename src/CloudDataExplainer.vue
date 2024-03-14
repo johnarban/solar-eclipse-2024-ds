@@ -140,14 +140,14 @@
             
             
             <details class="faq">
-              <summary><v-icon>mdi-chart-bar</v-icon> What is in the bar chart on the left?</summary>
+              <summary><v-icon>mdi-chart-bar</v-icon> What is in the bar chart on the  {{ smAndUp ? 'left' : 'top' }}?</summary>
               <p>
                 The left hand graph is called a histogram. For your selected location, it tells you how many years since 2003 were Clear, Partly Cloudy, Mostly Cloudy, or Cloudy at this location. If you have filtered the data by El Nino, Neutral, or La Nina years, your chosen subset will be colored with the blue to white gradient, while the rest of the years will appear gray.
               </p>
             </details>
 
             <details class="faq">
-              <summary><v-icon>mdi-chart-scatter-plot</v-icon> What is in the graph on the right?</summary>
+              <summary><v-icon>mdi-chart-scatter-plot</v-icon> What is in the graph on the {{ smAndUp ? 'right' : 'bottom' }}?</summary>
               <p>
                 The right hand graph is a scatter plot showing the cloud cover for your chosen location for each year since 2003. If you have filtered the data by El Nino, Neutral, or La Nina years, or for a single year, those data points will be displayed in yellow. The background of the graph shows what cloud cover values correspond to the weather conditions of Clear, Partly Cloudy, etc.
               </p>
@@ -246,7 +246,12 @@ export default defineComponent({
       set(value: boolean) {
         this.$emit('update:modelValue', value);
       }
+    },
+    
+    smAndUp() {
+      return this.$vuetify.display.smAndUp;
     }
+    
   }
   
 });
