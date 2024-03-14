@@ -11,6 +11,7 @@
     max-height="80%"
     height="500px"
     max-width="90%"
+    min-width="90%"
     >
     
   
