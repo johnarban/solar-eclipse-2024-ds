@@ -106,6 +106,7 @@ export default defineComponent({
   margin-left: 5px;
   margin-right: 1em;
   background: var(--background-color);
+  user-select: none;
 }
 
 .colorbar {
@@ -120,18 +121,19 @@ export default defineComponent({
 .colorbar:before {
   content:"100%";
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 0.5em;
+  right: 2em;
   transform-origin: bottom center;
-  color: white;
+  color: black;
   transform: translateX(calc(2*var(--width))) rotate(-90deg);
+  z-index: 1;
 }
 
 .colorbar:after {
   content:"0%";
   position: absolute;
-  bottom: 0;
-  right: 0;
+  bottom: 0.5em;
+  right: 2em;
   color: white;
   transform-origin: center;
   transform: translateX(calc(var(--width))) rotate(-90deg);

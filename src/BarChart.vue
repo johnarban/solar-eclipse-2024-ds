@@ -1,6 +1,6 @@
 <!-- A ChartJS bar-chart helper. -->
 <template>
-  <canvas :id="canvasID" role="img" :aria-label="accessiblityLabel">
+  <canvas :id="canvasID" role="img" :aria-label="accessiblityLabel" class="chartjs">
     <!-- this only get's shown in a browser does not support canvas -->
     {{ accessiblityLabel }}
   </canvas>
@@ -151,6 +151,12 @@ export default defineComponent({
       type: Object as PropType<ChartDataType["datasets"]>,
       default: () => { return [] as ChartDataType["datasets"];},
       required: false
+    },
+    
+    showHover: {
+      type: Boolean,
+      default: false,
+      required: false
     }
     
     
@@ -171,6 +177,7 @@ export default defineComponent({
     hoverColors() {
       // adapted from https://github.com/chartjs/Chart.js/blob/ef5e4d4692a3e7fc3d24b6e780f18652287907ca/src/helpers/helpers.color.ts#L29
       // We will darken the color by 50%
+      if (!this.showHover) {return this.colors;}
       const interim = Array.isArray(this.colors) ? this.colors : [this.colors];
       return interim.map((color) => {
         return Color(color).darken(0.25).hexString();
@@ -186,7 +193,7 @@ export default defineComponent({
           {
             label: this.dataLabel,
             backgroundColor: this.colors,
-            // hoverBackgroundColor: this.hoverColors,
+            hoverBackgroundColor: this.hoverColors,
             borderColor: this.borderColor,
             borderWidth: this.borderWidth,
             data: this.histogramData,

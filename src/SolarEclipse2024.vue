@@ -53,6 +53,9 @@
                 >Choose Any Location
               </span>
               <span v-if="learnerPath=='Clouds'"
+                >View Historical Cloud Data
+              </span>
+              <span v-if="learnerPath=='CloudDetail'"
                 >Explore Historical Cloud Data
               </span>
             </div>
@@ -143,11 +146,27 @@
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
                     />
-                    <div class="my-2">Open the <v-btn :color="accentColor" density="compact" variant="tonal" @click="showAdvancedWeather = true">Advanced Weather View</v-btn></div>
                   </div>
                 </div>
               </span>
             </div>
+            
+            <!-- Detailed Cloud Path -->
+            <div class="instructions-text" v-if="learnerPath=='CloudDetail'">
+              <span class="description">
+                <div class=".d-flex">
+                  <div>
+                    <p>View different statistics for the data beyond just the 20-year median shown here.</p>
+                    <p> Explore whether phenomena like El Niño historically impacted cloud cover patterns.</p>
+                  </div>
+                  <div>
+                    <div class="my-2">Open the <v-btn :color="accentColor" density="compact" variant="tonal" @click="showAdvancedWeather = true">Cloud Date Explorer</v-btn></div>
+                  </div>
+                </div>
+              </span>
+            </div>
+            
+            
           </div>
         </div>
       <!-- </toggle-content> -->
@@ -172,11 +191,23 @@
                 fa-size="xl"
                 :color="accentColor"
                 :focus-color="accentColor"
-                :tooltip-text="'Explore historical cloud coverage'"
+                :tooltip-text="'View historical cloud coverage'"
                 :tooltip-location="'bottom'"
                 :show-tooltip="!mobile"
                 :box-shadow="false"
                 @activate="() => { learnerPath = 'Clouds'}"
+              ></icon-button>
+              <icon-button
+                :model-value="learnerPath == 'CloudDetail'"
+                fa-icon="chart-column"
+                fa-size="xl"
+                :color="accentColor"
+                :focus-color="accentColor"
+                :tooltip-text="'Explore detailed historical cloud coverage'"
+                :tooltip-location="'bottom'"
+                :show-tooltip="!mobile"
+                :box-shadow="false"
+                @activate="() => { learnerPath = 'CloudDetail'}"
               ></icon-button>
               <icon-button
                 v-model="showInfoSheet"
@@ -217,9 +248,9 @@
               @update:modelValue="updateLocationFromMap"
               :place-circle-options="placeCircleOptions"
               :detect-location="false"
-              :map-options="(learnerPath === 'Clouds') ? userSelectedMapOptions : initialMapOptions"
+              :map-options="(['Clouds', 'CloudDetail'].includes(learnerPath)) ? userSelectedMapOptions : initialMapOptions"
               :selected-circle-options="selectedCircleOptions"
-              :show-cloud-cover="learnerPath === 'Clouds' && cloudCoverData !== null"
+              :show-cloud-cover="['Clouds', 'CloudDetail'].includes(learnerPath) && cloudCoverData !== null"
               class="leaflet-map"
               :geo-json-files="geojson"
               :selected-cloud-cover="selectedCloudCoverData"
@@ -1416,7 +1447,7 @@ interface CloudData {
 
 
 type SheetType = "text" | "video" | null;
-type LearnerPath = "Location" | "Clouds" | "Learn";
+type LearnerPath = "Location" | "Clouds" | 'CloudDetail' | "Learn";
 type ViewerMode = "Horizon";
 type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | `moon-sky-blue-overlay-${number}.png` | "empty.png";
 
@@ -4753,6 +4784,7 @@ video, #info-video {
           line-height: 1.4em;
           color: white;
           text-align: left;
+          user-select: text;
           
           p {
             margin-block: .3em;
