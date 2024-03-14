@@ -42,7 +42,7 @@
                 provide daily views of the entire surface of the Earth and measure the cloud cover.
                 This is provided as the <strong>cloud cover fraction - <em>the percentage of the sky at a given location that is covered 
                 by clouds</em></strong>. We are using MODIS Aqua cloud cover data product as provided by the 
-                  <a href="https://neo.gsfc.nasa.gov/view.php?datasetId=MYDAL2_E_CLD_FR" taget="_blank">NASA Near Earth Observations (NEO)</a> website.
+                  <a href="https://neo.gsfc.nasa.gov/view.php?datasetId=MYDAL2_E_CLD_FR" target="_blank">NASA Near Earth Observations (NEO)</a> website.
                 <!-- The daily data can have gaps and processing artefacts, so the 8-day average 
                 provies a more reliable measure of the cloud cover for a given time. -->
             </p>
@@ -162,7 +162,7 @@
                 They refer to weather patterns that are associated with a slight warming (“El Niño”) or cooling (“La Niña”) of 
                   the surface water in the Pacific Ocean relative to normal (“Neutral”). These are part of what is called the El Niño Southern Oscillation (ENSO) cycle.
                 These different conditions can impact weather worldwide, so we provide the option of filtering the historical cloud data based on these classifications. 
-                <a href="https://oceanservice.noaa.gov/facts/ninonina.html" taget="_blank">Learn more about these fascinating weather phenomena</a> from the NOAA National Ocean Service. 
+                <a href="https://oceanservice.noaa.gov/facts/ninonina.html" target="_blank">Learn more about these fascinating weather phenomena</a> from the NOAA National Ocean Service. 
             </details>
             
             <details class="faq">
