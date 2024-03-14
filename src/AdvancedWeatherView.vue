@@ -9,7 +9,7 @@
         <h1 style="padding:0.5em 0.5em">Just how cloudy is it in {{ locationName }} in April?
         <define-term 
           no-click
-          width="80ch"
+          width="25ch"
           definition='<p class="intro">
           Click for more details about the cloud cover data, statistical terms, and the El Niño & La Niña weather patterns. 
         </p>'
@@ -116,7 +116,7 @@
                   <!-- <hr> -->
                   <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ locationName }}</strong> for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
                   <h3 v-else> Cloud Cover for <strong class="attention">{{ locationName }}</strong>:</h3>
-
+                  <span v-if="!inBounds" style="color: #ff0000;">Location not in bounds</span>
                   <cloud-cover-line
                     :value="locationValue"
                     :label="selectedStat === 'singleyear' ?  `${selectedYear}` : statText.get(selectedStat) ?? 'Cloud Cover'"
@@ -694,6 +694,8 @@ export default defineComponent({
     
     locationValue: {
       get() {
+        if (!this.inBounds) {return null;}
+        
         if (this.selectedDataCloudCover) {
           return this.selectedDataCloudCover;
         }
@@ -1159,7 +1161,8 @@ export default defineComponent({
           this.updateData(this.displayData);
         });
       } else {
-        this.displayData = false;
+        console.log('closing AWV view');
+        // this.displayData = false;
       }
     }, 
     

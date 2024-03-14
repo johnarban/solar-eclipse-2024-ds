@@ -3,23 +3,40 @@
     v-model="value"
     close-on-back
     close-on-esc
-    
+    max-height="90%"
+    scrollable
   >
-  <v-card>
+  <v-card
+    class="align-self-center"
+    max-height="80%"
+    height="500px"
+    max-width="90%"
+    >
     
   
       <!-- create tab like buttons which set the tab -->
       <v-card-title>
-        <v-btn-toggle v-model="tab" color="primary" class="ma-2">
-          <v-btn value="intro">Introduction</v-btn>
-          <v-btn value="cloud-data">About Cloud Cover Data</v-btn>
-          <v-btn value="stats">Statistical Concepts</v-btn>
-          <v-btn value="weather">Weather Patterns</v-btn>
+        <v-btn-toggle class="button-tabs flex-wrap" density="default" v-model="tab" color="primary">
+          <v-btn class="no-text-transform" density="default" value="cloud-data">About Cloud Cover Data</v-btn>
+          <v-btn class="no-text-transform" density="default" value="stats">Statistical Concepts</v-btn>
+          <v-btn class="no-text-transform" density="default" value="weather">Weather Patterns</v-btn>
         </v-btn-toggle>
+        <!-- <v-icon class="close-button" @click="value = false">mdi-close</v-icon> -->
+        <font-awesome-icon
+              size="xl"
+              class="close-button"
+              color="#eac402"
+              icon='square-xmark'
+              @click="value = !value"
+              @keyup.enter="value = !value"
+              tabindex="0"
+              tooltip-location="start"
+            /> 
       </v-card-title>
       <v-card-text>
         <v-window v-model="tab">
-          <v-window-item value="intro">
+          
+          <v-window-item value="cloud-data">
             <p>
               NASAs <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS Aqua and Terra</a> satellites 
                 provide daily views of the entire surface of the Earth and measure the cloud cover.
@@ -29,9 +46,6 @@
                 <!-- The daily data can have gaps and processing artefacts, so the 8-day average 
                 provies a more reliable measure of the cloud cover for a given time. -->
             </p>
-          </v-window-item>
-          
-          <v-window-item value="cloud-data">
             
             <details class="faq">
               <summary>What is the difference between 1-day and 8-day cloud cover maps?</summary>
@@ -119,12 +133,11 @@
               <p>
                 These quantities are calculated and displayed for every location shown on the map, depending on your selections in the dropdown menus.
               </p>
+              <p>
+                When you choose a specific location on the map, the mean and median of the cloud cover amounts are displayed for that location over the selected range of years. You can also display cloud cover values for a single year at a time.
+              </p>
             </details>
-            
-            <p>
-              When you choose a specific location on the map, the mean and median of the cloud cover amounts are displayed for that location over the selected range of years. You can also display cloud cover values for a single year at a time.
-            </p>
-            
+          
           </v-window-item>
           
           <v-window-item value="weather">
@@ -133,21 +146,52 @@
               <summary> What is El Niño / La Niña?</summary>
                 You might have heard the terms El Niño or La Niña. 
                 They refer to weather patterns that are associated with a slight warming (“El Niño”) or cooling (“La Niña”) of 
-                  the surface water in the Pacific Ocean relative to normal (“Neutral”). 
+                  the surface water in the Pacific Ocean relative to normal (“Neutral”). These are part of what is called the El Niño Southern Oscillation (ENSO) cycle.
                 These different conditions can impact weather worldwide, so we provide the option of filtering the historical cloud data based on these classifications. 
                 <a href="https://oceanservice.noaa.gov/facts/ninonina.html" taget="_blank">Learn more about these fascinating weather phenomena</a> from the NOAA National Ocean Service. 
+            </details>
+            
+            <details class="faq">
+              <summary> What years are El Niño, La Niña, or Neutral?</summary>
+              We use the <a href="https://psl.noaa.gov/enso/past_events.html" target="_blank">NOAA list of past ENSO events</a> to classify years as El Niño, La Niña, or Neutral.
+              Their list is based on the presence of an active El Niño or La Niña pattern during the months of December, January, and February. 
+              As an ENSO typiclly last several months (or even years), this provides a decent indication a how likely April is to have the same pattern.
+              
+              <p> We duplicate a portion of the list below:</p>
+              <table>
+                <tr>
+                  <td> El Niño</td>
+                  <td>2003, 2007, 2010, 2016</td>
+                </tr>
+                <tr>
+                  <td> La Niña</td>
+                  <td>2008, 2011, 2012, 2021, 2022</td>
+                </tr>
+                
+                <tr>
+                  <td> Neutral</td>
+                  <td>2004, 2005, 2006, 2009, 2013, 2014, 2015, 2017, 2018</td>
+                </tr>
+              </table>
             </details>
 
 
             <details class="faq">
               <summary>What kind of year is 2024?</summary>
-              As of early 2024, we are in an El Niño pattern. The Climate Prediction Center of the National Weather Service <a href="https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml" target="_blank">reports</a> a 79% chance that we will transition to a Neutral pattern some time from April - June.
+              As of early 2024, we are in an El Niño pattern. 
+              The Climate Prediction Center of the National Weather Service <a href="https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml" target="_blank">reports</a> an 83% chance that 
+              we will transition to a <em>neutral</em> pattern some time from April - June. 
             </details>
             
           </v-window-item>
         </v-window>
 
     </v-card-text>
+    
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn @click="value = false">Close</v-btn>
+    </v-card-actions>
     
   </v-card>
   </v-dialog>
@@ -238,6 +282,18 @@ details.faq {
     padding-inline: 1em;
   }
 
+}
+
+.no-text-transform {
+  text-transform: none !important;
+}
+
+
+.close-button {
+  cursor: pointer;
+  position: absolute;
+  top: 0.125em;
+  right: 0.125em;
 }
 
 

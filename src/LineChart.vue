@@ -358,7 +358,6 @@ export default defineComponent({
         if ((this.subsets.length > 0) ) {
           const index = this.subsets.map((subset) => subset[i]).indexOf(true);
           if (index >= 0) {
-            console.log(this.subsetStyles[index]);
             return {...this.defaultScatterStyle, ...this.subsetStyles[index]};
           }
         }

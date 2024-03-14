@@ -4784,6 +4784,7 @@ video, #info-video {
           line-height: 1.4em;
           color: white;
           text-align: left;
+          user-select: text;
           
           p {
             margin-block: .3em;
