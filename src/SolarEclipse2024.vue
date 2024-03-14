@@ -1990,7 +1990,7 @@ export default defineComponent({
         if (document.visibilityState === "hidden") {
           this.sendUpdateData();
         } else {
-          this.clearData();
+          this.resetData();
         }
       });
 
@@ -2828,12 +2828,15 @@ export default defineComponent({
       });
     },
 
-    clearData() {
+    resetData() {
       this.userSelectedLocations = [];
       this.cloudCoverSelectedLocations = [];
       this.infoTimeMs = 0;
       this.weatherTimeMs = 0;
-      this.appStartTimestamp = Date.now();
+      const now = Date.now();
+      this.appStartTimestamp = now;
+      this.infoStartTimestamp = this.showInfoSheet ? now : null;
+      this.weatherStartTimestamp = this.showAdvancedWeather ? now : null;
     },
 
     sendUpdateData() {
@@ -2860,7 +2863,7 @@ export default defineComponent({
         }),
         keepalive: true,
       }).then(() => {
-        this.clearData();
+        this.resetData();
       });
     },
 
