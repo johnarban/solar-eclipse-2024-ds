@@ -28,23 +28,6 @@
   </icon-button>
   </div>
   <v-container id="guided-content-container" v-show="showGuidedContent">
-    <hover-tooltip
-      :tooltip-text="scrollUp ? 'Scroll to top' : 'Scroll to bottom'"
-      :disabled="mobile"
-      id="scrollButton"
-      >
-      <template #target>
-    <v-btn
-      v-if="!smAndUp"
-      :icon="scrollUp ? 'mdi-arrow-up' : 'mdi-arrow-down'"
-      @click="scrollToTop"
-      size="small"
-      density="comfortable"
-      :color="accentColor"
-      variant="flat"
-    />
-      </template>
-    </hover-tooltip>
     <div id="non-map-container">
         <div id="title-row" class="non-map-row">
 
@@ -4735,9 +4718,12 @@ video, #info-video {
 
 #guided-content-container {  
   --top-content-max-height: max(30vmin, 35vh);
+  --top-content-min-height: 200px;
   
   @media (max-width: 600px) {
-    --top-content-max-height: max(40vmin, 40vh);
+    --top-content-max-height: calc(100% - 1rem);
+    --top-content-min-height: calc(100% - 1rem);
+    box-sizing: border-box;
   }
   
   font-size: var(--default-font-size);
@@ -4754,7 +4740,7 @@ video, #info-video {
 
   width: calc(100% - 2*var(--margin));
   max-height: var(--top-content-max-height);
-  min-height: 200px;
+  min-height: var(--top-content-min-height);
   align-items: center;
   gap: 0.5rem;
   // border-bottom: 1px solid var(--accent-color);
@@ -4762,10 +4748,8 @@ video, #info-video {
   user-select: none;
   border: solid 1.5px var(--accent-color);
   
-  
-  
   line-height: var(--default-line-height);
-  overflow-y: auto ;
+  overflow-y: scroll;
   
   transition: height 0.5s ease-in-out;
   
@@ -4774,6 +4758,7 @@ video, #info-video {
   
   @media (max-width: 600px) and (max-aspect-ratio: 1) {
     flex-direction: column;
+    gap: 1rem;
   }
   
   
@@ -4792,6 +4777,9 @@ video, #info-video {
 
   #non-map-container {
     flex-basis: 100%;
+    @media (max-width: 600px) and (max-aspect-ratio: 1) {
+      flex-basis: fit-content;
+    }
   }
     
   #map-column {
