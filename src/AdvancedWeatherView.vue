@@ -115,11 +115,11 @@
                 <div v-if="true">
                   <!-- <hr> -->
                   <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ locationName }}</strong> for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
-                  <h3 v-else> Cloud Cover for {{ locationName }} in {{ selectedYear }}:</h3>
+                  <h3 v-else> Cloud Cover for {{ locationName }}:</h3>
 
                   <cloud-cover-line
                     :value="locationValue"
-                    :label="selectedStat === 'singleyear' ? 'Cloud Cover' : statText.get(selectedStat) ?? 'Cloud Cover'"
+                    :label="selectedStat === 'singleyear' ?  `${selectedYear}` : statText.get(selectedStat) ?? 'Cloud Cover'"
                     :codes="skyCoverCodes"
                     :ranges="skyCoverCodeRanges"
                     :icons="skyCoverIcons"
@@ -127,7 +127,7 @@
                     />
                 </div>
                 <hr>
-                <h3>Cloud Cover for <strong class="attention">{{ locationName }}</strong> for all years:</h3>
+                <h3 style="color:#ccc;">All years:</h3>
                 <!-- cloud cover for all years at location -->
                 <cloud-cover-line
                   :value="median(cloudDataNearLocation)"
@@ -135,6 +135,7 @@
                   :codes="skyCoverCodes"
                   :ranges="skyCoverCodeRanges"
                   :icons="skyCoverIcons"
+                  style="color:#ccc;"
                   />
                 
                 <cloud-cover-line
@@ -143,6 +144,7 @@
                   :codes="skyCoverCodes"
                   :ranges="skyCoverCodeRanges"
                   :icons="skyCoverIcons"
+                  style="color:#ccc;"
                   />
               </div>
             </v-row>
@@ -151,7 +153,6 @@
           
           <v-col cols="7">
             <v-container aspect-ratio="1">
-            <span id="awv-map-description"> {{ mapDescriptionText }} </span>
             <div class="map-colorbar">
             <location-selector
               :detect-location="false"
@@ -174,7 +175,8 @@
                 :cmap="(x: number) => [`hsla(0,0%,100%, 1)`, transferFunction(x)]"
                 />
             </div>
-              <div class="d-flex align-center justify-end">
+              <div class="d-flex align-center justify-space-between">
+              <span class="align-self-start" id="awv-map-description"> {{ mapDescriptionText }} </span>
               <v-checkbox
                 v-if="displayData"
                 v-model="showCloudCover"
@@ -222,7 +224,7 @@
             :scatter-label="!subsetSelected ? 'All Years' : 'Other Years'"
             :subsets="!subsetSelected ? [] :
               [allYears.map((year) => selectedYears.includes(year))]"
-            :subset-styles="[{backgroundColor: 'red', radius: 5}]"
+            :subset-styles="[{backgroundColor: 'goldenrod', radius: 6}]"
             :y-range="[-.1,1.1]"
             :x-range="[new Date(2003, 1, 8), new Date(2023, 7, 8)]"
 
