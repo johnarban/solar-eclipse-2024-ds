@@ -15,7 +15,7 @@
         </p>'
           >
           <template #term>
-            <v-btn icon="mdi-help-circle" @click="explainerOpen = true"></v-btn>
+            <v-btn elevation="0" icon="mdi-help-circle" @click="explainerOpen = true"></v-btn>
           </template>
         </define-term>
         <cloud-data-explainer
