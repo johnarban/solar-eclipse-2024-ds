@@ -1708,8 +1708,10 @@ export default defineComponent({
       
       uuid,
       infoTimeMs: 0,
+      weatherTimeMs: 0,
       appStartTimestamp: Date.now(),
       infoStartTimestamp: null as number | null,
+      weatherStartTimestamp: null as number | null,
       responseOptOut: responseOptOut as boolean | null,
 
       showSplashScreen: queryData.splash ?? true, 
@@ -2802,7 +2804,7 @@ export default defineComponent({
         headers: { "Authorization": process.env.VUE_APP_CDS_API_KEY ?? "" }
       });
       const content = await response.json();
-      const exists = response.status === 200 && content.response.user_uuid != undefined;
+      const exists = response.status === 200 && content.response?.user_uuid != undefined;
       if (exists) {
         return;
       }
@@ -2830,6 +2832,7 @@ export default defineComponent({
       this.userSelectedLocations = [];
       this.cloudCoverSelectedLocations = [];
       this.infoTimeMs = 0;
+      this.weatherTimeMs = 0;
       this.appStartTimestamp = Date.now();
     },
 
@@ -2850,7 +2853,10 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          delta_info_time_ms: this.infoTimeMs, delta_app_time_ms: Date.now() - this.appStartTimestamp
+          delta_info_time_ms: this.infoTimeMs, delta_app_time_ms: Date.now() - this.appStartTimestamp,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_advanced_weather_time_ms: this.weatherTimeMs,
+
         }),
         keepalive: true,
       }).then(() => {
@@ -3570,9 +3576,17 @@ export default defineComponent({
       if (show) {
         this.infoStartTimestamp = Date.now();
       } else if (this.infoStartTimestamp !== null) {
-        const timestamp = Date.now();
-        this.infoTimeMs += (timestamp - this.infoStartTimestamp);
+        this.infoTimeMs += (Date.now() - this.infoStartTimestamp);
         this.infoStartTimestamp = null;
+      }
+    },
+
+    showAdvancedWeather(show: boolean) {
+      if (show) {
+        this.weatherStartTimestamp = Date.now();
+      } else if (this.weatherStartTimestamp !== null) {
+        this.weatherTimeMs += (Date.now() - this.weatherStartTimestamp);
+        this.weatherStartTimestamp = null;
       }
     },
     
