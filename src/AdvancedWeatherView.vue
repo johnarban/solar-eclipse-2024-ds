@@ -115,7 +115,7 @@
                 <div v-if="true">
                   <!-- <hr> -->
                   <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ locationName }}</strong> for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
-                  <h3 v-else> Cloud Cover for {{ locationName }}:</h3>
+                  <h3 v-else> Cloud Cover for <strong class="attention">{{ locationName }}</strong>:</h3>
 
                   <cloud-cover-line
                     :value="locationValue"
