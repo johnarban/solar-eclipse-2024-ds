@@ -127,7 +127,7 @@
                     />
                 </div>
                 <hr>
-                <h3 style="color:#ccc;">All years:</h3>
+                <h3 style="color:#ccc;">For all years:</h3>
                 <!-- cloud cover for all years at location -->
                 <cloud-cover-line
                   :value="median(cloudDataNearLocation)"
