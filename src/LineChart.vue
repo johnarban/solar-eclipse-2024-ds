@@ -415,8 +415,6 @@ export default defineComponent({
       
       outData = [...this.otherData, ...outData, ];
       
-      console.log(outData);
-      
       return { datasets: outData };
 
     },

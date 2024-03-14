@@ -624,6 +624,7 @@ export default defineComponent({
     },
     
     yearForLocation(): LineGraphData {
+      console.log('yearForLocation');
       // get the all cloud data for this location for all years
       const allData = [] as LineGraphData;
       if (!this.inBounds) {return allData;}
@@ -634,23 +635,18 @@ export default defineComponent({
       if (Object.keys(this.allCloudData).length === 0) {
         return allData;
       }
-      
-      this.allYears.map((year: number) => {
-        if (this.dataSubset === 'elNino') {
-          if (!this.elNinoYears.includes(year)) {
-            return;
-          }
+
+      this.allYears.forEach((year: number) => {
+        if (this.dataSubset === 'elNino' && !this.elNinoYears.includes(year)) {
+          return;
         }
-        if (this.dataSubset === 'neutral') {
-          if (!this.neutralYears.includes(year)) {
-            return;
-          }
+        if (this.dataSubset === 'neutral' && !this.neutralYears.includes(year)) {
+          return;
         }
-        if (this.dataSubset === 'laNina') {
-          if (!this.laNinaYears.includes(year)) {
-            return;
-          }
+        if (this.dataSubset === 'laNina' && !this.laNinaYears.includes(year)) {
+          return;
         }
+
         const data = this.allCloudData[year];
         if (data === undefined) {
           return;
@@ -661,7 +657,7 @@ export default defineComponent({
         }
         allData.push({'x':new Date(year, 4, 8), 'y':data[index].cloudCover});
       });
-      
+
       return allData;
     },
     
@@ -673,48 +669,29 @@ export default defineComponent({
       return this.getHistogram(this.yearForLocation.map(d => d.y), 'none');
     },
     
-    locationMean(): number | null {
-      // get the mean cloud cover for the location
-      return this.mean(this.yearForLocation.map(d => d.y));
-    },
     
-    locationMedian(): number | null {
-      // get the median cloud cover for the location
-      return this.median(this.yearForLocation.map(d => d.y));
-    },
-    
-    locationSingleYear(): number | null {
-      if (this.cloudDataNearLocation) {
-        const out = this.cloudDataNearLocation.filter( v => v.x.getFullYear() === this.selectedYear);
-        if (out.length > 0) {
-          return out[0].y;
+    locationValue(): number | null {
+      console.log('locationValue');
+      if (!this.inBounds) {return null;}
+      
+      if (this.selectedStat === 'mean') {
+        return this.mean(this.yearForLocation.map(d => d.y));
+      }
+      if (this.selectedStat === 'median') {
+        return this.median(this.yearForLocation.map(d => d.y));
+      }
+      if (this.selectedStat === 'singleyear') {
+        if (this.cloudDataNearLocation) {
+          const out = this.cloudDataNearLocation.filter( v => v.x.getFullYear() === this.selectedYear);
+          if (out.length > 0) {
+            return out[0].y;
+          }
+          return null;
         }
       }
       return null;
     },
-    
-    locationValue: {
-      get() {
-        if (!this.inBounds) {return null;}
-        
-        if (this.selectedDataCloudCover) {
-          return this.selectedDataCloudCover;
-        }
-        if (this.selectedStat === 'mean') {
-          return this.locationMean;
-        }
-        if (this.selectedStat === 'median') {
-          return this.locationMedian;
-        }
-        if (this.selectedStat === 'singleyear') {
-          return this.locationSingleYear;
-        }
-        return null;
-      },
-      set(value: number) {
-        this.selectedDataCloudCover = value;
-      },
-    },
+
     
     elNinoData(): CloudData | undefined {
       if (this.selectedStat === 'singleyear') {
