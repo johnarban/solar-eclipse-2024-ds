@@ -102,6 +102,7 @@
               <hr style="width:100%; margin-block: 1rem;">
               <h3>Show cloud cover statistics for currently selected location: <strong class="attention">{{ locationName }}</strong></h3>
               <v-btn 
+                class="force-vuetify-small-font"
                 size="large"
                 density="compact"
                 color="#eac402"
