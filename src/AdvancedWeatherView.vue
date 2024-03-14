@@ -197,7 +197,7 @@
             :labels="skyCoverCodes.map((v) => v.includes('/') ? [v.split('/')[0] + '/', v.split('/')[1]]: v)"
             :data-label="hideHistogramSubset ? 'All Years' : 'Other Years'"
             :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
-            :border-width="0"
+            :border-width="[0]"
             :colors="hideHistogramSubset ? colorMap : ['#aaa']"
             :options = "{scales: {y: {beginAtZero: true, max:20}}}"
             :bar-annotations="false"
