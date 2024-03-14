@@ -197,6 +197,7 @@
             :labels="skyCoverCodes.map((v) => v.includes('/') ? [v.split('/')[0] + '/', v.split('/')[1]]: v)"
             :data-label="hideHistogramSubset ? 'All Years' : 'Other Years'"
             :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
+            :border-width="0"
             :colors="hideHistogramSubset ? colorMap : ['#aaa']"
             :options = "{scales: {y: {beginAtZero: true, max:20}}}"
             :bar-annotations="false"
@@ -234,7 +235,7 @@
                         return (value * 100).toFixed(0) + '%';
                         }}}"
             timeseries
-            color="grey"
+            color="#aaa"
             show-scatter
             :annotations="[...skyCoverCodeRanges.map(([_,[min,max]],i) => {
               return {
@@ -1231,6 +1232,10 @@ export default defineComponent({
   
   #chart-intro {
     
+  }
+  
+  canvas.chartjs {
+    border-radius: 5px;
   }
     
   .graph-col {

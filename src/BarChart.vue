@@ -1,6 +1,6 @@
 <!-- A ChartJS bar-chart helper. -->
 <template>
-  <canvas :id="canvasID" role="img" :aria-label="accessiblityLabel">
+  <canvas :id="canvasID" role="img" :aria-label="accessiblityLabel" class="chartjs">
     <!-- this only get's shown in a browser does not support canvas -->
     {{ accessiblityLabel }}
   </canvas>
