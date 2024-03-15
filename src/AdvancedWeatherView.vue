@@ -184,8 +184,9 @@
             </div>
               <div class="d-flex align-center justify-space-between">
               <span class="align-self-start text-right" id="awv-map-description"> {{ mapDescriptionText }} </span>
+              <div style="display:inline-block; width: 100px;" v-if="!displayData"></div>
               <v-checkbox
-                v-if="displayData || true"
+                v-if="displayData"
                 v-model="showCloudCover"
                 label="Show Cloud Cover"
                 color="#eac402"
@@ -227,7 +228,7 @@
           </v-col>
           <v-col cols="12" sm="6" class="graph-col">
           <line-chart
-            :show-legend="dataSubset !== 'allYears'"
+            :show-legend="subsetSelected"
             class="elevation-5"
             :title="`Percent Cloud Cover for ${locationName}`"
             :scatter-data="cloudDataNearLocation"
@@ -235,7 +236,7 @@
             :scatter-label="!subsetSelected ? 'All Years' : 'Other Years'"
             :other-data="subsetData"
             :y-range="[-.1,1.1]"
-            :x-range="[new Date(2003, 1, 8), new Date(2023, 7, 8)]"
+            :x-range="[new Date(2002, 9, 8), new Date(2023, 11, 8)]"
 
               :y-axis-options="{
                 ticks: {callback: (value: number, index: number) => {
@@ -267,7 +268,7 @@
                     backgroundColor: 'transparent',
                     content: skyCoverCodes[i],
                   },
-                  xMin: new Date(2023, 1, 8),
+                  xMin: new Date(2023, 0, 8),
                   yMin: (min + max) / 200,
                   yMax: (min + max) / 200,
                   };
@@ -582,7 +583,7 @@ export default defineComponent({
     
     subsetSelected() {
       // return !this.allYears.every(y => this.selectedYears.includes(y));
-      return (this.selectedYears.length < this.allYears.length);
+      return (this.selectedYears.length < this.allYears.length) || this.selectedStat === 'singleyear';
     },
     
     hideHistogramSubset() {
@@ -628,7 +629,7 @@ export default defineComponent({
       // show the lat lon of index
       
       this.allYears.map((year) => {
-        allData.push({'x': new Date(year, 4, 8), 'y':this.allCloudData[year][index].cloudCover});
+        allData.push({'x': new Date(year, 3, 8), 'y':this.allCloudData[year][index].cloudCover});
       });
       // console.log('index', index, this.latitudes[index], this.longitudes[index], allData.map(d => d.y));
       return allData;
@@ -682,7 +683,7 @@ export default defineComponent({
         if (index === -1 || index === null) {
           return;
         }
-        allData.push({'x':new Date(year, 4, 8), 'y':data[index].cloudCover});
+        allData.push({'x':new Date(year, 3, 8), 'y':data[index].cloudCover});
       });
 
       return allData;
@@ -782,7 +783,7 @@ export default defineComponent({
         }
         return [{
           type: 'scatter',
-          label: this.mapSubsets.get(this.dataSubset)  as string,
+          label: this.selectedStat !== 'singleyear' ? this.mapSubsets.get(this.dataSubset)  as string : `${this.selectedYear}`,
           backgroundColor: data.map(_v => '#eac402'),
           data: data,
           pointRadius: 6,
@@ -1158,7 +1159,8 @@ export default defineComponent({
       // Displaying {{ selectedStat === 'singleyear' ? '' : statText.get(selectedStat)?.toLowerCase() }}  cloud cover for {{ selectedStat === 'singleyear' ? selectedYear : mapSubsets.get(dataSubset) }}.
       const stat = this.selectedStat === 'singleyear' ? '' : this.statText.get(this.selectedStat);
       const subset = this.selectedStat === 'singleyear' ? this.selectedYear : this.mapSubsets.get(this.dataSubset);
-      this.mapDescriptionText = `Displaying ${stat} cloud cover for ${subset}.`;
+      const modis = this.modisDataSet === '1day' ? 'MODIS 1-day' : 'MODIS 8-day average';
+      this.mapDescriptionText = `Displaying ${stat} ${modis} cloud cover for ${subset}.`;
     },
     
     getCloudCoverText(val: number | null): [number | null, string | undefined] {
@@ -1271,6 +1273,7 @@ export default defineComponent({
     
   .graph-col {
     height: 300px;
+    padding: 6px;
   }
   
   .v-btn {
