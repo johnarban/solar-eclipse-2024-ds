@@ -16,6 +16,7 @@ import DefineTerm from "./DefineTerm.vue";
 import PlaybackControl from "./PlaybackControl.vue";
 import AdvancedWeatherView from "./AdvancedWeatherView.vue";
 import ColorBar from "./ColorBar.vue";
+import CloudDataExplainer from "./CloudDataExplainer.vue";
 
 import "./polyfills";
 
@@ -64,6 +65,7 @@ import {
   faGaugeHigh,
   faAnglesLeft,
   faAnglesRight,
+  faChartColumn,
 
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -96,6 +98,7 @@ library.add(faCloudSun);
 library.add(faGaugeHigh);
 library.add(faAnglesLeft);
 library.add(faAnglesRight);
+library.add(faChartColumn);
 
 /** v-hide directive taken from https://www.ryansouthgate.com/2020/01/30/vue-js-v-hide-element-whilst-keeping-occupied-space/ */
 // Extract the function out, up here, so I'm not writing it twice
@@ -148,5 +151,6 @@ createApp(SolarEclipse2023, {
   .component('playback-control', PlaybackControl)
   .component('advanced-weather-view', AdvancedWeatherView)
   .component('color-bar', ColorBar)
+  .component('cloud-data-explainer', CloudDataExplainer)
   // Mount
   .mount("#app");

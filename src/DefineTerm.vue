@@ -3,7 +3,7 @@ import { tooltip } from 'leaflet';
 <template>
   <v-tooltip 
     :width="width"
-    :open-on-click="true"
+    :open-on-click="!noClick"
     :open-on-hover="true"
     :open-on-focus="true"
     >
@@ -50,6 +50,10 @@ export default defineComponent({
     width: {
       type: String,
       default: '25ch'
+    },
+    noClick: {
+      type: Boolean,
+      default: false
     }
   }
 });
