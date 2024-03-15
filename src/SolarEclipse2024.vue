@@ -36,7 +36,10 @@
                 >Choose Any Location
               </span>
               <span v-if="learnerPath=='Clouds'"
-                >Explore Historical Cloud Data
+                >View Historical Cloud Data
+              </span>
+              <span v-if="learnerPath=='CloudDetail'"
+                >Explore Detailed Cloud Data
               </span>
             </div>
 
@@ -120,7 +123,7 @@
               <span class="description">
                 <div class=".d-flex">
                   <div>
-                    This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from the <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA MODIS</a> Aqua satellite.
+                    This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">MODIS</a> on NASA's Aqua satellite.
                     {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
                   </div>
                   <div>
@@ -131,6 +134,23 @@
                 </div>
               </span>
             </div>
+            
+            <!-- Detailed Cloud Path -->
+            <div class="instructions-text" v-if="learnerPath=='CloudDetail'">
+              <span class="description">
+                <div class=".d-flex">
+                  <div>
+                    <p>View different statistics for the data beyond just the 20-year median shown here.</p>
+                    <p> Explore whether phenomena like El Niño historically impacted cloud cover patterns.</p>
+                  </div>
+                  <div>
+                    <div class="my-2">Open the <v-btn :class="[smallSize ? 'text-caption' : '']" :color="accentColor" density="compact"  @click="showAdvancedWeather = true">Cloud Data Explorer</v-btn></div>
+                  </div>
+                </div>
+              </span>
+            </div>
+            
+            
           </div>
         </div>
       <!-- </toggle-content> -->
@@ -155,11 +175,23 @@
                 fa-size="xl"
                 :color="accentColor"
                 :focus-color="accentColor"
-                :tooltip-text="'Explore historical cloud coverage'"
+                :tooltip-text="'View historical cloud coverage'"
                 :tooltip-location="'bottom'"
                 :show-tooltip="!mobile"
                 :box-shadow="false"
                 @activate="() => { learnerPath = 'Clouds'}"
+              ></icon-button>
+              <icon-button
+                :model-value="learnerPath == 'CloudDetail'"
+                fa-icon="chart-column"
+                fa-size="xl"
+                :color="accentColor"
+                :focus-color="accentColor"
+                :tooltip-text="'Explore detailed historical cloud coverage'"
+                :tooltip-location="'bottom'"
+                :show-tooltip="!mobile"
+                :box-shadow="false"
+                @activate="() => { learnerPath = 'CloudDetail'}"
               ></icon-button>
               <icon-button
                 v-model="showInfoSheet"
@@ -193,22 +225,26 @@
         <v-slide-y-transition
           :disabled="smAndUp"
         >
-          <div v-if="!smAndUp || smAndUp" id="map-container" >
+          <div v-if="!smAndUp || smAndUp" id="map-container">
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
               @update:modelValue="updateLocationFromMap"
               :place-circle-options="placeCircleOptions"
               :detect-location="false"
-              :map-options="(learnerPath === 'Clouds') ? userSelectedMapOptions : initialMapOptions"
+              :map-options="(['Clouds', 'CloudDetail'].includes(learnerPath)) ? userSelectedMapOptions : initialMapOptions"
               :selected-circle-options="selectedCircleOptions"
-              :cloud-cover="learnerPath === 'Clouds'"
+              :show-cloud-cover="['Clouds', 'CloudDetail'].includes(learnerPath) && cloudCoverData !== null"
               class="leaflet-map"
               :geo-json-files="geojson"
+              :selected-cloud-cover="selectedCloudCoverData"
+              :cloud-cover-opacity-function="sigmoid"
             ></location-selector>
-            <!-- the colorbar is generated using colorbarGradient() to make a serieis of divs -->
-              <div v-show="learnerPath === 'Clouds'"  id="colorbar"></div>
-              <div v-if="learnerPath === 'Clouds'"  id="colorbar-labels">Historical Cloud Cover %</div>
+              <color-bar
+                v-if="learnerPath === 'Clouds'"
+                label="Historical Cloud Cover %"
+                :cmap="cloudColorMap"
+                />
           </div>
         </v-slide-y-transition>
       </v-hover>
@@ -410,38 +446,38 @@
                   >                   
                     <h4 class="user-guide-header">Time Controls:</h4>
                     <p  class="mb-3">(Bottom-left of the screen)</p>
+                    <p>
+                      By default, time is moving forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
+                    </p>
                     <ul class="text-list">
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
                               class="bullet-icon"
-                              icon="play"
+                              icon="angles-left"
                               size="lg" 
                             ></font-awesome-icon>
-                        to move time forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
-                      </li>
-                      <li>
-                        If playing, {{ touchscreen ? "tap" : "click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="pause"
-                              size="lg" 
-                            ></font-awesome-icon>
-                        to pause time.
+                        to reverse time, or to increase reverse speed by 10x if time was already reversed. 
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="angle-double-down"
-                              size="lg" 
-                            ></font-awesome-icon>
-                        to decrease speed by 10x.                        
+                          class="bullet-icon"
+                          icon="play"
+                          size="lg" 
+                        ></font-awesome-icon>/
+                        <font-awesome-icon
+                          class="bullet-icon"
+                          icon="pause"
+                          size="lg" 
+                        ></font-awesome-icon>
+                        to play or pause time. 
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="angle-double-up"
-                              size="lg" 
-                            ></font-awesome-icon>
-                        to increase speed by 10x. 
+                          class="bullet-icon"
+                          icon="angles-right"
+                          size="lg" 
+                        ></font-awesome-icon>
+                        to increase speed by 10x, or to move time forward if time was reversed.                        
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
@@ -449,14 +485,42 @@
                               icon="rotate"
                               size="lg" 
                             ></font-awesome-icon>
-                        to reset time, view, and speed. 
+                        to reset starting time and speed. 
                       </li>
+                      <li>
+                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
+                              class="bullet-icon"
+                              icon="gauge-high"
+                              size="lg" 
+                            ></font-awesome-icon>
+                        to open more speed controls. 
+                      </li>
+                        <ul>
+                          <li class="ml-5">
+                            {{ touchscreen ? "Tap" : "Click" }} 
+                            <v-icon
+                              class="bullet-icon"
+                              icon="mdi-step-forward-2"
+                              size="medium">
+                            </v-icon>
+                            or
+                            <v-icon
+                              class="bullet-icon"
+                              icon="mdi-step-backward-2"
+                              size="medium">
+                            </v-icon>
+                            to move time forward and backward.
+                          </li>
+                          <li class="ml-5">
+                            Use the slider to fine-tune desired speed.
+                          </li>
+                        </ul>
                       <li>
                         Drag <v-icon
                           class="bullet-icon"
                           icon="mdi-circle"
                           size="medium" 
-                        ></v-icon> along the slider to move to any time.
+                        ></v-icon> along the main slider to move to any time.
                       </li>
                     </ul>
 
@@ -467,21 +531,22 @@
                     <ul class="text-list">
                       <li class="mb-2">
                         The <span 
-                        style="color: blue; background-color: white;
-                        padding-inline: 0.7em;
-                        border-radius: 20px;
-                        font-weight: bold ">selected location</span>   
-                        <span 
                         v-if="mobile"
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">historical cloud cover</span>  
-                        and <span 
+                        font-weight: bold ">historical cloud cover</span><span v-if="mobile">, </span>
+                        <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">date/time</span> are displayed under the map.
+                        font-weight: bold ">date/time</span><span v-if="mobile">,</span> and
+                        <span 
+                        style="color: blue; background-color: white;
+                        padding-inline: 0.7em;
+                        border-radius: 20px;
+                        font-weight: bold ">selected location</span>   
+                        are displayed under the map.
                       </li>
                       <li class="switch-bullets">
                         <v-switch
@@ -519,6 +584,9 @@
                     <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
                       <li>
+                        <span class="user-guide-emphasis-white">Center Sun:</span> Recenter view on Sun.
+                      </li>
+                      <li>
                         <span class="user-guide-emphasis-white">Sky Grid:</span> Display altitude/azimuth grid with cardinal directions.
                       </li>
                       <li>
@@ -537,6 +605,13 @@
                     <h4 class="user-guide-header">Location Options:</h4>
                     <p  class="mb-3">(Top-left of the screen)</p>
                     <ul class="text-list">
+                      <li>
+                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
+                              class="bullet-icon"
+                              icon="magnifying-glass"
+                              size="lg" 
+                            ></font-awesome-icon> to search for a specific location name.
+                      </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
                               class="bullet-icon"
@@ -597,8 +672,18 @@
         </v-card>
       </v-card>
     </v-dialog>
-
-
+  <advanced-weather-view
+    v-model="showAdvancedWeather"
+    @close="() => {
+      console.log('closing'); 
+      showAdvancedWeather = false;
+    }"
+    @explainer-open="(open: boolean) => { weatherInfoOpen = open }"
+    :default-location="locationDeg"
+    :show-on-map="showAWVMapByDefault"
+    :show-charts="showAWVChartsByDefault"
+    :fullscreen="showAWVFullScreen"
+    />
   <div
     id="main-content"
   > 
@@ -829,6 +914,11 @@
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
+                icon="chart-column"
+              />New! Detailed cloud explorer
+            </v-col>
+            <v-col cols="12">
+              <font-awesome-icon
                 icon="book-open"
               />
               Learn more 
@@ -915,7 +1005,13 @@
                   <template v-slot:prepend>
                     <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                    <strong>View historical cloud data</strong> for the week of April 8th from 2003&#8211;2023.
+                    <strong>View historical cloud data</strong> for the week of April 8th from 2003&#8211;2023. 
+                </v-list-item>
+                <v-list-item density="compact">
+                  <template v-slot:prepend>
+                    <font-awesome-icon icon="chart-column" size="xl" class="bullet-icon"></font-awesome-icon>
+                  </template>
+                  <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon><strong>NEW! Explore historical cloud data</strong> as individual years or filter by El Niño/La Niña climate patterns.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -932,41 +1028,8 @@
               </ul>
               <p v-if="xSmallSize" class="mt-3">
                 To access all features, {{ touchscreen ? "tap" : "click" }} 
-                <font-awesome-icon  icon="circle-chevron-down" 
-                color="black"
-                id="inline-open-icon"
-                size="lg"
-                /> at top left.
+                <span class="span-accent">Map & Weather</span> at top left.
               </p> 
-            </div>
-          </v-window-item>
-
-          <v-window-item :value="3">
-            <div class="intro-text mb-3">
-              <h4 class="mb-3">
-                Check back soon for:
-              </h4>
-              
-              <ul>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-view-grid-compact" class="bullet-icon"></v-icon>
-                  </template>
-                  Higher resolution historical cloud data
-                </v-list-item>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-baby-face-outline" class="bullet-icon"></v-icon>
-                  </template>
-                  Filter cloud data by El Ni&#241;o years
-                </v-list-item>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-tools" class="bullet-icon"></v-icon>
-                  </template>
-                  More advanced tools for cloud data exploration
-                </v-list-item>
-              </ul> 
             </div>
           </v-window-item>
         </v-window>
@@ -992,7 +1055,7 @@
             @keyup.enter="introSlide++"
             elevation="0"
             >
-            {{ introSlide < 3 ? 'Next' : 'Get Started' }}
+            {{ introSlide < 2 ? 'Next' : 'Get Started' }}
           </v-btn>
         </div>
       </div>
@@ -1244,7 +1307,7 @@
                     :fa-icon="playbackVisible ? 'times' : 'gauge-high'"
                     :color="accentColor"
                     :focus-color="accentColor"
-                    tooltip-text="Time Controls"
+                    tooltip-text="Speed Controls"
                     tooltip-location="top"
                     tooltip-offset="5px"
                     faSize="1x"
@@ -1438,8 +1501,20 @@ import { recalculateForObserverUTC } from "./eclipse_predict";
 import { EclipseData } from "./eclipse_types";
 
 
+interface CloudData {
+  lat: number;
+  lon: number;
+  cloudCover: number;
+}
+
+// interface CloudCoverData {
+//   [key: string]: CloudData[];
+// }
+
+
+
 type SheetType = "text" | "video" | null;
-type LearnerPath = "Location" | "Clouds" | "Learn";
+type LearnerPath = "Location" | "Clouds" | 'CloudDetail' | "Learn";
 type ViewerMode = "Horizon";
 type MoonImageFile = "moon.png" | "moon-dark-gray-overlay.png" | `moon-sky-blue-overlay-${number}.png` | "empty.png";
 
@@ -1524,7 +1599,7 @@ type OptionalFieldsShallow<T> = {
   [P in keyof T]?: T[P]
 };
 
-type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean }>;
+type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean } & {awv: boolean}>;
 
 let queryData: QueryData = {};
 const UUID_KEY = "eclipse-mini-uuid" as const;
@@ -1616,11 +1691,26 @@ let cloudData: number[][] = csvParseRows(cloudCover, (d, _i) => {
 });
 
 // lon and lat are first col and row (dropping the first value)
-// const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
+const minLat = Math.min(...cloudData.map(d => d[0]).slice(1));
 const maxLat = Math.max(...cloudData.map(d => d[0]).slice(1));
 const minLon = Math.min(...cloudData[0].slice(1));
+const dLon = cloudData[0][2] - cloudData[0][1];
+const dLat = cloudData[2][0] - cloudData[1][0];
+console.log("minLat, minLon, dLat, dLon", minLat, minLon, dLat, dLon);
 // get just the inner data grid
 cloudData = cloudData.slice(1).map(row => row.slice(1));
+
+// conver cloudData from array to CloudData[] for locationselector
+const cloudDataArray: CloudData[] = [];
+cloudData.forEach((row, i) => {
+  row.forEach((cloudCover, j) => {
+    cloudDataArray.push({
+      lat: maxLat + dLat * i,
+      lon: minLon + dLon * j,
+      cloudCover
+    });
+  });
+});
 
 console.log("cloud cover data loaded");
 
@@ -1694,10 +1784,18 @@ export default defineComponent({
       { latitudeRad: D2R * latitudeDeg, longitudeRad: D2R * longitudeDeg } :
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
+      selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
+      cloudCoverData: cloudDataArray as CloudData[],
+      
       uuid,
       infoTimeMs: 0,
+      weatherTimeMs: 0,
+      weatherInfoTimeMs: 0,
       appStartTimestamp: Date.now(),
       infoStartTimestamp: null as number | null,
+      weatherStartTimestamp: null as number | null,
+      weatherInfoStartTimestamp: null as number | null,
+      weatherInfoOpen: false,
       responseOptOut: responseOptOut as boolean | null,
 
       showSplashScreen: queryData.splash ?? true, 
@@ -1721,6 +1819,10 @@ export default defineComponent({
       geolocationPermission: '' as 'granted' | 'denied' | 'prompt',
       
       showWWTGuideSheet: false,
+      showAdvancedWeather: queryData.awv ?? false,
+      showAWVMapByDefault: queryData.awv ?? false,
+      showAWVChartsByDefault: queryData.awv ?? false,
+      showAWVFullScreen: false,
       
       selectionProximity: 4,
       pointerMoveThreshold: 6,
@@ -1875,6 +1977,8 @@ export default defineComponent({
     }
     const splashQuery = searchParams.get("splash");
     queryData.splash = splashQuery !== "false";
+    const awv = searchParams.get("awv");
+    queryData.awv = awv === "true";
   },
 
   mounted() {
@@ -2001,10 +2105,19 @@ export default defineComponent({
       element.addEventListener("scroll", () => this.onScroll());
     }
     
-    this.colorbarGradient();
   },
 
   computed: {
+
+    selectedCloudCoverData(): CloudData[] | null {
+      if (this.cloudCoverData != null) {
+        return this.cloudCoverData;
+      } else {
+        console.log('selectedCloudCoverData: cloud cover data not loaded');
+        return null;
+      }
+    },
+
 
     dateTime() {
       return new Date(this.selectedTime);
@@ -2350,22 +2463,10 @@ export default defineComponent({
       }
     },
     
-    colorbarGradient() {
-      const colorbar = document.getElementById('colorbar');
-      if (!colorbar) {
-        return;
-      }
-      const n = 20;
-      for (let i=n; i >= 0; i--) {
-        const cc = this.sigmoid(i/n);
-        const color = `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
-        const div = document.createElement('div');
-        div.style.backgroundColor = color;
-        div.style.height = `${100/(n+1)}%`;
-        colorbar.appendChild(div);
-      }
-      
-      
+
+    cloudColorMap(v: number) {
+      const cc = this.sigmoid(v);
+      return `hsl(0, 0%, 100%, ${.9 * cc*100}%)`;
     },
     
     sigmoid(val: number | null): number {
@@ -2377,7 +2478,7 @@ export default defineComponent({
       const z = Math.exp(y);
       return z / (1 + z);
     },
-    
+
     async trackSun(): Promise<void> {
       this.sunOffset = null;
       return this.gotoTarget({
@@ -2803,7 +2904,7 @@ export default defineComponent({
         headers: { "Authorization": process.env.VUE_APP_CDS_API_KEY ?? "" }
       });
       const content = await response.json();
-      const exists = response.status === 200 && content.response.user_uuid != undefined;
+      const exists = response.status === 200 && content.response?.user_uuid != undefined;
       if (exists) {
         return;
       }
@@ -2834,6 +2935,10 @@ export default defineComponent({
       const now = Date.now();
       this.appStartTimestamp = now;
       this.infoStartTimestamp = this.showInfoSheet ? now : null;
+      this.weatherTimeMs = 0;
+      this.weatherInfoTimeMs = 0;
+      this.weatherStartTimestamp = this.showAdvancedWeather ? now : null;
+      this.weatherInfoStartTimestamp = this.weatherInfoOpen ? now : null;
     },
 
     sendUpdateData() {
@@ -2842,6 +2947,8 @@ export default defineComponent({
       }
       const now = Date.now();
       const infoTime = (this.showInfoSheet && this.infoStartTimestamp !== null) ? now - this.infoStartTimestamp : this.infoTimeMs;
+      const weatherTime = (this.showAdvancedWeather && this.weatherStartTimestamp !== null) ? now - this.weatherStartTimestamp : this.weatherTimeMs;
+      const weatherInfoTime = (this.weatherInfoOpen && this.weatherInfoStartTimestamp !== null) ? now - this.weatherInfoStartTimestamp : this.weatherInfoTimeMs;
       fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
         method: "PATCH",
         headers: {
@@ -2855,7 +2962,9 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          delta_info_time_ms: infoTime, delta_app_time_ms: Date.now() - this.appStartTimestamp
+          delta_info_time_ms: infoTime, delta_app_time_ms: Date.now() - this.appStartTimestamp,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_advanced_weather_time_ms: weatherTime, delta_weather_info_time_ms: weatherInfoTime,
         }),
         keepalive: true,
       }).then(() => {
@@ -3650,14 +3759,31 @@ export default defineComponent({
       if (show) {
         this.infoStartTimestamp = Date.now();
       } else if (this.infoStartTimestamp !== null) {
-        const timestamp = Date.now();
-        this.infoTimeMs += (timestamp - this.infoStartTimestamp);
+        this.infoTimeMs += (Date.now() - this.infoStartTimestamp);
         this.infoStartTimestamp = null;
+      }
+    },
+
+    showAdvancedWeather(show: boolean) {
+      if (show) {
+        this.weatherStartTimestamp = Date.now();
+      } else if (this.weatherStartTimestamp !== null) {
+        this.weatherTimeMs += (Date.now() - this.weatherStartTimestamp);
+        this.weatherStartTimestamp = null;
+      }
+    },
+
+    weatherInfoOpen(open: boolean) {
+      if (open) {
+        this.weatherInfoStartTimestamp = Date.now();
+      } else if (this.weatherInfoStartTimestamp !== null) {
+        this.weatherInfoTimeMs += (Date.now() - this.weatherInfoStartTimestamp);
+        this.weatherInfoStartTimestamp = null;
       }
     },
     
     introSlide(val: number) {
-      this.inIntro = val < 4;
+      this.inIntro = val < 3;
       return;
     },
 
@@ -4270,7 +4396,7 @@ body {
 
   #splash-screen-guide {
     margin-block: 1em;
-    font-size: min(5vw, 4vh);
+    font-size: min(4.5vw, 3.6vh);
     line-height: 160%;
     width: 75%;
 
@@ -4285,9 +4411,9 @@ body {
   }
 
   #splash-screen-acknowledgements {
-    font-size: calc(1.7 * var(--default-font-size));
-    line-height: calc(1.5 * var(--default-line-height));
-    width: 60%; 
+    font-size: calc(1.3 * var(--default-font-size));
+    line-height: calc(1.2 * var(--default-line-height));
+    width: 80%; 
   }
 
   #splash-screen-logos {
@@ -4870,6 +4996,7 @@ video, #info-video {
           line-height: 1.4em;
           color: white;
           text-align: left;
+          user-select: text;
           
           p {
             margin-block: .3em;
@@ -4936,45 +5063,6 @@ video, #info-video {
     width: 100%;
     
     display: flex;
-    
-    #colorbar {
-      height: 100%;
-      width: 1.25em;
-      outline: 1px solid white;
-      margin-left: 5px;
-      margin-right: 1em;
-      background: #5c5229;
-      // background: linear-gradient(to top, transparent, white)
-    }
-    
-    #colorbar:before {
-      content:"100%";
-      position: absolute;
-      top: 0;
-      right: 0;
-      transform-origin: center;
-      color: black;
-      transform: rotate(-90deg) translateX(-25%) translateX(-0.25em);
-    }
-    
-    #colorbar:after {
-      content:"0%";
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      color: white;
-      transform-origin: center;
-      transform: rotate(-90deg) translateY(-50%) translateX(0.5em);
-    }
-    
-    #colorbar-labels {
-        position: absolute;
-        top: 50%;
-        right: 0.25em;
-        transform-origin: center center;
-        transform:  translateX(50%) rotate(-90deg);
-        
-      }
     
     
     .map-container {
@@ -5061,6 +5149,10 @@ video, #info-video {
   @media (min-width: 701px) {
     width: 75%;
     padding: 2em;
+  }
+
+  .span-accent {
+    color: var(--accent-color);
   }
 
   // rotated translucent background gradient

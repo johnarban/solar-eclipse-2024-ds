@@ -3,6 +3,7 @@ import Vue, { createApp } from "vue";
 import { IconButton } from "@cosmicds/vue-toolkit";
 import LocationSelector from "./LocationSelector.vue";
 import { FundingAcknowledgment } from "@cosmicds/vue-toolkit";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import SolarEclipse2023 from "./SolarEclipse2024.vue";
 import TransitionExpand from "./TransitionExpand.vue";
 import GifPlayPause from "./GifPlayPause.vue";
@@ -13,6 +14,9 @@ import HoverTooltip from "./HoverTooltip.vue";
 import CloudCover from "./CloudCover.vue";
 import DefineTerm from "./DefineTerm.vue";
 import PlaybackControl from "./PlaybackControl.vue";
+import AdvancedWeatherView from "./AdvancedWeatherView.vue";
+import ColorBar from "./ColorBar.vue";
+import CloudDataExplainer from "./CloudDataExplainer.vue";
 
 import "./polyfills";
 
@@ -63,6 +67,8 @@ import {
   faAnglesRight,
   faMagnifyingGlass,
   faCircleXmark,
+  faChartColumn,
+
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(faBookOpen);
@@ -96,6 +102,7 @@ library.add(faAnglesLeft);
 library.add(faAnglesRight);
 library.add(faMagnifyingGlass);
 library.add(faCircleXmark);
+library.add(faChartColumn);
 
 /** v-hide directive taken from https://www.ryansouthgate.com/2020/01/30/vue-js-v-hide-element-whilst-keeping-occupied-space/ */
 // Extract the function out, up here, so I'm not writing it twice
@@ -146,5 +153,8 @@ createApp(SolarEclipse2023, {
   .component('cloud-cover', CloudCover)
   .component('define-term', DefineTerm)
   .component('playback-control', PlaybackControl)
+  .component('advanced-weather-view', AdvancedWeatherView)
+  .component('color-bar', ColorBar)
+  .component('cloud-data-explainer', CloudDataExplainer)
   // Mount
   .mount("#app");
