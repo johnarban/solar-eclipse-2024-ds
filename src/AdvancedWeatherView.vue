@@ -21,6 +21,7 @@
         </define-term>
         <cloud-data-explainer
           v-model="explainerOpen"
+          :fullscreen="$vuetify.display.width < 450 || fullscreen"
           />
       </h1>
         <!-- top row -->
@@ -104,7 +105,6 @@
               <hr style="width:100%; margin-block: 1rem;">
               <h4>Show cloud cover statistics for currently selected location: <strong class="attention">{{ locationName }}</strong></h4>
               <v-btn 
-                class="force-vuetify-small-font"
                 density="compact"
                 color="#eac402"
                 append-icon="mdi-chevron-triple-right"
@@ -273,7 +273,7 @@
       </v-card-text>
       <v-card-actions style="border-top: 1px solid white; margin-top: 10px;">
         <v-spacer></v-spacer>
-        <v-btn :size="showOnMap ? 'large' : 'default'" :color="showOnMap ? '#eac402' : ''" :variant="showOnMap ? 'flat' : 'plain'" @click="close()">Close</v-btn>
+        <v-btn :size="showOnMap ? 'large' : 'default'" color="#eac402" variant="flat" @click="close()">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -1240,7 +1240,7 @@ export default defineComponent({
   --color: #eac402;
   --default-font-size: clamp(10px, min(1.7vh, 1.7vw), 1.1rem);
   font-size: var(--default-font-size);
-  --smaller-font: calc(0.8 * var(--default-font-size));
+  --smaller-font: calc(1 * var(--default-font-size));
   
   h1 {
     font-size: 1.5em;
@@ -1290,10 +1290,6 @@ export default defineComponent({
     contain: strict;
     aspect-ratio: 1.5;
     max-height: 350px;
-  }
-  
-  .force-vuetify-small-font {
-    font-size: 0.8em!important;
   }
   
   .sentence-query {
