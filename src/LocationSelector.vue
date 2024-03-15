@@ -51,7 +51,7 @@ interface CloudData {
 
 export default defineComponent({
 
-  emits: ["place", "update:modelValue", "error", "dataclick"],
+  emits: ["place", "update:modelValue", "error", "dataclick", "finishLoading"],
 
   props: {
     
@@ -203,6 +203,7 @@ export default defineComponent({
         return;
       }
       this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
+      this.$emit('finishLoading');
     },
 
     

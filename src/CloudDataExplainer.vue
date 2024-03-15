@@ -3,8 +3,8 @@
     v-model="value"
     close-on-back
     close-on-esc
-    max-height="90%"
     scrollable
+    :fullscreen="fullscreen"
   >
   <v-card
     class="align-self-center"
@@ -17,22 +17,11 @@
   
       <!-- create tab like buttons which set the tab -->
       <v-card-title>
-        <v-btn-toggle class="button-tabs flex-wrap" density="default" v-model="tab" color="primary">
-          <v-btn class="no-text-transform" density="default" value="cloud-data">About Cloud Cover Data</v-btn>
-          <v-btn class="no-text-transform" density="default" value="stats">Statistical Concepts</v-btn>
-          <v-btn class="no-text-transform" density="default" value="weather">Weather Patterns</v-btn>
-        </v-btn-toggle>
-        <!-- <v-icon class="close-button" @click="value = false">mdi-close</v-icon> -->
-        <font-awesome-icon
-              size="xl"
-              class="close-button"
-              color="#eac402"
-              icon='square-xmark'
-              @click="value = !value"
-              @keyup.enter="value = !value"
-              tabindex="0"
-              tooltip-location="start"
-            /> 
+        <v-tabs selected-class="selected-tab" height="1.5rem" v-model="tab" :direction="$vuetify.display.width < 765 ? 'vertical' : 'horizontal'">
+          <v-tab class="no-text-transform" value="cloud-data">About Cloud Cover Data</v-tab>
+          <v-tab class="no-text-transform" value="stats">Statistical Concepts</v-tab>
+          <v-tab class="no-text-transform" value="weather">Weather Patterns</v-tab>
+        </v-tabs>
       </v-card-title>
       <v-card-text>
         <v-window v-model="tab">
@@ -218,7 +207,7 @@
     
     <v-card-actions>
       <v-spacer></v-spacer>
-      <v-btn @click="value = false">Close</v-btn>
+      <v-btn color="#eac402" variant="flat" @click="value = false">Close</v-btn>
     </v-card-actions>
     
   </v-card>
@@ -243,6 +232,11 @@ export default defineComponent({
     initialTab: {
       type: String as () => Tab,
       default: 'intro'
+    },
+    
+    fullscreen: {
+      type: Boolean,
+      default: false
     }
   },
   
@@ -318,6 +312,9 @@ details.faq {
 
 .no-text-transform {
   text-transform: none !important;
+  height: 1rem;
+  text-align: left;
+  white-space: pre-wrap;
 }
 
 
@@ -328,5 +325,8 @@ details.faq {
   right: 0.125em;
 }
 
+.selected-tab {
+  background-color: #eac3021d;
+}
 
 </style>

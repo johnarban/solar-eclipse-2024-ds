@@ -160,7 +160,7 @@
                     <p> Explore whether phenomena like El Niño historically impacted cloud cover patterns.</p>
                   </div>
                   <div>
-                    <div class="my-2">Open the <v-btn :color="accentColor" density="compact"  @click="showAdvancedWeather = true">Cloud Data Explorer</v-btn></div>
+                    <div class="my-2">Open the <v-btn :class="[smallSize ? 'text-caption' : '']" :color="accentColor" density="compact"  @click="showAdvancedWeather = true">Cloud Data Explorer</v-btn></div>
                   </div>
                 </div>
               </span>

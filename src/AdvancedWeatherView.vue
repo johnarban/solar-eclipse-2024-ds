@@ -21,6 +21,7 @@
         </define-term>
         <cloud-data-explainer
           v-model="explainerOpen"
+          :fullscreen="$vuetify.display.width < 450 || fullscreen"
           />
       </h1>
         <!-- top row -->
@@ -29,7 +30,7 @@
           <v-col cols="12" sm="5" :order="2" :order-lg="2">
             <v-row id="query-constructor">              
               <v-col class="sentence-query mb-2" col="12">
-                <label class="d-inline d-sm-block d-xl-inline" for="statistics">Show me</label>
+                <label class="d-inline d-sm-block d-xl-inline" for="statistics">Show me </label>
                 <select 
                   class="select-box"
                   name="statistics" 
@@ -41,7 +42,7 @@
                   <option value="median">the Median</option>
                   <option value="singleyear">a Single Year</option>
                 </select>
-                  <label class="d-inline d-sm-block d-md-inline" for="years">of the cloud cover for </label>
+                  <label class="d-inline d-sm-block d-md-inline" for="years"> of the cloud cover for </label>
                   <select 
                     v-if="selectedStat !== 'singleyear'"
                     class="select-box"
@@ -104,7 +105,6 @@
               <hr style="width:100%; margin-block: 1rem;">
               <h4>Show cloud cover statistics for currently selected location: <strong class="attention">{{ locationName }}</strong></h4>
               <v-btn 
-                class="force-vuetify-small-font"
                 density="compact"
                 color="#eac402"
                 append-icon="mdi-chevron-triple-right"
@@ -152,7 +152,13 @@
           </v-col>
 
 
-          <v-col id="awv-map" cols="12" sm="7" :order="1" :order-lg="1">
+          <v-col 
+            :class="[
+              needToUpdate || !displayData || loadingNewMap ? 'show-after' : '',
+              needToUpdate ? 'need-to-update' : '', 
+              !displayData ? 'no-data-shown' : '',
+              ]" 
+            id="awv-map" cols="12" sm="7" :order="1" :order-lg="1">
             <div class="map-colorbar">
             <location-selector
               :detect-location="showOnMap"
@@ -167,6 +173,7 @@
               @dataclick="selectedDataIndex = $event.index; selectedDataCloudCover = $event.cloudCover"
               :cloud-cover-opacity-function="transferFunction"
               :geo-json-files="eclipsePaths"
+              @finishLoading="loadingNewMap = false"
               />
               <color-bar
                 name="cloud-cover"
@@ -273,7 +280,7 @@
       </v-card-text>
       <v-card-actions style="border-top: 1px solid white; margin-top: 10px;">
         <v-spacer></v-spacer>
-        <v-btn :size="showOnMap ? 'large' : 'default'" :color="showOnMap ? '#eac402' : ''" :variant="showOnMap ? 'flat' : 'plain'" @click="close()">Close</v-btn>
+        <v-btn :size="showOnMap ? 'large' : 'default'" color="#eac402" variant="flat" @click="close()">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -528,6 +535,7 @@ export default defineComponent({
       displayCharts: this.showCharts,
       showCloudCover: true,
       transferFunction: this.transferFunction8,
+      loadingNewMap: false,
       
     };
   },
@@ -1024,9 +1032,10 @@ export default defineComponent({
       this.displayData = display;
       if (display){
         this.needToUpdate = false;
+        this.loadingNewMap = true;
       }
       this.updateMapDescriptionText();
-      
+
       if (this.modisDataSet === '1day') {
         this.transferFunction = this.transferFunction1;
       }
@@ -1240,7 +1249,7 @@ export default defineComponent({
   --color: #eac402;
   --default-font-size: clamp(10px, min(1.7vh, 1.7vw), 1.1rem);
   font-size: var(--default-font-size);
-  --smaller-font: calc(0.8 * var(--default-font-size));
+  --smaller-font: calc(1 * var(--default-font-size));
   
   h1 {
     font-size: 1.5em;
@@ -1286,14 +1295,44 @@ export default defineComponent({
     max-width: 99%;
   }
   
+  #awv-map {
+    &.show-after .map-container::after {
+      content: " ";
+      
+      display:flex;
+      width: 100%;
+      min-height: 2.5em;
+      height: max-content;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(1 * var(--default-font-size));
+      
+      position: absolute;
+      top: 0;
+      left: 0;
+      
+      color: black;
+      background-color: #cccccc77;
+      z-index: 500;
+      
+      backdrop-filter: blur(5px) saturate(50%);
+    }
+    
+    &.show-after.need-to-update .map-container::after {
+      content: "Press 'Update Map' to view new selection";
+    }
+    
+    &.show-after.no-data-shown .map-container::after {
+      content: "Press 'Show on Map' to view data";
+    }
+    
+    
+  }
+  
   .map-container {
     contain: strict;
     aspect-ratio: 1.5;
     max-height: 350px;
-  }
-  
-  .force-vuetify-small-font {
-    font-size: 0.8em!important;
   }
   
   .sentence-query {
@@ -1306,7 +1345,7 @@ export default defineComponent({
     
     
     >label, >select {
-      margin: 0.25em auto;
+      margin: 0.25em 0.5ch;
     }
     
     > label {
@@ -1348,6 +1387,6 @@ export default defineComponent({
     font-size: 1.12em;
   }
   
-
+  
 }
 </style>
