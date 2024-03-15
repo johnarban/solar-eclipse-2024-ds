@@ -1159,8 +1159,8 @@ export default defineComponent({
       // Displaying {{ selectedStat === 'singleyear' ? '' : statText.get(selectedStat)?.toLowerCase() }}  cloud cover for {{ selectedStat === 'singleyear' ? selectedYear : mapSubsets.get(dataSubset) }}.
       const stat = this.selectedStat === 'singleyear' ? '' : this.statText.get(this.selectedStat);
       const subset = this.selectedStat === 'singleyear' ? this.selectedYear : this.mapSubsets.get(this.dataSubset);
-      const modis = this.modisDataSet === '1day' ? 'MODIS 1-day' : 'MODIS 8-day average';
-      this.mapDescriptionText = `Displaying ${stat} ${modis} cloud cover for ${subset}.`;
+      const modis = this.modisDataSet === '1day' ? '1-day' : '8-day';
+      this.mapDescriptionText = `Displaying ${modis} ${stat} cloud cover for ${subset}.`;
     },
     
     getCloudCoverText(val: number | null): [number | null, string | undefined] {

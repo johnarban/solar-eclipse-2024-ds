@@ -39,7 +39,7 @@
                 >View Historical Cloud Data
               </span>
               <span v-if="learnerPath=='CloudDetail'"
-                >Explore Historical Cloud Data
+                >Explore Detailed Cloud Data
               </span>
             </div>
 
@@ -123,7 +123,7 @@
               <span class="description">
                 <div class=".d-flex">
                   <div>
-                    This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from the <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA MODIS</a> Aqua satellite.
+                    This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">MODIS</a> on NASA's Aqua satellite.
                     {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
                   </div>
                   <div>
@@ -446,38 +446,38 @@
                   >                   
                     <h4 class="user-guide-header">Time Controls:</h4>
                     <p  class="mb-3">(Bottom-left of the screen)</p>
+                    <p>
+                      By default, time is moving forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
+                    </p>
                     <ul class="text-list">
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
                               class="bullet-icon"
-                              icon="play"
+                              icon="angles-left"
                               size="lg" 
                             ></font-awesome-icon>
-                        to move time forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
-                      </li>
-                      <li>
-                        If playing, {{ touchscreen ? "tap" : "click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="pause"
-                              size="lg" 
-                            ></font-awesome-icon>
-                        to pause time.
+                        to reverse time, or to increase reverse speed by 10x if time was already reversed. 
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="angle-double-down"
-                              size="lg" 
-                            ></font-awesome-icon>
-                        to decrease speed by 10x.                        
+                          class="bullet-icon"
+                          icon="play"
+                          size="lg" 
+                        ></font-awesome-icon>/
+                        <font-awesome-icon
+                          class="bullet-icon"
+                          icon="pause"
+                          size="lg" 
+                        ></font-awesome-icon>
+                        to play or pause time. 
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="angle-double-up"
-                              size="lg" 
-                            ></font-awesome-icon>
-                        to increase speed by 10x. 
+                          class="bullet-icon"
+                          icon="angles-right"
+                          size="lg" 
+                        ></font-awesome-icon>
+                        to increase speed by 10x, or to move time forward if time was reversed.                        
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
@@ -485,14 +485,42 @@
                               icon="rotate"
                               size="lg" 
                             ></font-awesome-icon>
-                        to reset time, view, and speed. 
+                        to reset starting time and speed. 
                       </li>
+                      <li>
+                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
+                              class="bullet-icon"
+                              icon="gauge-high"
+                              size="lg" 
+                            ></font-awesome-icon>
+                        to open more speed controls. 
+                      </li>
+                        <ul>
+                          <li class="ml-5">
+                            {{ touchscreen ? "Tap" : "Click" }} 
+                            <v-icon
+                              class="bullet-icon"
+                              icon="mdi-step-forward-2"
+                              size="medium">
+                            </v-icon>
+                            or
+                            <v-icon
+                              class="bullet-icon"
+                              icon="mdi-step-backward-2"
+                              size="medium">
+                            </v-icon>
+                            to move time forward and backward.
+                          </li>
+                          <li class="ml-5">
+                            Use the slider to fine-tune desired speed.
+                          </li>
+                        </ul>
                       <li>
                         Drag <v-icon
                           class="bullet-icon"
                           icon="mdi-circle"
                           size="medium" 
-                        ></v-icon> along the slider to move to any time.
+                        ></v-icon> along the main slider to move to any time.
                       </li>
                     </ul>
 
@@ -503,21 +531,22 @@
                     <ul class="text-list">
                       <li class="mb-2">
                         The <span 
-                        style="color: blue; background-color: white;
-                        padding-inline: 0.7em;
-                        border-radius: 20px;
-                        font-weight: bold ">selected location</span>   
-                        <span 
                         v-if="mobile"
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">historical cloud cover</span>  
-                        and <span 
+                        font-weight: bold ">historical cloud cover</span><span v-if="mobile">, </span>
+                        <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">date/time</span> are displayed under the map.
+                        font-weight: bold ">date/time</span><span v-if="mobile">,</span> and
+                        <span 
+                        style="color: blue; background-color: white;
+                        padding-inline: 0.7em;
+                        border-radius: 20px;
+                        font-weight: bold ">selected location</span>   
+                        are displayed under the map.
                       </li>
                       <li class="switch-bullets">
                         <v-switch
@@ -555,6 +584,9 @@
                     <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
                       <li>
+                        <span class="user-guide-emphasis-white">Center Sun:</span> Recenter view on Sun.
+                      </li>
+                      <li>
                         <span class="user-guide-emphasis-white">Sky Grid:</span> Display altitude/azimuth grid with cardinal directions.
                       </li>
                       <li>
@@ -573,6 +605,13 @@
                     <h4 class="user-guide-header">Location Options:</h4>
                     <p  class="mb-3">(Top-left of the screen)</p>
                     <ul class="text-list">
+                      <li>
+                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
+                              class="bullet-icon"
+                              icon="magnifying-glass"
+                              size="lg" 
+                            ></font-awesome-icon> to search for a specific location name.
+                      </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
                               class="bullet-icon"
@@ -874,7 +913,9 @@
               /> View historical cloud data
             </v-col>
             <v-col cols="12">
-            <img class="svg-inline--fa rounded-lg bg-red"  style="height:1.2em;margin-inline:10px" src="./assets/new-rectangle-solid-svgrepo-com.svg"> <span class="text-red">Detailed Cloud Data View</span>
+              <font-awesome-icon
+                icon="chart-column"
+              />New! Detailed cloud explorer
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
@@ -1270,7 +1311,7 @@
                     :fa-icon="playbackVisible ? 'times' : 'gauge-high'"
                     :color="accentColor"
                     :focus-color="accentColor"
-                    tooltip-text="Time Controls"
+                    tooltip-text="Speed Controls"
                     tooltip-location="top"
                     tooltip-offset="5px"
                     faSize="1x"
@@ -4359,7 +4400,7 @@ body {
 
   #splash-screen-guide {
     margin-block: 1em;
-    font-size: min(5vw, 4vh);
+    font-size: min(4.5vw, 3.6vh);
     line-height: 160%;
     width: 75%;
 
@@ -4374,9 +4415,9 @@ body {
   }
 
   #splash-screen-acknowledgements {
-    font-size: calc(1.7 * var(--default-font-size));
-    line-height: calc(1.5 * var(--default-line-height));
-    width: 60%; 
+    font-size: calc(1.3 * var(--default-font-size));
+    line-height: calc(1.2 * var(--default-line-height));
+    width: 80%; 
   }
 
   #splash-screen-logos {
