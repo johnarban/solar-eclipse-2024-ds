@@ -152,7 +152,13 @@
           </v-col>
 
 
-          <v-col id="awv-map" cols="12" sm="7" :order="1" :order-lg="1">
+          <v-col 
+            :class="[
+              needToUpdate || !displayData || loadingNewMap ? 'show-after' : '',
+              needToUpdate ? 'need-to-update' : '', 
+              !displayData ? 'no-data-shown' : '',
+              ]" 
+            id="awv-map" cols="12" sm="7" :order="1" :order-lg="1">
             <div class="map-colorbar">
             <location-selector
               :detect-location="showOnMap"
@@ -167,6 +173,7 @@
               @dataclick="selectedDataIndex = $event.index; selectedDataCloudCover = $event.cloudCover"
               :cloud-cover-opacity-function="transferFunction"
               :geo-json-files="eclipsePaths"
+              @finishLoading="loadingNewMap = false"
               />
               <color-bar
                 name="cloud-cover"
@@ -528,6 +535,7 @@ export default defineComponent({
       displayCharts: this.showCharts,
       showCloudCover: true,
       transferFunction: this.transferFunction8,
+      loadingNewMap: false,
       
     };
   },
@@ -1024,9 +1032,10 @@ export default defineComponent({
       this.displayData = display;
       if (display){
         this.needToUpdate = false;
+        this.loadingNewMap = true;
       }
       this.updateMapDescriptionText();
-      
+
       if (this.modisDataSet === '1day') {
         this.transferFunction = this.transferFunction1;
       }
@@ -1286,6 +1295,40 @@ export default defineComponent({
     max-width: 99%;
   }
   
+  #awv-map {
+    &.show-after .map-container::after {
+      content: " ";
+      
+      display:flex;
+      width: 100%;
+      min-height: 2.5em;
+      height: max-content;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(1 * var(--default-font-size));
+      
+      position: absolute;
+      top: 0;
+      left: 0;
+      
+      color: black;
+      background-color: #cccccc77;
+      z-index: 500;
+      
+      backdrop-filter: blur(5px) saturate(50%);
+    }
+    
+    &.show-after.need-to-update .map-container::after {
+      content: "Press 'Update Map' to view new selection";
+    }
+    
+    &.show-after.no-data-shown .map-container::after {
+      content: "Press 'Show on Map' to view data";
+    }
+    
+    
+  }
+  
   .map-container {
     contain: strict;
     aspect-ratio: 1.5;
@@ -1344,6 +1387,6 @@ export default defineComponent({
     font-size: 1.12em;
   }
   
-
+  
 }
 </style>
