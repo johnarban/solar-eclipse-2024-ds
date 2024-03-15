@@ -1265,6 +1265,7 @@ export default defineComponent({
   
   .map-colorbar {
     display: flex;
+    max-width: 99%;
   }
   
   .map-container {
