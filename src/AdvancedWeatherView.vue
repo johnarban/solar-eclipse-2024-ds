@@ -671,7 +671,6 @@ export default defineComponent({
     
     
     locationValue(): number | null {
-      console.log('locationValue');
       if (!this.inBounds) {return null;}
       
       if (this.selectedStat === 'mean') {
