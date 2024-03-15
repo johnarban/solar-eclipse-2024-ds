@@ -654,7 +654,8 @@
     @close="() => {
       console.log('closing'); 
       showAdvancedWeather = false;
-      }"
+    }"
+    @explainer-open="(open: boolean) => { weatherInfoOpen = open }"
     :default-location="locationDeg"
     :show-on-map="showAWVMapByDefault"
     :show-charts="showAWVChartsByDefault"
@@ -1688,8 +1689,13 @@ export default defineComponent({
       
       uuid,
       infoTimeMs: 0,
+      weatherTimeMs: 0,
+      weatherInfoTimeMs: 0,
       appStartTimestamp: Date.now(),
       infoStartTimestamp: null as number | null,
+      weatherStartTimestamp: null as number | null,
+      weatherInfoStartTimestamp: null as number | null,
+      weatherInfoOpen: false,
       responseOptOut: responseOptOut as boolean | null,
 
       showSplashScreen: queryData.splash ?? true, 
@@ -1973,7 +1979,7 @@ export default defineComponent({
         if (document.visibilityState === "hidden") {
           this.sendUpdateData();
         } else {
-          this.clearData();
+          this.resetData();
         }
       });
 
@@ -2787,7 +2793,7 @@ export default defineComponent({
         headers: { "Authorization": process.env.VUE_APP_CDS_API_KEY ?? "" }
       });
       const content = await response.json();
-      const exists = response.status === 200 && content.response.user_uuid != undefined;
+      const exists = response.status === 200 && content.response?.user_uuid != undefined;
       if (exists) {
         return;
       }
@@ -2811,17 +2817,27 @@ export default defineComponent({
       });
     },
 
-    clearData() {
+    resetData() {
       this.userSelectedLocations = [];
       this.cloudCoverSelectedLocations = [];
       this.infoTimeMs = 0;
-      this.appStartTimestamp = Date.now();
+      this.weatherTimeMs = 0;
+      this.weatherInfoTimeMs = 0;
+      const now = Date.now();
+      this.appStartTimestamp = now;
+      this.infoStartTimestamp = this.showInfoSheet ? now : null;
+      this.weatherStartTimestamp = this.showAdvancedWeather ? now : null;
+      this.weatherInfoStartTimestamp = this.weatherInfoOpen ? now : null;
     },
 
     sendUpdateData() {
       if (this.responseOptOut) {
         return;
       }
+      const now = Date.now();
+      const infoTime = (this.showInfoSheet && this.infoStartTimestamp !== null) ? now - this.infoStartTimestamp : this.infoTimeMs;
+      const weatherTime = (this.showAdvancedWeather && this.weatherStartTimestamp !== null) ? now - this.weatherStartTimestamp : this.weatherTimeMs;
+      const weatherInfoTime = (this.weatherInfoOpen && this.weatherInfoStartTimestamp !== null) ? now - this.weatherInfoStartTimestamp : this.weatherInfoTimeMs;
       fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
         method: "PATCH",
         headers: {
@@ -2835,11 +2851,13 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          delta_info_time_ms: this.infoTimeMs, delta_app_time_ms: Date.now() - this.appStartTimestamp
+          delta_info_time_ms: infoTime, delta_app_time_ms: Date.now() - this.appStartTimestamp,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_advanced_weather_time_ms: weatherTime, delta_weather_info_time_ms: weatherInfoTime,
         }),
         keepalive: true,
       }).then(() => {
-        this.clearData();
+        this.resetData();
       });
     },
 
@@ -3555,9 +3573,26 @@ export default defineComponent({
       if (show) {
         this.infoStartTimestamp = Date.now();
       } else if (this.infoStartTimestamp !== null) {
-        const timestamp = Date.now();
-        this.infoTimeMs += (timestamp - this.infoStartTimestamp);
+        this.infoTimeMs += (Date.now() - this.infoStartTimestamp);
         this.infoStartTimestamp = null;
+      }
+    },
+
+    showAdvancedWeather(show: boolean) {
+      if (show) {
+        this.weatherStartTimestamp = Date.now();
+      } else if (this.weatherStartTimestamp !== null) {
+        this.weatherTimeMs += (Date.now() - this.weatherStartTimestamp);
+        this.weatherStartTimestamp = null;
+      }
+    },
+
+    weatherInfoOpen(open: boolean) {
+      if (open) {
+        this.weatherInfoStartTimestamp = Date.now();
+      } else if (this.weatherInfoStartTimestamp !== null) {
+        this.weatherInfoTimeMs += (Date.now() - this.weatherInfoStartTimestamp);
+        this.weatherInfoStartTimestamp = null;
       }
     },
     
