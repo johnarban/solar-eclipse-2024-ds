@@ -3,6 +3,7 @@
   <v-dialog 
     v-model="showValue" 
     close-on-back
+    :fullscreen="$vuetify.display.width < 450"
     >
     <v-card id="advanced-weather-view">
       <v-card-text class="overflow-auto">
