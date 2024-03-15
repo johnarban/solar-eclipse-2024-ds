@@ -56,7 +56,7 @@
                 >View Historical Cloud Data
               </span>
               <span v-if="learnerPath=='CloudDetail'"
-                >Explore Historical Cloud Data
+                >Explore Detailed Cloud Data
               </span>
             </div>
 
@@ -929,7 +929,9 @@
               /> View historical cloud data
             </v-col>
             <v-col cols="12">
-            <img class="svg-inline--fa rounded-lg bg-red"  style="height:1.2em;margin-inline:10px" src="./assets/new-rectangle-solid-svgrepo-com.svg"> <span class="text-red">Detailed Cloud Data View</span>
+              <font-awesome-icon
+                icon="chart-column"
+              />New! Detailed cloud explorer
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
@@ -4380,7 +4382,7 @@ body {
 
   #splash-screen-guide {
     margin-block: 1em;
-    font-size: min(5vw, 4vh);
+    font-size: min(4.5vw, 3.6vh);
     line-height: 160%;
     width: 75%;
 
@@ -4395,9 +4397,9 @@ body {
   }
 
   #splash-screen-acknowledgements {
-    font-size: calc(1.7 * var(--default-font-size));
-    line-height: calc(1.5 * var(--default-line-height));
-    width: 60%; 
+    font-size: calc(1.3 * var(--default-font-size));
+    line-height: calc(1.2 * var(--default-line-height));
+    width: 80%; 
   }
 
   #splash-screen-logos {
