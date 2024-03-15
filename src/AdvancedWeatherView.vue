@@ -5,7 +5,7 @@
     close-on-back
     >
     <v-card id="advanced-weather-view">
-      <v-card-text>
+      <v-card-text class="overflow-auto">
         <h1>Just how cloudy is it in {{ locationName }} in April?
         <define-term 
           no-click
@@ -15,7 +15,7 @@
         </p>'
           >
           <template #term>
-            <v-btn elevation="0" icon="mdi-help-circle" @click="explainerOpen = true"></v-btn>
+            <v-btn style="font-size: 1em;" elevation="1" icon="mdi-help-circle" @click="explainerOpen = true"></v-btn>
           </template>
         </define-term>
         <cloud-data-explainer
@@ -69,8 +69,7 @@
             
             <v-row class="mb-2" id="modis-radio-group">
               <v-btn 
-                class="elevation-5 my-2 mb-4"
-                variant="flat"
+                class="elevation-5 my-2 mb-4 mr-2"
                 size="small"
                 :disabled="!(needToUpdate || !showCloudCover)"
                 color="#eac402" 
@@ -176,7 +175,7 @@
                 />
             </div>
               <div class="d-flex align-center justify-space-between">
-              <span class="align-self-start" id="awv-map-description"> {{ mapDescriptionText }} </span>
+              <span class="align-self-start text-right" id="awv-map-description"> {{ mapDescriptionText }} </span>
               <v-checkbox
                 v-if="displayData || true"
                 v-model="showCloudCover"
@@ -205,6 +204,7 @@
               :bar-offset="1"
               :barAnnotationLabel="(v:number) => (v * 100/20).toFixed(0) + '%'"
               stacked
+              :show-legend="dataSubset !== 'allYears'"
               :title="`Cloud Conditions for ${locationName} ${allYears[0]} - ${allYears[allYears.length - 1]}`"
               :other-datasets="hideHistogramSubset ? [] : [
                 {
@@ -219,7 +219,7 @@
           </v-col>
           <v-col cols="12" sm="6" class="graph-col">
           <line-chart
-            show-legend
+            :show-legend="dataSubset !== 'allYears'"
             class="elevation-5"
             :title="`Percent Cloud Cover for ${locationName}`"
             :scatter-data="cloudDataNearLocation"
@@ -1155,7 +1155,7 @@ export default defineComponent({
   
   watch: {
     modelValue(value: boolean) {
-      if (value) {
+      if (value && Object.keys(this.allModisData['8day']).length === 0) {
         console.log('loading data');
         this.loadEightDayData().then(() => {
           console.log('finished loading data');
@@ -1164,6 +1164,7 @@ export default defineComponent({
         });
       } else {
         console.log('closing AWV view');
+        this.needToUpdate = true;
         // this.displayData = false;
       }
     }, 
@@ -1269,6 +1270,7 @@ export default defineComponent({
   .map-container {
     contain: strict;
     aspect-ratio: 1.5;
+    max-height: 350px;
   }
   
   .force-vuetify-small-font {
@@ -1330,4 +1332,3 @@ export default defineComponent({
 
 }
 </style>
-./utils
