@@ -184,6 +184,7 @@
             </div>
               <div class="d-flex align-center justify-space-between">
               <span class="align-self-start text-right" id="awv-map-description"> {{ mapDescriptionText }} </span>
+              <div style="display:inline-block; width: 100px;" v-if="!displayData"></div>
               <v-checkbox
                 v-if="displayData"
                 v-model="showCloudCover"
@@ -227,7 +228,7 @@
           </v-col>
           <v-col cols="12" sm="6" class="graph-col">
           <line-chart
-            :show-legend="dataSubset !== 'allYears'"
+            :show-legend="subsetSelected"
             class="elevation-5"
             :title="`Percent Cloud Cover for ${locationName}`"
             :scatter-data="cloudDataNearLocation"
@@ -582,7 +583,7 @@ export default defineComponent({
     
     subsetSelected() {
       // return !this.allYears.every(y => this.selectedYears.includes(y));
-      return (this.selectedYears.length < this.allYears.length);
+      return (this.selectedYears.length < this.allYears.length) || this.selectedStat === 'singleyear';
     },
     
     hideHistogramSubset() {
@@ -782,7 +783,7 @@ export default defineComponent({
         }
         return [{
           type: 'scatter',
-          label: this.mapSubsets.get(this.dataSubset)  as string,
+          label: this.selectedStat !== 'singleyear' ? this.mapSubsets.get(this.dataSubset)  as string : `${this.selectedYear}`,
           backgroundColor: data.map(_v => '#eac402'),
           data: data,
           pointRadius: 6,
@@ -1158,7 +1159,8 @@ export default defineComponent({
       // Displaying {{ selectedStat === 'singleyear' ? '' : statText.get(selectedStat)?.toLowerCase() }}  cloud cover for {{ selectedStat === 'singleyear' ? selectedYear : mapSubsets.get(dataSubset) }}.
       const stat = this.selectedStat === 'singleyear' ? '' : this.statText.get(this.selectedStat);
       const subset = this.selectedStat === 'singleyear' ? this.selectedYear : this.mapSubsets.get(this.dataSubset);
-      this.mapDescriptionText = `Displaying ${stat} cloud cover for ${subset}.`;
+      const modis = this.modisDataSet === '1day' ? 'MODIS 1-day' : 'MODIS 8-day average';
+      this.mapDescriptionText = `Displaying ${stat} ${modis} cloud cover for ${subset}.`;
     },
     
     getCloudCoverText(val: number | null): [number | null, string | undefined] {
