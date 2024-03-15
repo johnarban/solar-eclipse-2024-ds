@@ -1220,7 +1220,7 @@ export default defineComponent({
 
 #advanced-weather-view {
   --color: #eac402;
-  --default-font-size: clamp(0.7rem, min(1.7vh, 1.7vw), 1.1rem);
+  --default-font-size: clamp(10px, min(1.7vh, 1.7vw), 1.1rem);
   font-size: var(--default-font-size);
   --smaller-font: calc(0.8 * var(--default-font-size));
   
