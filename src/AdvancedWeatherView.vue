@@ -1198,6 +1198,11 @@ export default defineComponent({
       }
     }, 
     
+    defaultLocation(value: CityLocation) {
+      console.log('defaultLocation', value);
+      this.location = value;
+    },
+    
     modisDataSet(value: ModisTimeSpan) {
       console.log('modisTimespan', value);
       if (value === '1day') {
