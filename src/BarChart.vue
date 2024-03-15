@@ -157,7 +157,13 @@ export default defineComponent({
       type: Boolean,
       default: false,
       required: false
-    }
+    },
+    
+    showLegend: {
+      type: Boolean,
+      default: false,
+      required: false
+    },
     
     
   },
@@ -232,7 +238,7 @@ export default defineComponent({
           },
           // https://www.chartjs.org/docs/latest/configuration/legend.html
           legend: {
-            display: true
+            display: this.showLegend,
           },
           
           tooltip: {
