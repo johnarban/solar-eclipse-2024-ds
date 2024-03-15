@@ -473,7 +473,7 @@
                               icon="angles-left"
                               size="lg" 
                             ></font-awesome-icon>
-                        to reverse time, or to increase speed by 10x if time was already reversed. 
+                        to reverse time, or to increase reverse speed by 10x if time was already reversed. 
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
