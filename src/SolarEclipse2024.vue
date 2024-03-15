@@ -1028,11 +1028,7 @@
               </ul>
               <p v-if="xSmallSize" class="mt-3">
                 To access all features, {{ touchscreen ? "tap" : "click" }} 
-                <font-awesome-icon  icon="circle-chevron-down" 
-                color="black"
-                id="inline-open-icon"
-                size="lg"
-                /> at top left.
+                <span class="span-accent">Map & Weather</span> at top left.
               </p> 
             </div>
           </v-window-item>
@@ -5153,6 +5149,10 @@ video, #info-video {
   @media (min-width: 701px) {
     width: 75%;
     padding: 2em;
+  }
+
+  .span-accent {
+    color: var(--accent-color);
   }
 
   // rotated translucent background gradient
