@@ -3,7 +3,7 @@
   <v-dialog 
     v-model="showValue" 
     close-on-back
-    :fullscreen="$vuetify.display.width < 450"
+    :fullscreen="$vuetify.display.width < 450 || fullscreen"
     >
     <v-card id="advanced-weather-view">
       <v-card-text class="overflow-auto">
@@ -428,7 +428,25 @@ export default defineComponent({
       type: Object as PropType<CityLocation> | undefined,
       default: cityBoston,
       required: true,
-    }
+    },
+    
+    showOnMap: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
+    
+    showCharts: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
+    
+    fullscreen: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
   },
   
   data() {
@@ -506,8 +524,8 @@ export default defineComponent({
       mapDescriptionText: '',
       locationName: '',
       inBounds: false,
-      displayData: false,
-      displayCharts: false,
+      displayData: this.showOnMap,
+      displayCharts: this.showCharts,
       showCloudCover: true,
       transferFunction: this.transferFunction8,
       

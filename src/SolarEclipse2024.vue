@@ -656,6 +656,9 @@
       showAdvancedWeather = false;
       }"
     :default-location="locationDeg"
+    :show-on-map="showAWVMapByDefault"
+    :show-charts="showAWVChartsByDefault"
+    :fullscreen="showAWVFullScreen"
     />
   <div
     id="main-content"
@@ -1518,7 +1521,7 @@ type OptionalFieldsShallow<T> = {
   [P in keyof T]?: T[P]
 };
 
-type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean }>;
+type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean } & {awv: boolean}>;
 
 let queryData: QueryData = {};
 const UUID_KEY = "eclipse-mini-uuid" as const;
@@ -1728,7 +1731,10 @@ export default defineComponent({
       geolocationPermission: '' as 'granted' | 'denied' | 'prompt',
       
       showWWTGuideSheet: false,
-      showAdvancedWeather: false,
+      showAdvancedWeather: queryData.awv ?? false,
+      showAWVMapByDefault: queryData.awv ?? false,
+      showAWVChartsByDefault: queryData.awv ?? false,
+      showAWVFullScreen: false,
       
       selectionProximity: 4,
       pointerMoveThreshold: 6,
@@ -1883,6 +1889,8 @@ export default defineComponent({
     }
     const splashQuery = searchParams.get("splash");
     queryData.splash = splashQuery !== "false";
+    const awv = searchParams.get("awv");
+    queryData.awv = awv === "true";
   },
 
   mounted() {
