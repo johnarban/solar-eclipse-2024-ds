@@ -2900,9 +2900,6 @@ export default defineComponent({
       this.infoStartTimestamp = this.showInfoSheet ? now : null;
       this.weatherTimeMs = 0;
       this.weatherInfoTimeMs = 0;
-      const now = Date.now();
-      this.appStartTimestamp = now;
-      this.infoStartTimestamp = this.showInfoSheet ? now : null;
       this.weatherStartTimestamp = this.showAdvancedWeather ? now : null;
       this.weatherInfoStartTimestamp = this.weatherInfoOpen ? now : null;
     },
