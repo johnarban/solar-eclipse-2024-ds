@@ -33,6 +33,10 @@ module.exports = defineConfig({
           test: /\.csv/,
           type: 'asset/source',
         },
+        {
+          test: /\.zip/,
+          type: 'asset/resource'
+        }
       ]
     }
   },

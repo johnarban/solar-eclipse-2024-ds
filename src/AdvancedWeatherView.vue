@@ -288,6 +288,7 @@
 </template>
 
 <script lang="ts"> // Options API
+import { inflate } from "pako";
 import { defineComponent, PropType } from 'vue';
 import BarChart from './BarChart.vue';
 import LineChart, {ChartDataType} from './LineChart.vue';
@@ -310,6 +311,8 @@ type CityLocation = {
   longitudeDeg: number;
   latitudeDeg: number;
 };
+
+type ZipPath<T extends string> = T extends `${string}.zip` ? T : `${T} is not a valid zip filepath`;
 
 const cityBoston: CityLocation = {
   latitudeDeg: 42.3601,
@@ -543,6 +546,8 @@ export default defineComponent({
   
   mounted() {
     console.log('Advanced Weather View mounted');
+    console.log(this);
+    this.getElNinoData();
     this.needToUpdate = true;
     this.checkInBounds(this.location).then((inBounds) => {
       this.inBounds = inBounds;
@@ -853,23 +858,33 @@ export default defineComponent({
         };
       });
     },
+
+    async loadDataFromZip<Path extends string>(path: ZipPath<Path>) {
+      return import(path)
+        .then(module => fetch(module.default))
+        .then(async (response) => {
+          const data = new Uint8Array(await response.arrayBuffer());
+          return inflate(data, { to: 'string' });
+        });
+    },
     
     async getElNinoData() {
       console.log('loading el nino data');
-      return import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/nino_ucm.csv`).then((module) => {
-        this.elNinoYearsSummary[this.modisDataSet] = csvParseRows(module.default, (row, i) => {
-          if (i === 0) {return;}
-          return {
-            lat: +row[0],
-            lon: +row[1],
-            mean: +row[2],
-            median: +row[3],
-            mode: +row[4],
-            min: +row[5],
-            max: +row[6],
-          } as CloudSummaryData;
+      return this.loadDataFromZip(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/nino_ucm.zip`)
+        .then(csv => {
+          this.elNinoYearsSummary[this.modisDataSet] = csvParseRows(csv, (row, i) => {
+            if (i === 0) {return;}
+            return {
+              lat: +row[0],
+              lon: +row[1],
+              mean: +row[2],
+              median: +row[3],
+              mode: +row[4],
+              min: +row[5],
+              max: +row[6],
+            } as CloudSummaryData;
+          });
         });
-      });
     },
     
     async getNeutralData() {
