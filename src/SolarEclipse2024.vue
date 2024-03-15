@@ -56,7 +56,7 @@
                 >View Historical Cloud Data
               </span>
               <span v-if="learnerPath=='CloudDetail'"
-                >Explore Historical Cloud Data
+                >Explore Detailed Cloud Data
               </span>
             </div>
 
@@ -114,6 +114,7 @@
                 class="mr-2 mb-2"
                 v-if="infoPage==1"
                 density="compact"
+                hide-details
                 :color="accentColor"
                 @click="infoPage++"
                 @keyup.enter="infoPage++"
@@ -139,7 +140,7 @@
               <span class="description">
                 <div class=".d-flex">
                   <div>
-                    This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from the <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA MODIS</a> Aqua satellite.
+                    This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">MODIS</a> on NASA's Aqua satellite.
                     {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
                   </div>
                   <div>
@@ -160,7 +161,7 @@
                     <p> Explore whether phenomena like El Niño historically impacted cloud cover patterns.</p>
                   </div>
                   <div>
-                    <div class="my-2">Open the <v-btn :color="accentColor" density="compact" variant="tonal" @click="showAdvancedWeather = true">Cloud Date Explorer</v-btn></div>
+                    <div class="my-2">Open the <v-btn :class="[smallSize ? 'text-caption' : '']" :color="accentColor" density="compact"  @click="showAdvancedWeather = true">Cloud Data Explorer</v-btn></div>
                   </div>
                 </div>
               </span>
@@ -462,38 +463,38 @@
                   >                   
                     <h4 class="user-guide-header">Time Controls:</h4>
                     <p  class="mb-3">(Bottom-left of the screen)</p>
+                    <p>
+                      By default, time is moving forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
+                    </p>
                     <ul class="text-list">
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
                               class="bullet-icon"
-                              icon="play"
+                              icon="angles-left"
                               size="lg" 
                             ></font-awesome-icon>
-                        to move time forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
-                      </li>
-                      <li>
-                        If playing, {{ touchscreen ? "tap" : "click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="pause"
-                              size="lg" 
-                            ></font-awesome-icon>
-                        to pause time.
+                        to reverse time, or to increase reverse speed by 10x if time was already reversed. 
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="angle-double-down"
-                              size="lg" 
-                            ></font-awesome-icon>
-                        to decrease speed by 10x.                        
+                          class="bullet-icon"
+                          icon="play"
+                          size="lg" 
+                        ></font-awesome-icon>/
+                        <font-awesome-icon
+                          class="bullet-icon"
+                          icon="pause"
+                          size="lg" 
+                        ></font-awesome-icon>
+                        to play or pause time. 
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="angle-double-up"
-                              size="lg" 
-                            ></font-awesome-icon>
-                        to increase speed by 10x. 
+                          class="bullet-icon"
+                          icon="angles-right"
+                          size="lg" 
+                        ></font-awesome-icon>
+                        to increase speed by 10x, or to move time forward if time was reversed.                        
                       </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
@@ -501,14 +502,42 @@
                               icon="rotate"
                               size="lg" 
                             ></font-awesome-icon>
-                        to reset time, view, and speed. 
+                        to reset starting time and speed. 
                       </li>
+                      <li>
+                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
+                              class="bullet-icon"
+                              icon="gauge-high"
+                              size="lg" 
+                            ></font-awesome-icon>
+                        to open more speed controls. 
+                      </li>
+                        <ul>
+                          <li class="ml-5">
+                            {{ touchscreen ? "Tap" : "Click" }} 
+                            <v-icon
+                              class="bullet-icon"
+                              icon="mdi-step-forward-2"
+                              size="medium">
+                            </v-icon>
+                            or
+                            <v-icon
+                              class="bullet-icon"
+                              icon="mdi-step-backward-2"
+                              size="medium">
+                            </v-icon>
+                            to move time forward and backward.
+                          </li>
+                          <li class="ml-5">
+                            Use the slider to fine-tune desired speed.
+                          </li>
+                        </ul>
                       <li>
                         Drag <v-icon
                           class="bullet-icon"
                           icon="mdi-circle"
                           size="medium" 
-                        ></v-icon> along the slider to move to any time.
+                        ></v-icon> along the main slider to move to any time.
                       </li>
                     </ul>
 
@@ -519,21 +548,22 @@
                     <ul class="text-list">
                       <li class="mb-2">
                         The <span 
-                        style="color: blue; background-color: white;
-                        padding-inline: 0.7em;
-                        border-radius: 20px;
-                        font-weight: bold ">selected location</span>   
-                        <span 
                         v-if="mobile"
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">historical cloud cover</span>  
-                        and <span 
+                        font-weight: bold ">historical cloud cover</span><span v-if="mobile">, </span>
+                        <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">date/time</span> are displayed under the map.
+                        font-weight: bold ">date/time</span><span v-if="mobile">,</span> and
+                        <span 
+                        style="color: blue; background-color: white;
+                        padding-inline: 0.7em;
+                        border-radius: 20px;
+                        font-weight: bold ">selected location</span>   
+                        are displayed under the map.
                       </li>
                       <li class="switch-bullets">
                         <v-switch
@@ -571,6 +601,9 @@
                     <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
                       <li>
+                        <span class="user-guide-emphasis-white">Center Sun:</span> Recenter view on Sun.
+                      </li>
+                      <li>
                         <span class="user-guide-emphasis-white">Sky Grid:</span> Display altitude/azimuth grid with cardinal directions.
                       </li>
                       <li>
@@ -589,6 +622,13 @@
                     <h4 class="user-guide-header">Location Options:</h4>
                     <p  class="mb-3">(Top-left of the screen)</p>
                     <ul class="text-list">
+                      <li>
+                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
+                              class="bullet-icon"
+                              icon="magnifying-glass"
+                              size="lg" 
+                            ></font-awesome-icon> to search for a specific location name.
+                      </li>
                       <li>
                         {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
                               class="bullet-icon"
@@ -657,6 +697,9 @@
     }"
     @explainer-open="(open: boolean) => { weatherInfoOpen = open }"
     :default-location="locationDeg"
+    :show-on-map="showAWVMapByDefault"
+    :show-charts="showAWVChartsByDefault"
+    :fullscreen="showAWVFullScreen"
     />
   <div
     id="main-content"
@@ -668,7 +711,68 @@
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
-      
+        <div
+          id="forward-geocoding-container"
+          :style="forwardGeocodingCss"
+        >
+          <div
+            id="forward-geocoding-input-row"
+          >
+            <v-text-field
+              v-show="searchOpen"
+              v-model="searchText"
+              class="forward-geocoding-input"
+              label="Enter a location"
+              bg-color="black"
+              density="compact"
+              hide-details
+              variant="solo"
+              :color="accentColor"
+              @keydown.stop
+              @keyup.enter="() => performForwardGeocodingSearch()"
+              @keyup.esc="searchResults = null"
+              @click:clear="searchResults = null"
+              :error-messages="searchErrorMessage"
+            ></v-text-field>
+            <font-awesome-icon
+              id="geocoding-search-icon"
+              icon="magnifying-glass"
+              :size="searchOpen ? 'xl' : '1x'"
+              :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
+              @click="() => {
+                if (searchOpen) {
+                  performForwardGeocodingSearch();
+                } else {
+                  searchOpen = true;
+                }
+              }"
+            ></font-awesome-icon>
+            <font-awesome-icon
+              id="geocoding-close-icon"
+              v-show="searchOpen"
+              icon="circle-xmark"
+              :size="searchOpen ? 'xl' : '1x'"
+              color="gray"
+              @click="() => {
+                searchOpen = false;
+                clearSearchData();
+              }"
+            ></font-awesome-icon>
+          </div>
+          <div
+            id="forward-geocoding-results"
+            v-if="searchResults !== null"
+          >
+            <div
+              v-for="(feature, index) in searchResults.features"
+              class="forward-geocoding-result"
+              :key="index"
+              @click="() => setLocationFromSearchFeature(feature)"
+            >
+              {{ feature.place_name }}
+            </div>
+          </div>
+        </div>
         <icon-button
           id="share"
           fa-icon="share-nodes"
@@ -812,6 +916,10 @@
         <div id="splash-screen-guide">
           <v-row>
             <v-col cols="12">
+              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
+              New! Location Search
+            </v-col>
+            <v-col cols="12">
               <font-awesome-icon
                 icon="location-dot"
               /> Choose any location 
@@ -822,7 +930,9 @@
               /> View historical cloud data
             </v-col>
             <v-col cols="12">
-            <img class="svg-inline--fa rounded-lg bg-red"  style="height:1.2em;margin-inline:10px" src="./assets/new-rectangle-solid-svgrepo-com.svg"> <span class="text-red">Detailed Cloud Data View</span>
+              <font-awesome-icon
+                icon="chart-column"
+              />New! Detailed cloud explorer
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
@@ -912,7 +1022,13 @@
                   <template v-slot:prepend>
                     <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                    <strong>View historical cloud data</strong> for the week of April 8th from 2003&#8211;2023. <span class="text-red">New</span>: View detailed 0.5<sup>o</sup> cloud data including by presence of  El Niño/La Niña climate patterns.
+                    <strong>View historical cloud data</strong> for the week of April 8th from 2003&#8211;2023. 
+                </v-list-item>
+                <v-list-item density="compact">
+                  <template v-slot:prepend>
+                    <font-awesome-icon icon="chart-column" size="xl" class="bullet-icon"></font-awesome-icon>
+                  </template>
+                  <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon><strong>NEW! Explore historical cloud data</strong> as individual years or filter by El Niño/La Niña climate patterns.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -935,35 +1051,6 @@
                 size="lg"
                 /> at top left.
               </p> 
-            </div>
-          </v-window-item>
-
-          <v-window-item :value="3">
-            <div class="intro-text mb-3">
-              <h4 class="mb-3">
-                Check back soon for:
-              </h4>
-              
-              <ul>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-view-grid-compact" class="bullet-icon"></v-icon>
-                  </template>
-                  Higher resolution historical cloud data
-                </v-list-item>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-baby-face-outline" class="bullet-icon"></v-icon>
-                  </template>
-                  Filter cloud data by El Ni&#241;o years
-                </v-list-item>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-tools" class="bullet-icon"></v-icon>
-                  </template>
-                  More advanced tools for cloud data exploration
-                </v-list-item>
-              </ul> 
             </div>
           </v-window-item>
         </v-window>
@@ -989,7 +1076,7 @@
             @keyup.enter="introSlide++"
             elevation="0"
             >
-            {{ introSlide < 3 ? 'Next' : 'Get Started' }}
+            {{ introSlide < 2 ? 'Next' : 'Get Started' }}
           </v-btn>
         </div>
       </div>
@@ -1241,7 +1328,7 @@
                     :fa-icon="playbackVisible ? 'times' : 'gauge-high'"
                     :color="accentColor"
                     :focus-color="accentColor"
-                    tooltip-text="Time Controls"
+                    tooltip-text="Speed Controls"
                     tooltip-location="top"
                     tooltip-offset="5px"
                     faSize="1x"
@@ -1459,14 +1546,28 @@ const R2D = 180 / Math.PI;
 export interface MapBoxFeature {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   place_type: string[];
-  text: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  place_name: string;
+  text?: string;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   properties: { short_code: string; };
+  center: [number, number];
+  context: MapBoxContextItem[];
 }
 
 export interface MapBoxFeatureCollection {
   type: "FeatureCollection";
   features: MapBoxFeature[];
+}
+
+export interface MapBoxContextItem {
+  id: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  mapbox_id: string;
+  text: string;
+  wikidata: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  short_code?: string;
 }
 
 
@@ -1519,7 +1620,7 @@ type OptionalFieldsShallow<T> = {
   [P in keyof T]?: T[P]
 };
 
-type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean }>;
+type QueryData = OptionalFieldsShallow<LocationDeg & { splash: boolean } & {awv: boolean}>;
 
 let queryData: QueryData = {};
 const UUID_KEY = "eclipse-mini-uuid" as const;
@@ -1725,6 +1826,11 @@ export default defineComponent({
       positionSet: false,
       imagesetFolder: null as Folder | null,
 
+      searchOpen: true,
+      searchText: null as string | null,
+      searchResults: null as MapBoxFeatureCollection | null,
+      searchErrorMessage: null as string | null,
+
       showMapTooltip: false,
       showTextTooltip: false,
       showMapSelector: false,
@@ -1734,7 +1840,10 @@ export default defineComponent({
       geolocationPermission: '' as 'granted' | 'denied' | 'prompt',
       
       showWWTGuideSheet: false,
-      showAdvancedWeather: false,
+      showAdvancedWeather: queryData.awv ?? false,
+      showAWVMapByDefault: queryData.awv ?? false,
+      showAWVChartsByDefault: queryData.awv ?? false,
+      showAWVFullScreen: false,
       
       selectionProximity: 4,
       pointerMoveThreshold: 6,
@@ -1889,6 +1998,8 @@ export default defineComponent({
     }
     const splashQuery = searchParams.get("splash");
     queryData.splash = splashQuery !== "false";
+    const awv = searchParams.get("awv");
+    queryData.awv = awv === "true";
   },
 
   mounted() {
@@ -2136,6 +2247,11 @@ export default defineComponent({
         '--app-content-height': this.showInfoSheet ? '100vh' : '100vh',
         '--top-content-height': this.showGuidedContent? this.guidedContentHeight : this.guidedContentHeight,
         '--moon-color': this.moonColor,
+      };
+    },
+    forwardGeocodingCss() {
+      return {
+        '--fg-container-padding': this.searchOpen ? '5px 10px 12px 10px' : '0px',
       };
     },
     wwtControl(): WWTControl {
@@ -2790,6 +2906,7 @@ export default defineComponent({
         return;
       }
       this.locationDeg = location;
+      this.updateSelectedLocationText();
     },
 
     onTimeSliderChange() {
@@ -3323,38 +3440,61 @@ export default defineComponent({
       }
       
     },
-    
 
-    mapboxLocationText(location: MapBoxFeatureCollection): string {
-      const relevantFeatures = location.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
-      const placeFeature = relevantFeatures.find(feature => feature.place_type.includes("place")) ?? (relevantFeatures.find(feature => feature.place_type.includes("postcode")) ?? null);
-      const pieces: string[] = [];
-      if (placeFeature && placeFeature.text) {
-        pieces.push(placeFeature.text);
+    findBestFeature(collection: MapBoxFeatureCollection): MapBoxFeature | null {
+      const relevantFeatures = collection.features.filter(feature => RELEVANT_FEATURE_TYPES.some(type => feature.place_type.includes(type)));
+      const placeFeature = relevantFeatures.find(feature => feature.place_type.includes("place")) ?? (relevantFeatures.find(feature => feature.place_type.includes("postcode")) ?? undefined);
+      if (placeFeature !== undefined) {
+        return placeFeature;
+      }
+      const regionFeature = relevantFeatures.find(feature => feature.place_type.includes("region"));
+      if (regionFeature !== undefined) {
+        return regionFeature;
       }
       const countryFeature = relevantFeatures.find(feature => feature.place_type.includes("country"));
-      if (countryFeature) {
-        let countryText: string | null = countryFeature.text;
-        if (NA_COUNTRIES.includes(countryText)) {
-          countryText = null;
-          const regionFeature = relevantFeatures.find(feature => feature.place_type.includes("region"));
-          if (regionFeature) {
-            let stateCode = regionFeature.properties.short_code as string;
-            if (stateCode) {
-              if (NA_ABBREVIATIONS.some(abbr => stateCode.startsWith(abbr))) {
-                stateCode = stateCode.substring(3);
-              }
-              pieces.push(stateCode);
-            }
+      if (countryFeature !== undefined) {
+        return countryFeature;
+      }
+      return null;
+    },
+
+    textForMapboxFeature(feature: MapBoxFeature): string {
+      const pieces: string[] = [];
+      if (feature.text) {
+        pieces.push(feature.text);
+      }
+      feature.context.forEach(item => {
+        const itemType = item.id.split(".")[0];
+        if (!RELEVANT_FEATURE_TYPES.includes(itemType)) {
+          return;
+        }
+        let text = null as string | null;
+        const shortCode = item.short_code;
+        if (itemType === "region" && shortCode != null) {
+          if (NA_ABBREVIATIONS.some(abbr => shortCode.startsWith(abbr))) {
+            text = shortCode.substring(3);
+          }
+        } else if (itemType === "country") {
+          const itemText = item.text;
+          if (!NA_COUNTRIES.includes(itemText)) {
+            text = itemText; 
           }
         }
-        if (countryText) {
-          pieces.push(countryText);
+        if (text !== null) {
+          pieces.push(text);
         }
-      }
+      });
       return pieces.join(", ");
     },
 
+    textForMapboxResults(results: MapBoxFeatureCollection): string {
+      const feature = this.findBestFeature(results);
+      if (feature === null) {
+        return "";
+      }
+      return this.textForMapboxFeature(feature);
+    },
+    
     async textForLocation(longitudeDeg: number, latitudeDeg: number): Promise<string> {
       const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitudeDeg},${latitudeDeg}.json?access_token=${accessToken}`;
@@ -3364,9 +3504,11 @@ export default defineComponent({
           if (result.features.length === 0) {
             return null;
           }
-          return this.mapboxLocationText(result);
+          return this.textForMapboxResults(result);
         })
-        .catch((_err) => null);
+        .catch((_err) => {
+          this.searchErrorMessage = "An error occurred while searching";
+        });
       if (mapBoxText) {
         return mapBoxText;
       } else {
@@ -3376,6 +3518,50 @@ export default defineComponent({
         const lon = Math.abs(this.locationDeg.longitudeDeg).toFixed(3);
         return `${lat}° ${ns}, ${lon}° ${ew}`;
       }
+    },
+
+    async geocodingInfoForSearch(searchText: string): Promise<MapBoxFeatureCollection | null> {
+      const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}&types=place`;
+      return fetch(url)
+        .then(response => response.json())
+        .then((result: MapBoxFeatureCollection) => {
+          return result;
+        })
+        .catch((_err) => null);
+    },
+
+    performForwardGeocodingSearch() {
+      if (this.searchText === null || this.searchText.length < 3) {
+        return;
+      }
+      this.geocodingInfoForSearch(this.searchText).then((info) => {
+        if (info !== null && info.features?.length === 1) {
+          this.setLocationFromSearchFeature(info.features[0]);
+        } else if (info !== null && info.features?.length == 0) {
+          this.searchErrorMessage = "No matching places were found";
+        } else {
+          this.searchResults = info;
+        }
+      });
+    },
+
+    setLocationFromFeature(feature: MapBoxFeature) {
+      this.locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] };
+      this.textForLocation(feature.center[0], feature.center[1]).then((text) => {
+        this.selectedLocationText = text;
+      });
+    },
+
+    clearSearchData() {
+      this.searchResults = null;
+      this.searchText = null;
+      this.searchErrorMessage = null;
+    },
+
+    setLocationFromSearchFeature(feature: MapBoxFeature) {
+      this.setLocationFromFeature(feature);
+      this.clearSearchData();
     },
     
     decreasePlaybackRate() {
@@ -3404,12 +3590,10 @@ export default defineComponent({
       this.playbackRate = sign * Math.pow(10, Math.abs(ezrate));
     },
     
-    
-
     async updateSelectedLocationText() {
       this.selectedLocationText = await this.textForLocation(this.locationDeg.longitudeDeg, this.locationDeg.latitudeDeg);
     },
-    
+
     niceRound(val: number) {
       // rounding routine specifically for the playback rate
       const abs = Math.abs(val);
@@ -3542,7 +3726,6 @@ export default defineComponent({
       this.playing = false;
       // this.sunOffset = null;
       this.updateWWTLocation();
-      this.updateSelectedLocationText();
 
       // We need to let the location update before we redraw the horizon and overlay
       // Not a huge fan of having to do this, but we really need a frame render to update e.g. sun/moon positions
@@ -3564,6 +3747,15 @@ export default defineComponent({
         this.cloudCoverSelectedLocations.push(visitedLocation);
       } else {
         this.userSelectedLocations.push(visitedLocation);
+      }
+    },
+
+    searchText(text: string | null) {
+      if (this.searchErrorMessage) {
+        this.searchErrorMessage = null;
+      }
+      if (!text || text.length === 0) {
+        this.searchResults = null;
       }
     },
 
@@ -3612,7 +3804,7 @@ export default defineComponent({
     },
     
     introSlide(val: number) {
-      this.inIntro = val < 4;
+      this.inIntro = val < 3;
       return;
     },
 
@@ -3902,6 +4094,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: fit-content;
   
   @media (max-width: 599px) {
     top: 2.5rem;
@@ -4223,9 +4416,9 @@ body {
   }
 
   #splash-screen-guide {
-    margin-block: 1.5em;
-    font-size: min(5vw, 4vh);
-    line-height: 140%;
+    margin-block: 1em;
+    font-size: min(4.5vw, 3.6vh);
+    line-height: 160%;
     width: 75%;
 
     .v-col{
@@ -4239,9 +4432,9 @@ body {
   }
 
   #splash-screen-acknowledgements {
-    font-size: calc(1.7 * var(--default-font-size));
-    line-height: calc(1.5 * var(--default-line-height));
-    width: 60%; 
+    font-size: calc(1.3 * var(--default-font-size));
+    line-height: calc(1.2 * var(--default-line-height));
+    width: 80%; 
   }
 
   #splash-screen-logos {
@@ -5318,6 +5511,68 @@ a {
 @keyframes blinker {
   10% {
     opacity: 0;
+  }
+}
+
+.icon-wrapper {
+  width: fit-content;
+}
+
+#forward-geocoding-container {
+  position: relative;
+  width: fit-content;
+  color: var(--accent-color);
+  background-color: black;
+  border: 2px solid var(--accent-color);
+  border-radius: 20px;
+  padding: var(--fg-container-padding);
+
+  .v-text-field {
+    min-width: 150px;
+    width: min(200px, 20vw);
+  }
+
+  #forward-geocoding-input-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 10px;
+    align-items: center;
+  }
+
+  #geocoding-search-icon {
+    padding-inline: calc(0.3 * var(--default-line-height));
+    padding-block: calc(0.4 * var(--default-line-height));
+  }
+
+  #geocoding-search-icon:hover, #geocoding-close-icon:hover {
+    cursor: pointer;
+  }
+
+  // For some reason setting width: 100% makes the search results 2px too small
+  // It's probably some Vuetify styling thing
+  // Maybe there's a better workaround, but this gets the job done for now
+  #forward-geocoding-results {
+    position: absolute;
+    top: 42px;
+    left: -1px;
+    width: calc(100% + 2px);
+    background: black;
+    border: 1px solid var(--accent-color);
+    border-top: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding: 0px 10px;
+
+    .forward-geocoding-result {
+      border-top: 1px solid var(--accent-color);
+      font-size: 12pt;
+      pointer-events: auto;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
   }
 }
 </style>

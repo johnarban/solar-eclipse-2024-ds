@@ -51,7 +51,7 @@ interface CloudData {
 
 export default defineComponent({
 
-  emits: ["place", "update:modelValue", "error", "dataclick"],
+  emits: ["place", "update:modelValue", "error", "dataclick", "finishLoading"],
 
   props: {
     
@@ -203,6 +203,7 @@ export default defineComponent({
         return;
       }
       this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
+      this.$emit('finishLoading');
     },
 
     
@@ -330,13 +331,11 @@ export default defineComponent({
       const initialZoom = this.mapOptions.initialZoom ?? 4;
       const zoom = initial ? initialZoom : (this.map?.getZoom() ?? initialZoom);
       const map = L.map(mapContainer, {renderer: new L.Canvas()}).setView(location, zoom);
-      
+
       const options = { ...defaultMapOptions, ...this.mapOptions };
       this.basemap = L.tileLayer(options.templateUrl, options);
       this.basemap.addTo(map);
 
-      this.updateCloudCover(this.showCloudCover);
-      this.bringLocationAndPathToFront();
 
       this.placeCircles = this.places.map(place => this.circleForPlace(place));
       this.placeCircles.forEach((circle, index) => {
@@ -412,6 +411,9 @@ export default defineComponent({
       this.selectedCircle?.bringToFront();
       
       this.map = map;
+      
+      this.updateCloudCover(this.showCloudCover);
+      this.bringLocationAndPathToFront();
     },
 
     updateValue(value: LocationDeg) {
