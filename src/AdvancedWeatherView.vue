@@ -524,7 +524,7 @@ export default defineComponent({
       mapDescriptionText: '',
       locationName: '',
       inBounds: false,
-      displayData: this.showOnMap,
+      displayData: false,
       displayCharts: this.showCharts,
       showCloudCover: true,
       transferFunction: this.transferFunction8,
@@ -544,7 +544,7 @@ export default defineComponent({
       this.loadEightDayData().then(() => {
         console.log('preloading data');
         this.dataloaded = true;
-        this.updateData(false);
+        this.updateData(this.showOnMap);
         this.updateMapDescriptionText();
       });
     }
