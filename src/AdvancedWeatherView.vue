@@ -235,7 +235,7 @@
             :scatter-label="!subsetSelected ? 'All Years' : 'Other Years'"
             :other-data="subsetData"
             :y-range="[-.1,1.1]"
-            :x-range="[new Date(2003, 1, 8), new Date(2023, 7, 8)]"
+            :x-range="[new Date(2002, 9, 8), new Date(2023, 11, 8)]"
 
               :y-axis-options="{
                 ticks: {callback: (value: number, index: number) => {
@@ -267,7 +267,7 @@
                     backgroundColor: 'transparent',
                     content: skyCoverCodes[i],
                   },
-                  xMin: new Date(2023, 1, 8),
+                  xMin: new Date(2023, 0, 8),
                   yMin: (min + max) / 200,
                   yMax: (min + max) / 200,
                   };
@@ -628,7 +628,7 @@ export default defineComponent({
       // show the lat lon of index
       
       this.allYears.map((year) => {
-        allData.push({'x': new Date(year, 4, 8), 'y':this.allCloudData[year][index].cloudCover});
+        allData.push({'x': new Date(year, 3, 8), 'y':this.allCloudData[year][index].cloudCover});
       });
       // console.log('index', index, this.latitudes[index], this.longitudes[index], allData.map(d => d.y));
       return allData;
@@ -682,7 +682,7 @@ export default defineComponent({
         if (index === -1 || index === null) {
           return;
         }
-        allData.push({'x':new Date(year, 4, 8), 'y':data[index].cloudCover});
+        allData.push({'x':new Date(year, 3, 8), 'y':data[index].cloudCover});
       });
 
       return allData;
@@ -1271,6 +1271,7 @@ export default defineComponent({
     
   .graph-col {
     height: 300px;
+    padding: 6px;
   }
   
   .v-btn {
