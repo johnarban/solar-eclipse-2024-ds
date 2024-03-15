@@ -28,7 +28,7 @@
           
           <v-window-item value="cloud-data">
             <p>
-              NASA's Aqua and Terra satellites provide daily views of the entire surface of Earth. The <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS</a> instruments on these satellites help scientists learn about conditions in our atmosphere and oceans. We display calculated <strong>cloud cover fraction</strong>&#8212;the percentage of the sky at a given location that is covered by clouds&#8212;from MODIS on the Aqua satellite, provided by the NASA Near Earth Observations (<a href="https://neo.gsfc.nasa.gov/view.php?datasetId=MYDAL2_E_CLD_FR" target="_blank">NEO</a>) website.
+              NASA's Aqua and Terra satellites provide daily views of the entire surface of Earth. The <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS</a> instrument on these satellites helps scientists learn about conditions in our atmosphere and oceans. We display the calculated <strong>cloud cover fraction</strong>&#8212;the percentage of the sky at a given location that is covered by clouds&#8212;from MODIS (on the Aqua satellite), as provided by the NASA Near Earth Observations (<a href="https://neo.gsfc.nasa.gov/view.php?datasetId=MYDAL2_E_CLD_FR" target="_blank">NEO</a>) website.
                 <!-- The daily data can have gaps and processing artefacts, so the 8-day average 
                 provies a more reliable measure of the cloud cover for a given time. -->
             </p>
