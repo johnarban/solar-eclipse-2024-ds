@@ -39,11 +39,7 @@
           
           <v-window-item value="cloud-data">
             <p>
-              NASAs <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS Aqua and Terra</a> satellites 
-                provide daily views of the entire surface of the Earth and measure the cloud cover.
-                This is provided as the <strong>cloud cover fraction - <em>the percentage of the sky at a given location that is covered 
-                by clouds</em></strong>. We are using MODIS Aqua cloud cover data product as provided by the 
-                  <a href="https://neo.gsfc.nasa.gov/view.php?datasetId=MYDAL2_E_CLD_FR" target="_blank">NASA Near Earth Observations (NEO)</a> website.
+              NASA's Aqua and Terra satellites provide daily views of the entire surface of Earth. The <a href="https://modis.gsfc.nasa.gov/" target="_blank">MODIS</a> instruments on these satellites help scientists learn about conditions in our atmosphere and oceans. We display calculated <strong>cloud cover fraction</strong>&#8212;the percentage of the sky at a given location that is covered by clouds&#8212;from MODIS on the Aqua satellite, provided by the NASA Near Earth Observations (<a href="https://neo.gsfc.nasa.gov/view.php?datasetId=MYDAL2_E_CLD_FR" target="_blank">NEO</a>) website.
                 <!-- The daily data can have gaps and processing artefacts, so the 8-day average 
                 provies a more reliable measure of the cloud cover for a given time. -->
             </p>
@@ -55,22 +51,34 @@
                 NASA provides the cloud cover data in 1-day, 8-day (and, not included, 30-day) averages. 
                 <ul>
                   <li>The <strong>1-day (daily)</strong> data maps display historic cloud cover for each April 8<sup>th</sup> from 2003 to 2023. </li>
-                  <li>The <strong>8-day average</strong> gives average of the 1-day data from April 7-14 from 2003 to 2023. </li>
+                  <li>The <strong>8-day</strong> maps display an average of the 1-day data from April 7-14 from 2003 to 2023. </li>
                 </ul>
-                The daily data can have gaps and processing artefacts, so the 8-day average provides a more reliable measure of the cloud cover at every location on the map. 
-                <!-- Also, the 8-day average gives us more data to draw conclusions from. -->
-                Because weather can vary considerably from hour-to-hour and day-to-day, the longer interval of the 8-day average gives us more data 
-                  from which we can draw better conclusions about the possible weather conditions in a given location. 
-                <!-- (MODIS also offers month-long averages of the data, but we opted not to include that here to improve performance and data load times.) -->
+              </p>
+            </details>
+            <details class="faq">
+              <summary>What can I learn from the 1-day maps?</summary>
+              <p>
+                If you compare the 1-day vs. the 8-day maps, you'll notice that the 1-day maps often have more data at the extreme ends, either mostly clear or cloudy. The 8-day maps tend to have more data concentrated in the middle bins of partly cloudy or mostly cloudy. If you average together days that are clear and cloudy, you will end up with something in the middle. The 1-day maps are not subject to this "smearing" effect of averaging over many days of data.
+              </p>
+            </details>
+            <details class="faq">
+              <summary>What can I learn from the 8-day maps?</summary>
+              <p>
+                The daily data can have gaps and processing artefacts, so the 8-day average provides a more reliable measure of the cloud cover at every location on the map. Because weather can vary considerably from hour-to-hour and day-to-day, the longer interval of the 8-day average gives us more data from which we can draw better conclusions about the possible weather conditions in a given location. 
+              </p>
+            </details>
+            <details class="faq">
+              <summary>Why are 30-day maps not available?</summary>
+              <p>
+                MODIS offers month-long averages of the data, but we opted not to include that here to improve performance and data load times.
               </p>
 
             </details>
             
-            
             <details class="faq">
               <summary>How does the percent cloud cover relate to what I might see in a weather report?</summary>
               <p>
-                We group the percent cloud cover based on the <a href="https://www.weather.gov/mrx/pfm_explain" target="_blank">bins from the National Weather Service</a>:
+                We group the percent cloud cover based on the <a href="https://www.weather.gov/mrx/pfm_explain" target="_blank">bins</a> from the National Weather Service:
                 <table>
                   <tr>
                     <th>Percentage</th>
@@ -100,10 +108,17 @@
             <details class="faq">
               <summary>Why is 2022 missing from the year list?</summary>
               <p>
-                Sometimes satellites go offline or there are issues transmitting data back to Earth. 
-                On March 31, 2022 the MODIS Aqua satellite entered SAFE mode, only returning to normal operations on April 17, 2022.
+                Sometimes satellites go offline, or there are issues transmitting data back to Earth. 
+                On March 31, 2022 the Aqua satellite entered SAFE mode, only returning to normal operations on April 17, 2022.
                 <!-- https://mcst.gsfc.nasa.gov/iot/pm1weekly2022-0852022-091, Event summary https://mcst.gsfc.nasa.gov/news/aqua-safe-mode-event -->
-                No cloud cover data is available from Mar 31 - Apr 16, 2022. <a href="https://mcst.gsfc.nasa.gov/news/aqua-safe-mode-event" target="_blank">View event summary</a>. 
+                No cloud cover data is available from Mar 31 - Apr 16, 2022. View the event <a href="https://mcst.gsfc.nasa.gov/news/aqua-safe-mode-event" target="_blank">summary</a>. 
+              </p>
+            </details>
+
+            <details class="faq">
+              <summary>Why use data from the Aqua satellite instead of Terra?</summary>
+              <p>
+                We use data from the Aqua satellite because its cloud cover measurements are taken in the afternoon, which corresponds better to the time of day of the April Eclipse.
               </p>
             </details>
             
@@ -118,7 +133,7 @@
             <details class="faq">
               <summary>What is a mean?</summary>
               <p>
-                The mean is the average of all values in the dataset. It is calculated by adding all the values together and dividing by the number of values. This is the statistic people are probably more familiar with and is often interpreted as a single value that “best” represents an entire data set.
+                The mean is the average of all values in the dataset. It is calculated by adding all the values together and dividing by the number of values. This is the statistical term people are probably more familiar with and is often interpreted as a single value that “best” represents an entire data set.
               </p>
             </details>
             
@@ -141,53 +156,51 @@
             
             
             <details class="faq">
-              <summary><v-icon>mdi-chart-bar</v-icon> What is in the bar chart on the  {{ smAndUp ? 'left' : 'top' }}?</summary>
+              <summary><v-icon>mdi-chart-bar</v-icon> What is in the chart on the  {{ smAndUp ? 'left' : 'top' }}?</summary>
               <p>
-                The left hand graph is called a histogram. For your selected location, it tells you how many years since 2003 were Clear, Partly Cloudy, Mostly Cloudy, or Cloudy at this location. If you have filtered the data by El Nino, Neutral, or La Nina years, your chosen subset will be colored with the blue to white gradient, while the rest of the years will appear gray.
+                The left hand graph is called a histogram. For your selected location, it tells you how many years since 2003 were Clear, Partly Cloudy, Mostly Cloudy, or Cloudy at this location. If you have filtered the data by El Niño, Neutral, or La Niña years, your chosen subset will be colored with the blue to white gradient, while the rest of the years will appear gray.
               </p>
             </details>
 
             <details class="faq">
               <summary><v-icon>mdi-chart-scatter-plot</v-icon> What is in the graph on the {{ smAndUp ? 'right' : 'bottom' }}?</summary>
               <p>
-                The right hand graph is a scatter plot showing the cloud cover for your chosen location for each year since 2003. If you have filtered the data by El Nino, Neutral, or La Nina years, or for a single year, those data points will be displayed in yellow. The background of the graph shows what cloud cover values correspond to the weather conditions of Clear, Partly Cloudy, etc.
+                The right hand graph is a scatter plot showing the cloud cover for your chosen location for each year since 2003. If you have filtered the data by El Niño, Neutral, or La Niña years, or for a single year, those data points will be displayed in yellow. The background of the graph shows what cloud cover values correspond to the weather conditions of Clear, Partly Cloudy, etc.
               </p>
             </details>
           </v-window-item>
           
           <v-window-item value="weather">
 
-            <details class="faq">
-              <summary> What is El Niño / La Niña?</summary>
-                You might have heard the terms El Niño or La Niña. 
-                They refer to weather patterns that are associated with a slight warming (“El Niño”) or cooling (“La Niña”) of 
-                  the surface water in the Pacific Ocean relative to normal (“Neutral”). These are part of what is called the El Niño Southern Oscillation (ENSO) cycle.
-                These different conditions can impact weather worldwide, so we provide the option of filtering the historical cloud data based on these classifications. 
-                <a href="https://oceanservice.noaa.gov/facts/ninonina.html" target="_blank">Learn more about these fascinating weather phenomena</a> from the NOAA National Ocean Service. 
-            </details>
+            <p>
+              You might have heard the terms <strong>El Niño</strong> or <strong>La Niña</strong>. They refer to weather patterns that are associated with a slight warming (“El Niño”) or cooling (“La Niña”) of the surface water in the Pacific Ocean relative to normal (“Neutral”). These are part of what is called the El Niño Southern Oscillation (ENSO) cycle. These different conditions can impact weather worldwide, so we provide the option of filtering the historical cloud data based on these classifications. <a href="https://oceanservice.noaa.gov/facts/ninonina.html" target="_blank">Learn more</a> about these fascinating weather phenomena from the NOAA National Ocean Service. 
+            </p>
             
             <details class="faq">
-              <summary> What years are El Niño, La Niña, or Neutral?</summary>
-              We use the <a href="https://psl.noaa.gov/enso/past_events.html" target="_blank">NOAA list of past ENSO events</a> to classify years as El Niño, La Niña, or Neutral.
-              Their list is based on the presence of an active El Niño or La Niña pattern during the months of December, January, and February. 
-              As an ENSO typiclly last several months (or even years), this provides a decent indication a how likely April is to have the same pattern.
-              
-              <p> We duplicate a portion of the list below:</p>
+              <summary> What years are considered El Niño, La Niña, or Neutral?</summary>
+              <p>
+                We use NOAA's <a href="https://psl.noaa.gov/enso/past_events.html" target="_blank">list</a> of past ENSO events to classify years as El Niño, La Niña, or Neutral. As that page explains, there is not a single accepted way to define which of these categories we are in.
+                Their list is based on the presence of an active El Niño or La Niña pattern during the months of December, January, and February. As an ENSO typically last several months (or even years), this provides a decent indication a how likely April is to have the same pattern.
+              </p>
+              <p> For the years included in our data set, they classify them as follows:
               <table>
                 <tr>
-                  <td> El Niño</td>
+                  <td> <strong>El Niño</strong>: </td>
                   <td>2003, 2007, 2010, 2016</td>
                 </tr>
                 <tr>
-                  <td> La Niña</td>
-                  <td>2008, 2011, 2012, 2021, 2022</td>
-                </tr>
-                
-                <tr>
-                  <td> Neutral</td>
+                  <td> <strong>Neutral</strong>: </td>
                   <td>2004, 2005, 2006, 2009, 2013, 2014, 2015, 2017, 2018</td>
                 </tr>
+                <tr>
+                  <td> <strong>La Niña</strong>: </td>
+                  <td>2008, 2011, 2012, 2021, 2022, 2023</td>
+                </tr>
               </table>
+            </p>
+              <p>
+              If you want to see what the ENSO conditions were in March/April in the past, see the "MEI.v2 Values" at this NOAA <a href="https://psl.noaa.gov/enso/mei/" target="_blank">website</a>. 
+            </p>
             </details>
 
 
@@ -265,7 +278,6 @@ export default defineComponent({
 
 strong {
   font-weight: bold;
-  color: #eac402;
 }
 
 h3 {
