@@ -185,7 +185,7 @@
               <div class="d-flex align-center justify-space-between">
               <span class="align-self-start text-right" id="awv-map-description"> {{ mapDescriptionText }} </span>
               <v-checkbox
-                v-if="displayData || true"
+                v-if="displayData"
                 v-model="showCloudCover"
                 label="Show Cloud Cover"
                 color="#eac402"
