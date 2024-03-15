@@ -654,7 +654,8 @@
     @close="() => {
       console.log('closing'); 
       showAdvancedWeather = false;
-      }"
+    }"
+    @explainer-open="(open: boolean) => { weatherInfoOpen = open }"
     :default-location="locationDeg"
     />
   <div
@@ -1709,9 +1710,12 @@ export default defineComponent({
       uuid,
       infoTimeMs: 0,
       weatherTimeMs: 0,
+      weatherInfoTimeMs: 0,
       appStartTimestamp: Date.now(),
       infoStartTimestamp: null as number | null,
       weatherStartTimestamp: null as number | null,
+      weatherInfoStartTimestamp: null as number | null,
+      weatherInfoOpen: false,
       responseOptOut: responseOptOut as boolean | null,
 
       showSplashScreen: queryData.splash ?? true, 
@@ -2833,10 +2837,12 @@ export default defineComponent({
       this.cloudCoverSelectedLocations = [];
       this.infoTimeMs = 0;
       this.weatherTimeMs = 0;
+      this.weatherInfoTimeMs = 0;
       const now = Date.now();
       this.appStartTimestamp = now;
       this.infoStartTimestamp = this.showInfoSheet ? now : null;
       this.weatherStartTimestamp = this.showAdvancedWeather ? now : null;
+      this.weatherInfoStartTimestamp = this.weatherInfoOpen ? now : null;
     },
 
     sendUpdateData() {
@@ -2846,6 +2852,7 @@ export default defineComponent({
       const now = Date.now();
       const infoTime = (this.showInfoSheet && this.infoStartTimestamp !== null) ? now - this.infoStartTimestamp : this.infoTimeMs;
       const weatherTime = (this.showAdvancedWeather && this.weatherStartTimestamp !== null) ? now - this.weatherStartTimestamp : this.weatherTimeMs;
+      const weatherInfoTime = (this.weatherInfoOpen && this.weatherInfoStartTimestamp !== null) ? now - this.weatherInfoStartTimestamp : this.weatherInfoTimeMs;
       fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
         method: "PATCH",
         headers: {
@@ -2861,8 +2868,7 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           delta_info_time_ms: infoTime, delta_app_time_ms: Date.now() - this.appStartTimestamp,
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          delta_advanced_weather_time_ms: weatherTime,
-
+          delta_advanced_weather_time_ms: weatherTime, delta_weather_info_time_ms: weatherInfoTime,
         }),
         keepalive: true,
       }).then(() => {
@@ -3593,6 +3599,15 @@ export default defineComponent({
       } else if (this.weatherStartTimestamp !== null) {
         this.weatherTimeMs += (Date.now() - this.weatherStartTimestamp);
         this.weatherStartTimestamp = null;
+      }
+    },
+
+    weatherInfoOpen(open: boolean) {
+      if (open) {
+        this.weatherInfoStartTimestamp = Date.now();
+      } else if (this.weatherInfoStartTimestamp !== null) {
+        this.weatherInfoTimeMs += (Date.now() - this.weatherInfoStartTimestamp);
+        this.weatherInfoStartTimestamp = null;
       }
     },
     

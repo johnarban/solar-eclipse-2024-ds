@@ -414,7 +414,7 @@ export default defineComponent({
     'define-term': DefineTerm,
   },
   
-  emits: ['update:modelValue','close'],
+  emits: ['update:modelValue','close', 'explainer-open'],
   
   props: {
     modelValue: {
@@ -1206,8 +1206,11 @@ export default defineComponent({
         this.inBounds = inBounds;
       });
       this.getLatLonIndex(value.latitudeDeg, value.longitudeDeg);
-      
     },
+
+    explainerOpen(open: boolean) {
+      this.$emit('explainer-open', open);
+    }
   },
   
   
@@ -1306,4 +1309,3 @@ export default defineComponent({
 
 }
 </style>
-./utils
