@@ -475,7 +475,7 @@ export default defineComponent({
         2018, 2019, 2020, 2021, 2023
       ],
       elNinoYears: [2003, 2007, 2010, 2016],
-      laNinaYears: [2000, 2008, 2011, 2012, 2021, 2022],
+      laNinaYears: [2000, 2008, 2011, 2012, 2021, 2022, 2023],
       neutralYears: [2001, 2002, 2004, 2005, 2006, 2009, 2013, 2014, 2015, 2017, 2018],
       selectedYear: 2021,
       selectedStat: 'median' as Statistics,
