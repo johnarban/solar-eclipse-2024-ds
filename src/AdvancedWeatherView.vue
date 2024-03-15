@@ -423,7 +423,7 @@ export default defineComponent({
     'define-term': DefineTerm,
   },
   
-  emits: ['update:modelValue','close', 'explainer-open'],
+  emits: ['update:modelValue','close', 'explainer-open', 'location'],
   
   props: {
     modelValue: {
@@ -1200,6 +1200,10 @@ export default defineComponent({
     
     defaultLocation(value: CityLocation) {
       console.log('defaultLocation', value);
+      // check if they are the same, if so do nothing
+      if (value.latitudeDeg === this.location.latitudeDeg && value.longitudeDeg === this.location.longitudeDeg) {
+        return;
+      }
       this.location = value;
     },
     
@@ -1234,8 +1238,12 @@ export default defineComponent({
       console.log('dataLoadingProgress', value);
     },
     
-    location(value: CityLocation) {
+    location(value: CityLocation, old: CityLocation) {
       console.log('location', value);
+      if (value.latitudeDeg === old.latitudeDeg && value.longitudeDeg === old.longitudeDeg) {
+        return;
+      }
+      this.$emit('location', value);
       this.updateLocationName();
       this.checkInBounds(value).then((inBounds) => {
         this.inBounds = inBounds;

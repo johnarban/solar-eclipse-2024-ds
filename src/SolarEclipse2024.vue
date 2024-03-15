@@ -683,6 +683,10 @@
     :show-on-map="showAWVMapByDefault"
     :show-charts="showAWVChartsByDefault"
     :fullscreen="showAWVFullScreen"
+    @location="(loc: LocationDeg) => {
+      locationDeg = loc;
+      updateLocationFromMap(loc);
+    }"
     />
   <div
     id="main-content"
