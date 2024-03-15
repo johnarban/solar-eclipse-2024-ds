@@ -29,7 +29,7 @@
           <v-col cols="12" sm="5" :order="2" :order-lg="2">
             <v-row id="query-constructor">              
               <v-col class="sentence-query mb-2" col="12">
-                <label class="d-inline d-sm-block d-xl-inline" for="statistics">Show me</label>
+                <label class="d-inline d-sm-block d-xl-inline" for="statistics">Show me </label>
                 <select 
                   class="select-box"
                   name="statistics" 
@@ -41,7 +41,7 @@
                   <option value="median">the Median</option>
                   <option value="singleyear">a Single Year</option>
                 </select>
-                  <label class="d-inline d-sm-block d-md-inline" for="years">of the cloud cover for </label>
+                  <label class="d-inline d-sm-block d-md-inline" for="years"> of the cloud cover for </label>
                   <select 
                     v-if="selectedStat !== 'singleyear'"
                     class="select-box"
@@ -1306,7 +1306,7 @@ export default defineComponent({
     
     
     >label, >select {
-      margin: 0.25em auto;
+      margin: 0.25em 0.5ch;
     }
     
     > label {
