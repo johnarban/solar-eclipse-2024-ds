@@ -914,7 +914,13 @@
                   <template v-slot:prepend>
                     <font-awesome-icon icon="cloud-sun" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                    <strong>View historical cloud data</strong> for the week of April 8th from 2003&#8211;2023. <span class="text-red">New</span>: View detailed 0.5<sup>o</sup> cloud data including by presence of  El Niño/La Niña climate patterns.
+                    <strong>View historical cloud data</strong> for the week of April 8th from 2003&#8211;2023. 
+                </v-list-item>
+                <v-list-item density="compact">
+                  <template v-slot:prepend>
+                    <font-awesome-icon icon="chart-column" size="xl" class="bullet-icon"></font-awesome-icon>
+                  </template>
+                  <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon><strong>NEW! Explore historical cloud data</strong> as individual years or filter by El Niño/La Niña climate patterns.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -937,35 +943,6 @@
                 size="lg"
                 /> at top left.
               </p> 
-            </div>
-          </v-window-item>
-
-          <v-window-item :value="3">
-            <div class="intro-text mb-3">
-              <h4 class="mb-3">
-                Check back soon for:
-              </h4>
-              
-              <ul>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-view-grid-compact" class="bullet-icon"></v-icon>
-                  </template>
-                  Higher resolution historical cloud data
-                </v-list-item>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-baby-face-outline" class="bullet-icon"></v-icon>
-                  </template>
-                  Filter cloud data by El Ni&#241;o years
-                </v-list-item>
-                <v-list-item density="compact">
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-tools" class="bullet-icon"></v-icon>
-                  </template>
-                  More advanced tools for cloud data exploration
-                </v-list-item>
-              </ul> 
             </div>
           </v-window-item>
         </v-window>
@@ -991,7 +968,7 @@
             @keyup.enter="introSlide++"
             elevation="0"
             >
-            {{ introSlide < 3 ? 'Next' : 'Get Started' }}
+            {{ introSlide < 2 ? 'Next' : 'Get Started' }}
           </v-btn>
         </div>
       </div>
@@ -3585,7 +3562,7 @@ export default defineComponent({
     },
     
     introSlide(val: number) {
-      this.inIntro = val < 4;
+      this.inIntro = val < 3;
       return;
     },
 
