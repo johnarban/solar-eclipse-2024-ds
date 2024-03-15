@@ -43,27 +43,13 @@
                   <li>The <strong>8-day</strong> maps display an average of the 1-day data from April 7-14 from 2003 to 2023. </li>
                 </ul>
               </p>
-            </details>
-            <details class="faq">
-              <summary>What can I learn from the 1-day maps?</summary>
               <p>
                 If you compare the 1-day vs. the 8-day maps, you'll notice that the 1-day maps often have more data at the extreme ends, either mostly clear or cloudy. The 8-day maps tend to have more data concentrated in the middle bins of partly cloudy or mostly cloudy. If you average together days that are clear and cloudy, you will end up with something in the middle. The 1-day maps are not subject to this "smearing" effect of averaging over many days of data.
               </p>
-            </details>
-            <details class="faq">
-              <summary>What can I learn from the 8-day maps?</summary>
               <p>
                 The daily data can have gaps and processing artefacts, so the 8-day average provides a more reliable measure of the cloud cover at every location on the map. Because weather can vary considerably from hour-to-hour and day-to-day, the longer interval of the 8-day average gives us more data from which we can draw better conclusions about the possible weather conditions in a given location. 
               </p>
-            </details>
-            <details class="faq">
-              <summary>Why are 30-day maps not available?</summary>
-              <p>
-                MODIS offers month-long averages of the data, but we opted not to include that here to improve performance and data load times.
-              </p>
-
-            </details>
-            
+            </details>            
             <details class="faq">
               <summary>How does the percent cloud cover relate to what I might see in a weather report?</summary>
               <p>
@@ -93,6 +79,12 @@
               </p>
 
             </details>
+            <details class="faq">
+              <summary>Why use data from the Aqua satellite instead of Terra?</summary>
+              <p>
+                We use data from the Aqua satellite because its cloud cover measurements are taken in the afternoon, which corresponds better to the time of day of the April Eclipse.
+              </p>
+            </details>
             
             <details class="faq">
               <summary>Why is 2022 missing from the year list?</summary>
@@ -103,13 +95,13 @@
                 No cloud cover data is available from Mar 31 - Apr 16, 2022. View the event <a href="https://mcst.gsfc.nasa.gov/news/aqua-safe-mode-event" target="_blank">summary</a>. 
               </p>
             </details>
-
             <details class="faq">
-              <summary>Why use data from the Aqua satellite instead of Terra?</summary>
+              <summary>Why are 30-day maps not available?</summary>
               <p>
-                We use data from the Aqua satellite because its cloud cover measurements are taken in the afternoon, which corresponds better to the time of day of the April Eclipse.
+                MODIS offers month-long averages of the data, but we opted not to include that here to improve performance and data load times.
               </p>
             </details>
+
             
           </v-window-item>
           
