@@ -155,7 +155,7 @@
           <v-col id="awv-map" cols="12" sm="7" :order="1" :order-lg="1">
             <div class="map-colorbar">
             <location-selector
-              :detect-location="false"
+              :detect-location="showOnMap"
               v-model="location"
               label="Location"
               :map-options="mapOptions"
