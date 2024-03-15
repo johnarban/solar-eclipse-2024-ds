@@ -2857,6 +2857,8 @@ export default defineComponent({
       if (this.responseOptOut) {
         return;
       }
+      const now = Date.now();
+      const infoTime = (this.showInfoSheet && this.infoStartTimestamp !== null) ? now - this.infoStartTimestamp : this.infoTimeMs;
       fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
         method: "PATCH",
         headers: {
@@ -2870,7 +2872,7 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          delta_info_time_ms: this.infoTimeMs, delta_app_time_ms: Date.now() - this.appStartTimestamp
+          delta_info_time_ms: infoTime, delta_app_time_ms: Date.now() - this.appStartTimestamp
         }),
         keepalive: true,
       }).then(() => {
