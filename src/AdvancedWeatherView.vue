@@ -273,7 +273,7 @@
       </v-card-text>
       <v-card-actions style="border-top: 1px solid white; margin-top: 10px;">
         <v-spacer></v-spacer>
-        <v-btn @click="close()">Close</v-btn>
+        <v-btn :size="showOnMap ? 'large' : 'default'" :color="showOnMap ? '#eac402' : ''" :variant="showOnMap ? 'flat' : 'plain'" @click="close()">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
