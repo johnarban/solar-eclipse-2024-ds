@@ -674,10 +674,6 @@
     </v-dialog>
   <advanced-weather-view
     v-model="showAdvancedWeather"
-    @close="() => {
-      console.log('closing'); 
-      showAdvancedWeather = false;
-    }"
     @explainer-open="(open: boolean) => { weatherInfoOpen = open }"
     :default-location="locationDeg"
     :show-on-map="showAWVMapByDefault"

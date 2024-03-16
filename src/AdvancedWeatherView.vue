@@ -567,6 +567,9 @@ export default defineComponent({
       },
       set(value: boolean) {
         console.log('AdvancedWeatherView showValue set to', value);
+        if (!value) {
+          this.$emit('location', this.location);
+        }
         this.$emit('update:modelValue', value);
       },
     },
@@ -1243,7 +1246,6 @@ export default defineComponent({
       if (value.latitudeDeg === old.latitudeDeg && value.longitudeDeg === old.longitudeDeg) {
         return;
       }
-      this.$emit('location', value);
       this.updateLocationName();
       this.checkInBounds(value).then((inBounds) => {
         this.inBounds = inBounds;
