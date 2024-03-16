@@ -703,6 +703,7 @@
             </v-card>
           </v-dialog>
         </v-btn>
+          <span class="ep-time ep-duration">Duration: {{ eclipsePrediction.duration }} </span>
           <span class="ep-time ep-start"
             @click="selectedTime = eclipseStart ?? selectedTime"
           >Start: {{ eclipseStart ? toTimeString(new Date(eclipseStart), true) : 'N/A' }} </span>
