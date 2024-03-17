@@ -1,7 +1,7 @@
 <template>
   <div id="eclipse-timer-container">
     <h1> Eclipse Timer</h1>
-    <span class="eclipse-countdown">{{ timeToEclipse }}</span>
+    <span v-if="showTimer" class="eclipse-countdown">{{ timeToEclipse }}</span>
     <!-- utc/local time preference switch -->
     <v-btn-toggle 
       v-model="tzPref"  
@@ -21,14 +21,14 @@
       <h2 class="mb-4"> {{ type }} Eclipse</h2>
     </div>
     <div class="eclipse-data-list" v-if="!noEclipse">
+      <p>Eclipse <define-term
+                    term="Coverage"
+                    definition="The fraction (percentage) of the Sun covered by the Moon."
+                    />: {{ (coverage*100).toFixed(1) }}%</p>
       <p>Eclipse <define-term 
                     definition="The fraction of the Sun covered by the Moon. If a total eclipse, then it is the ratio of the area of the Moon to the area of the Sun. >1 means the apparent size of the Moon is larger than the Sun."
                     term="Magnitude"
                     />: {{ magnitude }}</p>
-      <p>Eclipse <define-term
-                    term="Coverage"
-                    definition="The fraction of the Sun covered by the Moon."
-                    />: {{ coverage }}%</p>
       <p>Eclipse Duration: {{ duration }}</p>
       <table id="time-container">
         <tr class="time">
@@ -85,6 +85,12 @@ export default defineComponent({
       required: true,
     },
     
+    showTimer: {
+      type: Boolean,
+      default: false,
+      required: false,
+    },
+    
     timezone: {
       type: String,
       default: 'UTC',
@@ -108,7 +114,7 @@ export default defineComponent({
   data() {
     return {
       pred: this.prediction,
-      tzPref: 'UTC' as 'UTC' | 'Local',
+      tzPref: 'Local' as 'UTC' | 'Local',
       partialStart: this.prediction.partialStart[0],
       centralStart: this.prediction.centralStart[0],
       maxTime: this.prediction.maxTime[0],

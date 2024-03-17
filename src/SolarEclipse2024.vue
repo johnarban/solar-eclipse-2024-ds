@@ -225,7 +225,9 @@
         <v-slide-y-transition
           :disabled="smAndUp"
         >
-          <div v-if="!smAndUp || smAndUp" id="map-container">
+          <div 
+            :class="[learnerPath === 'Location' ? 'show-after' : '']"
+            v-if="!smAndUp || smAndUp" id="map-container" :data-before-text="eclipsePredictionText">
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
@@ -685,32 +687,6 @@
     }"
     />
 
-    <div class="user-banner">
-      <!-- print out eclipse predicion -->
-        <div class='eclipse-prediction' v-if="eclipsePrediction !== null">
-          <span class="ep-type">{{ eclipseType }} Eclipse:</span>
-          <v-btn id="eclipse-prediction-button" prepend-icon="mdi-timer" density="compact">
-          <v-dialog
-            activator="parent"
-            transition="slide-y-transition"
-            id="eclipse-prediction-sheet"
-            >
-            <v-card
-              >
-              <v-card-text>
-                <eclipse-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor"/>
-              </v-card-text>
-            </v-card>
-          </v-dialog>
-        </v-btn>
-          <span class="ep-time ep-duration">Duration: {{ eclipsePrediction.duration }} </span>
-          <span class="ep-time ep-start"
-            @click="selectedTime = eclipseStart ?? selectedTime"
-          >Start: {{ eclipseStart ? toTimeString(new Date(eclipseStart), true) : 'N/A' }} </span>
-          <span class="ep-time ep-max">Max: {{ eclipseMid ? toTimeString(new Date(eclipseMid), true) : 'N/A' }} </span>
-          <span class="ep-time ep-end">End: {{ eclipseEnd ? toTimeString(new Date(eclipseEnd), true) : 'N/A' }} </span>
-        </div>
-      </div>
   <div
     id="main-content"
   > 
@@ -1146,7 +1122,33 @@
     </div>
     
     <div class="bottom-content">
-
+      
+        
+      
+      <v-dialog
+        max-width="fit-content"
+        activator="parent"
+        transition="slide-y-transition"
+        id="eclipse-prediction-sheet"
+        >
+        <template v-slot:activator="{ props: activatorProps }">
+          <icon-button
+            v-bind="activatorProps"
+            :color="accentColor"
+            :focus-color="accentColor"
+            tooltip-text="View eclipse timing details"
+            tooltip-location="start"
+            >
+            <template #button>Eclipse Details</template>
+          </icon-button>
+        </template>
+        <v-card>
+          <v-card-text>
+            <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor"/>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+      
       <div
         id="controls"
         class="control-icon-wrapper"
@@ -1526,6 +1528,7 @@ import pointInPolygon from 'point-in-polygon';
 
 import { recalculateForObserverUTC } from "./eclipse_predict";
 import { EclipseData } from "./eclipse_types";
+import { toHMS } from './utils';
 
 
 interface CloudData {
@@ -2137,6 +2140,31 @@ export default defineComponent({
   },
 
   computed: {
+    
+    eclipsePredictionText(): string {
+      if (this.eclipsePrediction) {
+        const { type, maxTime, duration } = this.eclipsePrediction;
+        if (type === '' || type === null || maxTime[0] === null) {
+          return "No eclipse";
+        }
+        const typeString = (new Map([
+          ["P", "Partial"],
+          ["T", "Total"],
+          ["A", "Annular"],
+        ])).get(type);
+        
+        const maxTimeString = formatInTimeZone(maxTime[0], this.selectedTimezone, "HH:mm (zzz)");
+        
+        if (duration === '') {
+          // get the duration of the partial eclipse
+          const starting = formatInTimeZone(this.eclipsePrediction.partialStart[0], this.selectedTimezone, "HH:mm (zzz)");
+          const lasting = this.eclipsePrediction.partialEnd[0].getTime() - this.eclipsePrediction.partialStart[0].getTime();
+          return `${typeString} starting at ${starting} and lasting ${toHMS(lasting)}`;
+        }
+        return `${typeString} eclipse at ${maxTimeString} for ${duration}`;
+      }
+      return '';
+    },
 
     selectedCloudCoverData(): CloudData[] | null {
       if (this.cloudCoverData != null) {
@@ -3988,53 +4016,6 @@ body {
   }
 }
 
-.user-banner {
-  position: relative;
-  font-size: var(--default-font-size);
-}
-
-#test-content {
-  position: absolute;
-  width: 50%;
-  height: 60%;
-  padding: 1em;
-  top: 5%;
-  left: 5%;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.eclipse-prediction {
-  background-color: rgb(93, 93, 93);
-  display:flex;
-  justify-content: space-evenly;
-  align-items: center;
-  
-  span {
-    margin: 5px 0;
-  }
-  
-  .ep-type, .ep-max {
-    font-weight: bold;
-  }
-  
-  // style ep-time as a raised button
-  .ep-time {
-    margin: 2px;
-    background-color: #333;
-    color: white;
-    padding-left: 0.25em;
-    padding-right: 0.25em;
-    padding-top: 0.1em;
-    padding-bottom: 0.1em;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.8s;
-    &:hover {
-      background-color: #999;
-    }
-  }
-}
-
 #app {
   width: 100%;
   height: 100%;
@@ -5143,6 +5124,29 @@ video, #info-video {
     width: 100%;
     
     display: flex;
+    
+    
+    &.show-after::after {
+      content: attr(data-before-text);
+      
+      display:flex;
+      width: 100%;
+      min-height: 2.5em;
+      height: max-content;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(0.8 * var(--default-font-size));
+      padding: 0 10px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      
+      color: black;
+      background-color: #cccccc77;
+      z-index: 500;
+      
+      backdrop-filter: blur(5px) saturate(50%);
+    }
     
     
     .map-container {
