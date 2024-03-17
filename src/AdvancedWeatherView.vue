@@ -335,9 +335,9 @@ const latitudesOneDay = points.map((p) => p[0]);
 const longitudesOneDay = points.map((p) => p[1]);
 
 
-type Statistics =  'mean' | 'median' | 'max' | 'min' | 'singleyear';
+type Statistics = 'mean' | 'median' | 'max' | 'min' | 'singleyear';
 type DataSubset = 'elNino' | 'neutral' | 'laNina' | 'allYears';
-type ModisTimeSpan = '1day' | '8day' | 'monthly' ;
+type ModisTimeSpan = '1day' | '8day' | 'monthly';
 
 const statText = new Map([
   ['mean', 'Mean'],
@@ -346,19 +346,7 @@ const statText = new Map([
 ]) as Map<Statistics, string>;
 
 function getStat(val: CloudSummaryData, stat: Exclude<Statistics,'singleyear'>): number {
-  if (stat === 'mean') {
-    return val.mean;
-  }
-  if (stat === 'median') {
-    return val.median;
-  }
-  if (stat === 'max') {
-    return val.max;
-  }
-  if (stat === 'min') {
-    return val.min;
-  }
-  return -1;
+  return val[stat];
 }
 
 const mapSubsets = new Map([
@@ -596,7 +584,7 @@ export default defineComponent({
       const hide1 = this.dataSubset === 'allYears';
       const hide2 = this.selectedStat === 'singleyear';
       
-      return  hide1 || hide2;
+      return hide1 || hide2;
     },
     
     latitudes(): number[] {
@@ -868,6 +856,7 @@ export default defineComponent({
         });
     },
 
+    //
     async loadSummaryData(csvPath: string): Promise<CloudSummaryData[]> {
       return this.inflateFromCsv(csvPath)
         .then(csv => {
@@ -885,7 +874,7 @@ export default defineComponent({
           });
         });
     },
-    
+
     async getElNinoData() {
       console.log('loading el nino data');
       return import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/nino_ucm.zip`)
