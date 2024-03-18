@@ -1986,6 +1986,7 @@ export default defineComponent({
   mounted() {
     
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
+      this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
     }
     this.createUserEntry();
