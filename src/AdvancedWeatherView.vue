@@ -11,6 +11,7 @@
         <define-term 
           no-click
           width="25ch"
+          :showFor="firstOpen ? 5 : 0"
           definition='<p class="intro">
           Click for more details about the cloud cover data, statistical terms, and the El Niño & La Niña weather patterns. 
         </p>'
@@ -460,6 +461,7 @@ export default defineComponent({
   data() {
     const eps = 0.000001;
     return {
+      firstOpen: true,
       explainerOpen: false,
       statText,
       mapSubsets,
@@ -1197,6 +1199,7 @@ export default defineComponent({
       } else {
         console.log('closing AWV view');
         this.needToUpdate = true;
+        this.firstOpen = false;
         // this.displayData = false;
       }
     }, 

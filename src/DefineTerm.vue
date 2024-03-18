@@ -2,6 +2,7 @@
 import { tooltip } from 'leaflet';
 <template>
   <v-tooltip 
+    v-model="tooltip"
     :width="width"
     :open-on-click="!noClick"
     :open-on-hover="true"
@@ -14,9 +15,9 @@ import { tooltip } from 'leaflet';
     </template>
     
     <slot name="definition">
-    <div class="define-term-tooltip definition" v-html="definition">
-    </div>
-  </slot>
+      <div class="define-term-tooltip definition" v-html="definition">
+      </div>
+    </slot>
 
     </v-tooltip>
 </template>
@@ -52,8 +53,42 @@ export default defineComponent({
     noClick: {
       type: Boolean,
       default: false
+    },
+    showFor: {
+      type: Number,
+      default: 0,
+      validator: (value: number) => value >= 0
     }
-  }
+  },
+  
+  data() {
+    return {
+      tooltip: false
+    };
+  },
+  
+  mounted() {
+    if (this.showFor > 0) {
+      this.timedShow();
+    }
+  },
+  
+  methods: {
+    show() {
+      this.tooltip = true;
+    },
+    hide() {
+      this.tooltip = false;
+    },
+    
+    timedShow() {
+      this.show();
+      setTimeout(() => {
+        this.hide();
+      }, this.showFor * 1000);
+    }
+    
+  },
 });
 
 
