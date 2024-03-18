@@ -1,19 +1,16 @@
 <template>
   <div id="eclipse-timer-container">
     <h1> Eclipse Timer</h1>
-    <span v-if="showTimer" class="eclipse-countdown">{{ timeToEclipse }}</span>
-    <!-- utc/local time preference switch -->
-    <v-btn-toggle 
-      v-model="tzPref"  
-      :color="color" 
-      divided 
-      mandatory 
-      hide-details
-      variant="outlined"
-      >
-      <v-btn value="UTC" size="small" height="2em" >UTC</v-btn>
-      <v-btn value="Local" size="small" height="2em" >Local ({{ tzCode }})</v-btn>
-    </v-btn-toggle>
+    <div v-if="showTimer" class="eclipse-countdown">
+      <div>
+        {{ timeToEclipse }}
+      </div> 
+      <div style="font-size:0.8em;">
+        till max eclipse
+      </div>
+    </div>
+    
+    
     <div v-if="noEclipse">
       <p>No eclipse is predicted for this location.</p>
     </div>
@@ -33,33 +30,46 @@
       <table id="time-container">
         <tr class="time">
           <td class="time-label">Partial Start</td>
-          <td class="time-value">{{ timeString(partialStart) }}</td>
+          <td class="time-value">{{ partialStart[1] === '' ? timeString(partialStart[0]) : 'Sun below Horizon' }}</td>
         </tr>
         <tr class="time" v-if="isTotal">
           <td class="time-label">Totality Start</td>
-          <td class="time-value">{{ timeString(centralStart) }}</td>
+          <td class="time-value">{{ centralStart[1] === '' ? timeString(centralStart[0]) : 'Sun below Horizon' }}</td>
         </tr>
         <tr class="time">
           <td class="time-label">Max Eclipse</td>
-          <td class="time-value"> {{ timeString(maxTime) }} </td>
+          <td class="time-value">{{ maxTime[1] === '' ? timeString(maxTime[0]) : 'Sun below Horizon' }}</td>
         </tr>
         <tr class="time" v-if="isTotal">
           <td class="time-label">Totality End</td>
-          <td class="time-value">{{ timeString(centralEnd) }}</td>
+          <td class="time-value">{{ centralEnd[1] === '' ? timeString(centralEnd[0]) : 'Sun below Horizon' }}</td>
         </tr>
         <tr class="time">
           <td class="time-label">Partial End</td>
-          <td class="time-value"> {{ timeString(partialEnd) }}  </td>
+          <td class="time-value">{{ partialEnd[1] === '' ? timeString(partialEnd[0]) : 'Sun below Horizon' }}</td>
         </tr>
       </table>
     </div>
-    
+    <!-- utc/local time preference switch -->
+    <hr class="mt-4" style="width:100%">
+    <v-btn-toggle 
+      class="mt-2"
+      v-model="tzPref"  
+      :color="color" 
+      divided 
+      mandatory 
+      hide-details
+      variant="outlined"
+      >
+      <v-btn value="UTC" size="small" height="2em" >UTC</v-btn>
+      <v-btn value="Local" size="small" height="2em" >Local ({{ tzCode }})</v-btn>
+    </v-btn-toggle>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import { EclipseData } from './eclipse_types';
+import { EclipseData, BSRArray } from './eclipse_types';
 import { formatInTimeZone } from "date-fns-tz";
 import { VBtnToggle } from 'vuetify/components/VBtnToggle';
 import { VBtn } from 'vuetify/components/VBtn';
@@ -115,13 +125,13 @@ export default defineComponent({
     return {
       pred: this.prediction,
       tzPref: 'Local' as 'UTC' | 'Local',
-      partialStart: this.prediction.partialStart[0],
-      centralStart: this.prediction.centralStart[0],
-      maxTime: this.prediction.maxTime[0],
-      centralEnd: this.prediction.centralEnd[0],
-      partialEnd: this.prediction.partialEnd[0],
-      magnitude: this.prediction.magnitude[0],
-      coverage: this.prediction.coverage[0],
+      // partialStart: this.prediction.partialStart[0],
+      // centralStart: this.prediction.centralStart[0],
+      // maxTime: this.prediction.maxTime[0],
+      // centralEnd: this.prediction.centralEnd[0],
+      // partialEnd: this.prediction.partialEnd[0],
+      // magnitude: this.prediction.magnitude[0],
+      // coverage: this.prediction.coverage[0],
       duration: this.prediction.duration,
       timeToEclipse: '',
     };
@@ -159,26 +169,69 @@ export default defineComponent({
     
     tzCode(): string {
       return formatInTimeZone(new Date(), this.timezone, 'z');
-    }
+    },
+    
+    partialStart() {
+      return this.circumstance(this.prediction.partialStart, 'Partial Start');
+    },
+    
+    partialEnd() {
+      return this.circumstance(this.prediction.partialEnd, 'Partial End');
+    },
+    centralStart() {
+      return this.circumstance(this.prediction.centralStart, 'Central Start');
+    },
+    centralEnd() {
+      return this.circumstance(this.prediction.centralEnd, 'Central End');
+    },
+    maxTime() {
+      return this.circumstance(this.prediction.maxTime, 'Max Eclipse');
+    },
+    magnitude(): number {
+      return this.prediction.magnitude[0];
+    },
+    coverage(): number {
+      return this.prediction.coverage[0];
+    },
     
   },
   
   methods: {
     toUtcString(date: Date | null): string {
       if (date === null) return '';
-      return formatInTimeZone(date, 'UTC', 'h:mm:ss aaa' );
+      try {
+        return formatInTimeZone(date, 'UTC', 'h:mm:ss aaa' );
+      } catch (e) {
+        console.error(e);
+        console.error(date);
+        return '';
+      }
     },
     
     toLocalString(date: Date | null): string {
       if (date === null) return '';
-      return formatInTimeZone(date, this.timezone, 'h:mm:ss aaa' );
+      try {
+        return formatInTimeZone(date, this.timezone, 'h:mm:ss aaa' );
+      } catch (e) {
+        console.error(e);
+        console.error(date);
+        return '';
+      }
     },
     
+    circumstance(data: BSRArray<Date | null>, _normal = ''): [Date | null, string] {
+      const [t, c] = data;
+      if (c === 's') return [t, 'Sunset'];
+      if (c === 'r') return [t, 'Sunrise'];
+      if (c === 'b') return [t, 'Below Horizon'];
+      return [t, ''];
+    },
+      
     getTimeToEclipse() {
       const now = new Date();
       if (this.type === '') return '';
-      if (this.maxTime === null) return '';
-      const timeToEclipse = this.maxTime.getTime() - now.getTime();
+      if (this.maxTime[0] === null) return '';
+      const timeToEclipse = this.maxTime[0].getTime() - now.getTime();
       
       const days = Math.floor(timeToEclipse / dayInMs);
       const hours = Math.floor((timeToEclipse % dayInMs) / hourInMs);
@@ -211,8 +264,9 @@ export default defineComponent({
 }
 
 .eclipse-countdown {
-  font-size: 2em;
+  font-size: 1.5em;
   margin-bottom: 0.5em;
+  text-align: center;
 }
 
 .eclipse-data-list{

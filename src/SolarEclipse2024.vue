@@ -1122,22 +1122,25 @@
     </div>
     
     <div class="bottom-content">
-      
-        
+
       
       <v-dialog
+        v-model="showEclipsePredictionSheet"
         max-width="fit-content"
-        activator="parent"
         transition="slide-y-transition"
         id="eclipse-prediction-sheet"
         >
         <template v-slot:activator="{ props: activatorProps }">
           <icon-button
             v-bind="activatorProps"
+            id="eclipse-details-button"
             :color="accentColor"
             :focus-color="accentColor"
             tooltip-text="View eclipse timing details"
             tooltip-location="start"
+            @activate="() => {
+              showEclipsePredictionSheet = true;
+            }"
             >
             <template #button>Eclipse Details</template>
           </icon-button>
@@ -1854,6 +1857,8 @@ export default defineComponent({
       showAWVChartsByDefault: queryData.awv ?? false,
       showAWVFullScreen: false,
       
+      showEclipsePredictionSheet: false,
+      
       selectionProximity: 4,
       pointerMoveThreshold: 6,
       isPointerMoving: false,
@@ -2016,6 +2021,7 @@ export default defineComponent({
   mounted() {
     
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
+      this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
     }
     this.createUserEntry();
