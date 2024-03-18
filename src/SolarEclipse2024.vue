@@ -704,8 +704,8 @@
             <v-text-field
               v-show="searchOpen"
               v-model="searchText"
-              class="forward-geocoding-input"
-              :label="locationJustUpdated ? 'Location Updated!' : 'Enter a location'"
+              :class="['forward-geocoding-input', locationJustUpdated ? 'geocode-success' : '']"
+              :label="locationJustUpdated ? 'Location Updated' : 'Enter a location'"
               bg-color="black"
               density="compact"
               hide-details
@@ -5527,6 +5527,11 @@ a {
   .v-text-field {
     min-width: 150px;
     width: min(200px, 20vw);
+  }
+  
+  .forward-geocoding-input.geocode-success label {
+    color: var(--accent-color);
+    opacity: 1;
   }
 
   #forward-geocoding-input-row {
