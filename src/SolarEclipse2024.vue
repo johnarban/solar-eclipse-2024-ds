@@ -686,7 +686,6 @@
       updateLocationFromMap(loc);
     }"
     />
-
   <div
     id="main-content"
   > 

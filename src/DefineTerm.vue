@@ -54,16 +54,16 @@ export default defineComponent({
     noClick: {
       type: Boolean,
       default: false
-    }
+    },
     
     bold: {
       type: Boolean,
-      default: false
+      default: true
     },
     
     underlined: {
       type: Boolean,
-      default: true
+      default: false
     },
     
   }
