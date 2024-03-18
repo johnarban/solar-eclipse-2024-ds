@@ -8,11 +8,9 @@ import { tooltip } from 'leaflet';
     :open-on-focus="true"
     >
     <template v-slot:activator="{props}" >
-      <div :class="['define-term-tooltip', inline ? 'inline' : '']" v-bind="props">
-        <slot name="term">
-          {{ term }}
+        <slot name="term" v-bind="props" tabindex="0" :props="props">
+          <span tabindex="0" :class="['define-term-tooltip', inline ? 'inline' : '']" v-bind="props" > {{  term }} </span>
         </slot>
-      </div>
     </template>
     
     <slot name="definition">
