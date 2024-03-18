@@ -705,7 +705,7 @@
               v-show="searchOpen"
               v-model="searchText"
               class="forward-geocoding-input"
-              label="Enter a location"
+              :label="locationJustUpdated ? 'Location Updated!' : 'Enter a location'"
               bg-color="black"
               density="compact"
               hide-details
@@ -1809,6 +1809,7 @@ export default defineComponent({
       searchText: null as string | null,
       searchResults: null as MapBoxFeatureCollection | null,
       searchErrorMessage: null as string | null,
+      locationJustUpdated: false,
 
       showMapTooltip: false,
       showTextTooltip: false,
@@ -3524,8 +3525,16 @@ export default defineComponent({
         }
       });
     },
+    
+    timedJustUpdatedLocation() {
+      this.locationJustUpdated = true;
+      setTimeout(() => {
+        this.locationJustUpdated = false;
+      }, 5000);
+    },
 
     setLocationFromFeature(feature: MapBoxFeature) {
+      this.timedJustUpdatedLocation();
       this.locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] };
       this.textForLocation(feature.center[0], feature.center[1]).then((text) => {
         this.selectedLocationText = text;
