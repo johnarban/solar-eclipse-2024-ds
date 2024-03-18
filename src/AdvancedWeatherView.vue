@@ -298,8 +298,8 @@ import CloudCoverLine from './CloudCoverLine.vue';
 import DefineTerm from './DefineTerm.vue';
 import ColorBar from './ColorBar.vue';
 import eclipseUmbra from "./assets/upath_hi.json";
-import coordsEight from './assets/modis_eight_day/coords.csv';
-import coordsOne from './assets/modis_one_day/coords.csv';
+import coordsEightFile from './assets/modis_eight_day/coords.zip';
+import coordsOneFile from './assets/modis_one_day/coords.zip';
 
 import {isNumber, OrderedPair, textForLocation} from './utils';
 // isNumber is a utility function that checks if a value is a number
@@ -320,20 +320,37 @@ const cityBoston: CityLocation = {
   longitudeDeg: -71.0589,
 };
 
-let points = csvParseRows(coordsEight, (row, index) => {
-  if (index === 0) {return;}
-  return [+row[0], +row[1]];
-});
-const latitudesEightDay = points.map((p) => p[0]);
-const longitudesEightDay = points.map((p) => p[1]);
+async function inflateFromZip(path: string): Promise<string> {
+  return fetch(path)
+    .then(async (response) => {
+      const data = new Uint8Array(await response.arrayBuffer());
+      return inflate(data, { to: 'string' });
+    });
+}
 
-points = csvParseRows(coordsOne, (row, index) => {
-  if (index === 0) {return;}
-  return [+row[0], +row[1]];
-});
-const latitudesOneDay = points.map((p) => p[0]);
-const longitudesOneDay = points.map((p) => p[1]);
+let latitudesEightDay: number[];
+let longitudesEightDay: number[];
+const coordsEightPromise = inflateFromZip(coordsEightFile)
+  .then(coordsEight => {
+    const points = csvParseRows(coordsEight, (row, index) => {
+      if (index === 0) { return; }
+      return [+row[0], +row[1]];
+    });
+    latitudesEightDay = points.map((p) => p[0]);
+    longitudesEightDay = points.map((p) => p[1]);
+  });
 
+let latitudesOneDay: number[];
+let longitudesOneDay: number[];
+const coordsOnePromise = inflateFromZip(coordsOneFile)
+  .then(coordsOne => {
+    const points = csvParseRows(coordsOne, (row, index) => {
+      if (index === 0) { return; }
+      return [+row[0], +row[1]];
+    });
+    latitudesOneDay = points.map((p) => p[0]);
+    longitudesOneDay = points.map((p) => p[1]);
+  });
 
 type Statistics = 'mean' | 'median' | 'max' | 'min' | 'singleyear';
 type DataSubset = 'elNino' | 'neutral' | 'laNina' | 'allYears';
@@ -399,7 +416,6 @@ type CloudSummaryData = {
   min: number;
   cloudCover?: number;
 };
-
 
 
 export default defineComponent({
@@ -535,24 +551,25 @@ export default defineComponent({
   
   mounted() {
     console.log('Advanced Weather View mounted');
-    console.log(this);
-    this.getElNinoData();
-    this.needToUpdate = true;
-    this.checkInBounds(this.location).then((inBounds) => {
-      this.inBounds = inBounds;
-    });
-    // create a time to simulate data loading
-    this.updateLocationName();
-    if (this.modelValue) {
-      this.loadEightDayData().then(() => {
-        console.log('preloading data');
-        this.dataloaded = true;
-        this.updateData(this.showOnMap);
-        this.updateMapDescriptionText();
+    Promise.all([coordsOnePromise, coordsEightPromise]).then(() => {
+      this.getElNinoData();
+      this.needToUpdate = true;
+      this.checkInBounds(this.location).then((inBounds) => {
+        this.inBounds = inBounds;
       });
-    }
+      // create a time to simulate data loading
+      this.updateLocationName();
+      if (this.modelValue) {
+        this.loadEightDayData().then(() => {
+          console.log('preloading data');
+          this.dataloaded = true;
+          this.updateData(false);
+          this.updateMapDescriptionText();
+        });
+      }
+    });
   },
-  
+
   computed: {
     
     showValue: {
