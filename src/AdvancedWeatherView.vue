@@ -205,7 +205,7 @@
               class="elevation-5"
               :labels="skyCoverCodes.map((v) => v.includes('/') ? [v.split('/')[0] + '/', v.split('/')[1]]: v)"
               :data-label="hideHistogramSubset ? 'All Years' : 'Other Years'"
-              :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
+              :histogram-data="cloudDataHistogram.map((v, i) => locationHistogram.length > 0 ? v - locationHistogram[i] : v)"
               :border-width="hideHistogramSubset ? [1] : [0]"
               :colors="hideHistogramSubset ? colorMap : ['#aaa']"
               :options = "{scales: {y: {beginAtZero: true, max:20}}}"
@@ -301,7 +301,7 @@ import eclipseUmbra from "./assets/upath_hi.json";
 import coordsEightFile from './assets/modis_eight_day/coords.zip';
 import coordsOneFile from './assets/modis_one_day/coords.zip';
 
-import {isNumber, OrderedPair, textForLocation} from './utils';
+import { isNumber, OrderedPair, textForLocation } from './utils';
 // isNumber is a utility function that checks if a value is a number
 // We need to use Ordered Pairs as that is the data format that Chart.js expects
 type LineGraphData = OrderedPair<Date, number>[];
@@ -312,8 +312,6 @@ type CityLocation = {
   latitudeDeg: number;
 };
 
-// This will only match paths that end with ".zip"
-// type ZipPath<T extends string> = T extends `${string}.zip` ? T : `${T} is not a valid zip filepath`;
 
 const cityBoston: CityLocation = {
   latitudeDeg: 42.3601,
