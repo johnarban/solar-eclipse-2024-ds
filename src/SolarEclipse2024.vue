@@ -706,8 +706,8 @@
             <v-text-field
               v-show="searchOpen"
               v-model="searchText"
-              class="forward-geocoding-input"
-              label="Enter a location"
+              :class="['forward-geocoding-input', locationJustUpdated ? 'geocode-success' : '']"
+              :label="locationJustUpdated ? 'Location Updated' : 'Enter a location'"
               bg-color="black"
               density="compact"
               hide-details
@@ -1328,6 +1328,7 @@
                 location-strategy="connected"
                 persistent
                 no-click-animation
+                :retain-focus="false"
                 >
                 <template v-slot:activator="{ props }">
                   <icon-button
@@ -1841,6 +1842,7 @@ export default defineComponent({
       searchText: null as string | null,
       searchResults: null as MapBoxFeatureCollection | null,
       searchErrorMessage: null as string | null,
+      locationJustUpdated: false,
 
       showMapTooltip: false,
       showTextTooltip: false,
@@ -3602,8 +3604,16 @@ export default defineComponent({
         }
       });
     },
+    
+    timedJustUpdatedLocation() {
+      this.locationJustUpdated = true;
+      setTimeout(() => {
+        this.locationJustUpdated = false;
+      }, 5000);
+    },
 
     setLocationFromFeature(feature: MapBoxFeature) {
+      this.timedJustUpdatedLocation();
       this.locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] };
       this.textForLocation(feature.center[0], feature.center[1]).then((text) => {
         this.selectedLocationText = text;
@@ -5607,6 +5617,11 @@ a {
   .v-text-field {
     min-width: 150px;
     width: min(200px, 20vw);
+  }
+  
+  .forward-geocoding-input.geocode-success label {
+    color: var(--accent-color);
+    opacity: 1;
   }
 
   #forward-geocoding-input-row {

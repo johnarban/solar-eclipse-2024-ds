@@ -2,23 +2,22 @@
 import { tooltip } from 'leaflet';
 <template>
   <v-tooltip 
+    v-model="tooltip"
     :width="width"
     :open-on-click="!noClick"
     :open-on-hover="true"
     :open-on-focus="true"
     >
     <template v-slot:activator="{props}" >
-      <div :class="['define-term-tooltip', inline ? 'inline' : '', bold ? 'define-term-bold' : '', underlined ? 'define-term-underline' : '' ]" v-bind="props">
-        <slot name="term">
-          {{ term }}
+        <slot name="term" v-bind="props" tabindex="0" :props="props">
+          <span tabindex="0" :class="['define-term-tooltip', inline ? 'inline' : '', bold ? 'define-term-bold' : '', underlined ? 'define-term-underline' : '' ]" v-bind="props" > {{  term }} </span>
         </slot>
-      </div>
     </template>
     
     <slot name="definition">
-    <div class="define-term-tooltip definition" v-html="definition">
-    </div>
-  </slot>
+      <div class="define-term-tooltip definition" v-html="definition">
+      </div>
+    </slot>
 
     </v-tooltip>
 </template>
@@ -66,7 +65,41 @@ export default defineComponent({
       default: false
     },
     
-  }
+    showFor: {
+      type: Number,
+      default: 0,
+      validator: (value: number) => value >= 0
+    }
+  },
+  
+  data() {
+    return {
+      tooltip: false
+    };
+  },
+  
+  mounted() {
+    if (this.showFor > 0) {
+      this.timedShow();
+    }
+  },
+  
+  methods: {
+    show() {
+      this.tooltip = true;
+    },
+    hide() {
+      this.tooltip = false;
+    },
+    
+    timedShow() {
+      this.show();
+      setTimeout(() => {
+        this.hide();
+      }, this.showFor * 1000);
+    }
+    
+  },
 });
 
 
