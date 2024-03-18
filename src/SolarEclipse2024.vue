@@ -1297,6 +1297,7 @@
                 location-strategy="connected"
                 persistent
                 no-click-animation
+                :retain-focus="false"
                 >
                 <template v-slot:activator="{ props }">
                   <icon-button
