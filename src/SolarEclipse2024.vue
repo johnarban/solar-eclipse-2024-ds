@@ -73,7 +73,7 @@
                     "Watch" the eclipse from the location shared in your link, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
                   <p>
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">other</span> location and view the eclipse from there.
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">other</span> location and view the eclipse from there, or <br> <strong>Enter a location</strong> in the search box below.
                   </p>
                 </div>
 
@@ -674,15 +674,15 @@
     </v-dialog>
   <advanced-weather-view
     v-model="showAdvancedWeather"
-    @close="() => {
-      console.log('closing'); 
-      showAdvancedWeather = false;
-    }"
     @explainer-open="(open: boolean) => { weatherInfoOpen = open }"
     :default-location="locationDeg"
     :show-on-map="showAWVMapByDefault"
     :show-charts="showAWVChartsByDefault"
     :fullscreen="showAWVFullScreen"
+    @location="(loc: LocationDeg) => {
+      locationDeg = loc;
+      updateLocationFromMap(loc);
+    }"
     />
   <div
     id="main-content"

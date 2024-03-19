@@ -174,6 +174,7 @@ export default defineComponent({
       cloudCoverRectangles: L.layerGroup(),
       map: null as Map | null,
       basemap: null as L.TileLayer | null,
+      fromInside: null as boolean | null,
     };
   },
 
@@ -278,6 +279,10 @@ export default defineComponent({
         options
       );
     },
+    
+    sameLoc(loc1: LocationDeg, loc2: LocationDeg): boolean {
+      return loc1.latitudeDeg === loc2.latitudeDeg && loc1.longitudeDeg === loc2.longitudeDeg;
+    },
 
     circleForLocation(location: LocationDeg, circleOptions: Record<string,any>): L.CircleMarker {  // eslint-disable-line @typescript-eslint/no-explicit-any
       return this.circleMaker([location.latitudeDeg, location.longitudeDeg], circleOptions);
@@ -302,6 +307,7 @@ export default defineComponent({
     },
 
     onPlaceSelect(place: Place) {
+      this.fromInside = true;
       this.updateValue({
         longitudeDeg: place.longitudeDeg,
         latitudeDeg: place.latitudeDeg
@@ -311,6 +317,7 @@ export default defineComponent({
     },
 
     onMapSelect(event: LeafletMouseEvent) {
+      this.fromInside = true;
       let longitudeDeg = event.latlng.lng + 180;
       longitudeDeg = ((longitudeDeg % 360) + 360) % 360;  // We want modulo, but JS % operator is remainder
       longitudeDeg -= 180;
@@ -486,11 +493,13 @@ export default defineComponent({
       }
     },
     
-    modelValue() {
+    modelValue(loc: LocationDeg, oldLoc: LocationDeg) {
       this.updateCircle();
-      if (this.map && !this.map.getBounds().contains(this.latLng)) {
-        this.map.setView(this.latLng);
+      const needZoom = !this.fromInside && !this.sameLoc(loc, oldLoc);
+      if (this.map && (!this.map.getBounds().contains(this.latLng) || needZoom)) {
+        this.map.setView(this.latLng, needZoom ? 10 : this.map.getZoom());
       }
+      this.fromInside = false;
     },
     
     mapOptions(newOptions: MapOptions, oldOptions: MapOptions) {
