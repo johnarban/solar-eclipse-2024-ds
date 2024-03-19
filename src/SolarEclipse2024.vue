@@ -4352,6 +4352,7 @@ body {
   align-content: center;
   padding-top: 4rem;
   padding-bottom: 1rem;
+  box-sizing: content-box;
 
   border-radius: 10%;
   border: min(1.2vw, 0.9vh) solid var(--accent-color);
