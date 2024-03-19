@@ -11,7 +11,7 @@
         <define-term 
           no-click
           width="25ch"
-          :showFor="firstOpen ? 600 : 0"
+          :showFor="firstOpen ? 5 : 0"
           :tooltip-location="$vuetify.display.width < 400 ? 'bottom right' : 'right center'"
           definition='<p class="intro">
           Click for more details about the cloud cover data, statistical terms, and the El Niño & La Niña weather patterns. 
