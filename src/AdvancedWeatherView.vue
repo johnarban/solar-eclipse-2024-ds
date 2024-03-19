@@ -11,7 +11,8 @@
         <define-term 
           no-click
           width="25ch"
-          :showFor="firstOpen ? 5 : 0"
+          :showFor="firstOpen ? 600 : 0"
+          :tooltip-location="$vuetify.display.width < 400 ? 'bottom right' : 'right center'"
           definition='<p class="intro">
           Click for more details about the cloud cover data, statistical terms, and the El Niño & La Niña weather patterns. 
         </p>'
@@ -1309,6 +1310,7 @@ export default defineComponent({
     font-size: var(--smaller-font);
   }
 
+  
   #awv-map-description {
     font-size: 1em;
     font-weight: 500;
@@ -1413,5 +1415,15 @@ export default defineComponent({
   }
   
   
+}
+
+
+@media (max-width: 400px) {
+  .v-tooltip {
+    > .v-overlay__content:has(.define-term-tooltip) {
+      top: 80px!important;
+      left: 20px!important;
+    }
+  }
 }
 </style>

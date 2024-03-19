@@ -7,6 +7,8 @@ import { tooltip } from 'leaflet';
     :open-on-click="!noClick"
     :open-on-hover="true"
     :open-on-focus="true"
+    location-strategy="connected"
+    :location="tooltipLocation as any"
     >
     <template v-slot:activator="{props}" >
         <slot name="term" v-bind="props" tabindex="0" :props="props">
@@ -58,6 +60,11 @@ export default defineComponent({
       type: Number,
       default: 0,
       validator: (value: number) => value >= 0
+    },
+    
+    tooltipLocation: {
+      type: String || undefined,
+      default: undefined
     }
   },
   
