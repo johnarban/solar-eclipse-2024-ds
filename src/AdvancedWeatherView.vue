@@ -550,7 +550,6 @@ export default defineComponent({
   mounted() {
     console.log('Advanced Weather View mounted');
     Promise.all([coordsOnePromise, coordsEightPromise]).then(() => {
-      this.getElNinoData();
       this.needToUpdate = true;
       this.checkInBounds(this.location).then((inBounds) => {
         this.inBounds = inBounds;
@@ -561,7 +560,7 @@ export default defineComponent({
         this.loadEightDayData().then(() => {
           console.log('preloading data');
           this.dataloaded = true;
-          this.updateData(false);
+          this.updateData(this.showOnMap);
           this.updateMapDescriptionText();
         });
       }
