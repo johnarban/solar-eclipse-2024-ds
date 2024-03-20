@@ -7,6 +7,11 @@ import { tooltip } from 'leaflet';
     :open-on-click="!noClick"
     :open-on-hover="true"
     :open-on-focus="true"
+    location-strategy="connected"
+    location="bottom center"
+    origin="top center"
+    offset="-2"
+    content-class="top-triangle"
     >
     <template v-slot:activator="{props}" >
         <slot name="term" v-bind="props" tabindex="0" :props="props">
@@ -69,6 +74,11 @@ export default defineComponent({
       type: Number,
       default: 0,
       validator: (value: number) => value >= 0
+    },
+    
+    tooltipLocation: {
+      type: String || undefined,
+      default: undefined
     }
   },
   
@@ -100,6 +110,12 @@ export default defineComponent({
     }
     
   },
+  
+  watch: {
+    showFor() {
+      this.timedShow();
+    }
+  }
 });
 
 
@@ -108,7 +124,8 @@ export default defineComponent({
 <style scoped>
 
 .v-tooltip > .v-overlay__content {
-  background: #F5F5F5 !important;
+  background: #3b567f !important;
+  color: white !important;
 }
 
 .define-term-tooltip.inline {
