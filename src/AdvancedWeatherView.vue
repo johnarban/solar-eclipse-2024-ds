@@ -206,7 +206,7 @@
               class="elevation-5"
               :labels="skyCoverCodes.map((v) => v.includes('/') ? [v.split('/')[0] + '/', v.split('/')[1]]: v)"
               :data-label="hideHistogramSubset ? 'All Years' : 'Other Years'"
-              :histogram-data="cloudDataHistogram.map((v, _i) => locationHistogram.length > 0 ? v - locationHistogram[_i] : v)"
+              :histogram-data="cloudDataHistogram.map((v, i) => locationHistogram.length > 0 ? v - locationHistogram[i] : v)"
               :border-width="hideHistogramSubset ? [1] : [0]"
               :colors="hideHistogramSubset ? colorMap : ['#aaa']"
               :options = "{scales: {y: {beginAtZero: true, max:20}}}"
@@ -289,6 +289,7 @@
 </template>
 
 <script lang="ts"> // Options API
+import { inflate } from "pako";
 import { defineComponent, PropType } from 'vue';
 import BarChart from './BarChart.vue';
 import LineChart, {ChartDataType} from './LineChart.vue';
@@ -298,10 +299,10 @@ import CloudCoverLine from './CloudCoverLine.vue';
 import DefineTerm from './DefineTerm.vue';
 import ColorBar from './ColorBar.vue';
 import eclipseUmbra from "./assets/upath_hi.json";
-import coordsEight from './assets/modis_eight_day/coords.csv';
-import coordsOne from './assets/modis_one_day/coords.csv';
+import coordsEightFile from './assets/modis_eight_day/coords.zip';
+import coordsOneFile from './assets/modis_one_day/coords.zip';
 
-import {isNumber, OrderedPair, textForLocation} from './utils';
+import { isNumber, OrderedPair, textForLocation } from './utils';
 // isNumber is a utility function that checks if a value is a number
 // We need to use Ordered Pairs as that is the data format that Chart.js expects
 type LineGraphData = OrderedPair<Date, number>[];
@@ -312,29 +313,47 @@ type CityLocation = {
   latitudeDeg: number;
 };
 
+
 const cityBoston: CityLocation = {
   latitudeDeg: 42.3601,
   longitudeDeg: -71.0589,
 };
 
-let points = csvParseRows(coordsEight, (row, index) => {
-  if (index === 0) {return;}
-  return [+row[0], +row[1]];
-});
-const latitudesEightDay = points.map((p) => p[0]);
-const longitudesEightDay = points.map((p) => p[1]);
+async function inflateFromZip(path: string): Promise<string> {
+  return fetch(path)
+    .then(async (response) => {
+      const data = new Uint8Array(await response.arrayBuffer());
+      return inflate(data, { to: 'string' });
+    });
+}
 
-points = csvParseRows(coordsOne, (row, index) => {
-  if (index === 0) {return;}
-  return [+row[0], +row[1]];
-});
-const latitudesOneDay = points.map((p) => p[0]);
-const longitudesOneDay = points.map((p) => p[1]);
+let latitudesEightDay: number[];
+let longitudesEightDay: number[];
+const coordsEightPromise = inflateFromZip(coordsEightFile)
+  .then(coordsEight => {
+    const points = csvParseRows(coordsEight, (row, index) => {
+      if (index === 0) { return; }
+      return [+row[0], +row[1]];
+    });
+    latitudesEightDay = points.map((p) => p[0]);
+    longitudesEightDay = points.map((p) => p[1]);
+  });
 
+let latitudesOneDay: number[];
+let longitudesOneDay: number[];
+const coordsOnePromise = inflateFromZip(coordsOneFile)
+  .then(coordsOne => {
+    const points = csvParseRows(coordsOne, (row, index) => {
+      if (index === 0) { return; }
+      return [+row[0], +row[1]];
+    });
+    latitudesOneDay = points.map((p) => p[0]);
+    longitudesOneDay = points.map((p) => p[1]);
+  });
 
-type Statistics =  'mean' | 'median' | 'max' | 'min' | 'singleyear';
+type Statistics = 'mean' | 'median' | 'max' | 'min' | 'singleyear';
 type DataSubset = 'elNino' | 'neutral' | 'laNina' | 'allYears';
-type ModisTimeSpan = '1day' | '8day' | 'monthly' ;
+type ModisTimeSpan = '1day' | '8day' | 'monthly';
 
 const statText = new Map([
   ['mean', 'Mean'],
@@ -343,19 +362,7 @@ const statText = new Map([
 ]) as Map<Statistics, string>;
 
 function getStat(val: CloudSummaryData, stat: Exclude<Statistics,'singleyear'>): number {
-  if (stat === 'mean') {
-    return val.mean;
-  }
-  if (stat === 'median') {
-    return val.median;
-  }
-  if (stat === 'max') {
-    return val.max;
-  }
-  if (stat === 'min') {
-    return val.min;
-  }
-  return -1;
+  return val[stat];
 }
 
 const mapSubsets = new Map([
@@ -408,7 +415,6 @@ type CloudSummaryData = {
   min: number;
   cloudCover?: number;
 };
-
 
 
 export default defineComponent({
@@ -545,22 +551,24 @@ export default defineComponent({
   
   mounted() {
     console.log('Advanced Weather View mounted');
-    this.needToUpdate = true;
-    this.checkInBounds(this.location).then((inBounds) => {
-      this.inBounds = inBounds;
-    });
-    // create a time to simulate data loading
-    this.updateLocationName();
-    if (this.modelValue) {
-      this.loadEightDayData().then(() => {
-        console.log('preloading data');
-        this.dataloaded = true;
-        this.updateData(this.showOnMap);
-        this.updateMapDescriptionText();
+    Promise.all([coordsOnePromise, coordsEightPromise]).then(() => {
+      this.needToUpdate = true;
+      this.checkInBounds(this.location).then((inBounds) => {
+        this.inBounds = inBounds;
       });
-    }
+      // create a time to simulate data loading
+      this.updateLocationName();
+      if (this.modelValue) {
+        this.loadEightDayData().then(() => {
+          console.log('preloading data');
+          this.dataloaded = true;
+          this.updateData(this.showOnMap);
+          this.updateMapDescriptionText();
+        });
+      }
+    });
   },
-  
+
   computed: {
     
     showValue: {
@@ -595,7 +603,7 @@ export default defineComponent({
       const hide1 = this.dataSubset === 'allYears';
       const hide2 = this.selectedStat === 'singleyear';
       
-      return  hide1 || hide2;
+      return hide1 || hide2;
     },
     
     latitudes(): number[] {
@@ -858,77 +866,67 @@ export default defineComponent({
         };
       });
     },
-    
+
+    async inflateFromCsv(csvPath: string): Promise<string> {
+      return fetch(csvPath)
+        .then(async (response) => {
+          const data = new Uint8Array(await response.arrayBuffer());
+          return inflate(data, { to: 'string' });
+        });
+    },
+
+    //
+    async loadSummaryData(csvPath: string): Promise<CloudSummaryData[]> {
+      return this.inflateFromCsv(csvPath)
+        .then(csv => {
+          return csvParseRows(csv, (row, i) => {
+            if (i === 0) {return;}
+            return {
+              lat: +row[0],
+              lon: +row[1],
+              mean: +row[2],
+              median: +row[3],
+              mode: +row[4],
+              min: +row[5],
+              max: +row[6],
+            } as CloudSummaryData;
+          });
+        });
+    },
+
     async getElNinoData() {
       console.log('loading el nino data');
-      return import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/nino_ucm.csv`).then((module) => {
-        this.elNinoYearsSummary[this.modisDataSet] = csvParseRows(module.default, (row, i) => {
-          if (i === 0) {return;}
-          return {
-            lat: +row[0],
-            lon: +row[1],
-            mean: +row[2],
-            median: +row[3],
-            mode: +row[4],
-            min: +row[5],
-            max: +row[6],
-          } as CloudSummaryData;
+      return import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/nino_ucm.zip`)
+        .then(module => this.loadSummaryData(module.default))
+        .then(data => {
+          this.elNinoYearsSummary[this.modisDataSet] = data;
         });
-      });
     },
-    
+
     async getNeutralData() {
       console.log('loading neutral data');
       // './assets/modis_eight_day/neutral_ucm.csv'
-      await import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/neutral_ucm.csv`).then((module) => {
-        this.neutralYearsSummary[this.modisDataSet] = csvParseRows(module.default, (row, i) => {
-          if (i === 0) {return;}
-          return {
-            lat: +row[0],
-            lon: +row[1],
-            mean: +row[2],
-            median: +row[3],
-            mode: +row[4],
-            min: +row[5],
-            max: +row[6],
-          } as CloudSummaryData;
+      return import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/neutral_ucm.zip`)
+        .then(module => this.loadSummaryData(module.default))
+        .then(data => {
+          this.neutralYearsSummary[this.modisDataSet] = data;
         });
-      });
     },
     
     async getLaNinaData() {
-      await import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/nina_ucm.csv`).then((module) => {
-        // get number of rows in the csv
-        this.laNinaYearsSummary[this.modisDataSet] = csvParseRows(module.default, (row, i) => {
-          if (i === 0) {return;}
-          return {
-            lat: +row[0],
-            lon: +row[1],
-            mean: +row[2],
-            median: +row[3],
-            mode: +row[4],
-            min: +row[5],
-            max: +row[6],
-          } as CloudSummaryData;
+      return import(`./assets/modis_${this.modisDataSet === '1day' ? 'one': 'eight'}_day/nina_ucm.zip`)
+        .then(module => this.loadSummaryData(module.default))
+        .then(data => {
+          this.laNinaYearsSummary[this.modisDataSet] = data;
         });
-      });
     },
     
     async getAllYearsData() {
-      await import(`./assets/modis_${this.modisDataSet === '1day' ? 'one' : 'eight'}_day/all_years_ucm.csv`).then((module) => {
-        this.allYearsSummary[this.modisDataSet] = csvParseRows(module.default, (row, i) => {
-          if (i === 0) {return;}
-          return {
-            lat: +row[0],
-            lon: +row[1],
-            mean: +row[2],
-            median: +row[3],
-            mode: +row[4],
-            min: +row[5],
-            max: +row[6],
-          } as CloudSummaryData;
+      return import(`./assets/modis_${this.modisDataSet === '1day' ? 'one' : 'eight'}_day/all_years_ucm.zip`)
+        .then(module => this.loadSummaryData(module.default))
+        .then(data => {
+          this.allYearsSummary[this.modisDataSet] = data;
         });
-      });
     },
     
     getDataForYears(years: number[]): CloudData {
@@ -948,25 +946,26 @@ export default defineComponent({
       });
       return data;
     },
-
     
     loadEightDayData() {
       console.log('awv: loading cloud data');
       this.dataLoadingProgress = 0;
       this.allYears.map((val: number, index) => {
-        import(`./assets/modis_eight_day/${val}_cloud_cover.csv`).then((module) => {
-          const data = csvParseRows(module.default, (row, i) => {
-            if (i === 0) {return {} as CloudDataElement;}
-            return {
-              lat: latitudesEightDay[i-1], // minus one cuz first row is header
-              lon: longitudesEightDay[i-1],
-              cloudCover: +row[0],
-            } as CloudDataElement;
+        import(`./assets/modis_eight_day/${val}_cloud_cover.zip`)
+          .then(module => this.inflateFromCsv(module.default))
+          .then(csv => {
+            const data = csvParseRows(csv, (row, i) => {
+              if (i === 0) {return {} as CloudDataElement;}
+              return {
+                lat: latitudesEightDay[i-1], // minus one cuz first row is header
+                lon: longitudesEightDay[i-1],
+                cloudCover: +row[0],
+              } as CloudDataElement;
+            });
+            // skip first row
+            this.allModisData['8day'][val] = data.slice(1);
+            this.dataLoadingProgress = Math.ceil(((index + 1) / this.allYears.length) * 100);
           });
-          // skip first row
-          this.allModisData['8day'][val] = data.slice(1);
-          this.dataLoadingProgress = Math.ceil(((index + 1) / this.allYears.length) * 100);
-        });
       });
       return new Promise((resolve) => {resolve(true);});
     },
@@ -975,19 +974,21 @@ export default defineComponent({
       console.log('awv: loading cloud data');
       this.dataLoadingProgress = 0;
       this.allYears.map((val: number, index) => {
-        import(`./assets/modis_one_day/${val}_cloud_cover.csv`).then((module) => {
-          const data = csvParseRows(module.default, (row, i) => {
-            if (i === 0) {return {} as CloudDataElement;}
-            return {
-              lat: latitudesOneDay[i-1], // minus one cuz first row is header
-              lon: longitudesOneDay[i-1],
-              cloudCover: +row[0],
-            } as CloudDataElement;
+        import(`./assets/modis_one_day/${val}_cloud_cover.zip`)
+          .then(module => this.inflateFromCsv(module.default))
+          .then(csv => {
+            const data = csvParseRows(csv, (row, i) => {
+              if (i === 0) {return {} as CloudDataElement;}
+              return {
+                lat: latitudesOneDay[i-1], // minus one cuz first row is header
+                lon: longitudesOneDay[i-1],
+                cloudCover: +row[0],
+              } as CloudDataElement;
+            });
+            // skip first row
+            this.allModisData['1day'][val] = data.slice(1);
+            this.dataLoadingProgress = Math.ceil(((index + 1) / this.allYears.length) * 100);
           });
-          // skip first row
-          this.allModisData['1day'][val] = data.slice(1);
-          this.dataLoadingProgress = Math.ceil(((index + 1) / this.allYears.length) * 100);
-        });
       });
       return new Promise((resolve) => {resolve(true);});
     },
