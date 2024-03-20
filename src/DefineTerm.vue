@@ -8,7 +8,10 @@ import { tooltip } from 'leaflet';
     :open-on-hover="true"
     :open-on-focus="true"
     location-strategy="connected"
-    :location="tooltipLocation as any"
+    location="bottom center"
+    origin="top center"
+    offset="-2"
+    content-class="top-triangle"
     >
     <template v-slot:activator="{props}" >
         <slot name="term" v-bind="props" tabindex="0" :props="props">
@@ -96,6 +99,12 @@ export default defineComponent({
     }
     
   },
+  
+  watch: {
+    showFor() {
+      this.timedShow();
+    }
+  }
 });
 
 
