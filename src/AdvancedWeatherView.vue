@@ -11,11 +11,13 @@
         <define-term 
           no-click
           width="25ch"
-          :showFor="firstOpen ? 5 : 0"
-          definition='<p class="intro">
-          Click for more details about the cloud cover data, statistical terms, and the El Niño & La Niña weather patterns. 
-        </p>'
+          :showFor="showFor ? 5 : 0"
           >
+          <template #definition>
+            <p class="intro">
+            Click<v-icon class="pa-0" size="1.2em">mdi-help-circle</v-icon>for more details about the cloud cover data, statistical terms, and the El Niño & La Niña weather patterns. 
+          </p>
+          </template>
           <template v-slot:term="{props}">
             <v-btn v-bind="props" style="font-size: 1em;" elevation="1" icon="mdi-help-circle" @click="explainerOpen = true" tabindex="0"></v-btn>
           </template>
@@ -468,6 +470,7 @@ export default defineComponent({
     const eps = 0.000001;
     return {
       firstOpen: true,
+      showFor: false,
       explainerOpen: false,
       statText,
       mapSubsets,
@@ -1197,6 +1200,11 @@ export default defineComponent({
           this.dataloaded = true;
           this.updateData(this.displayData);
         });
+        if (this.firstOpen) {
+          setTimeout(() => {
+            this.showFor = true;
+          }, 250);
+        }
       } else {
         console.log('closing AWV view');
         this.needToUpdate = true;
@@ -1309,6 +1317,7 @@ export default defineComponent({
     font-size: var(--smaller-font);
   }
 
+  
   #awv-map-description {
     font-size: 1em;
     font-weight: 500;
@@ -1414,4 +1423,5 @@ export default defineComponent({
   
   
 }
+
 </style>
