@@ -1734,7 +1734,7 @@ export default defineComponent({
           // RA/Dec of Sun in Nazas, Mexico close to max totality
           raRad: 3.481,
           decRad: -0.145,
-          zoomDeg: 1
+          zoomDeg: 20,
         };
       },
     },
@@ -1991,6 +1991,10 @@ export default defineComponent({
     }
     this.createUserEntry();
 
+    // We just need to force these to get around some Safari issues whose cause is TBD
+    Planets._loadPlanetTextures();
+    Planets.updatePlanetLocations(false);
+
     this.waitForReady().then(async () => {
 
       this.backgroundImagesets = [...skyBackgroundImagesets];
@@ -2026,6 +2030,7 @@ export default defineComponent({
       // Force the render of one frame so that planet textures will be loaded
       // We don't want to attach the callback before this so that we don't mess up sun tracking
       this.wwtControl.renderOneFrame();
+      console.log("Rendered frame");
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -2561,6 +2566,10 @@ export default defineComponent({
     },
     
     updateIntersection() {
+
+      if (Planets['_planetLocations'] == null) {
+        return;
+      }
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -3657,7 +3666,8 @@ export default defineComponent({
       }
     },
 
-    wwtZoomDeg(_zoom: number) {
+    wwtZoomDeg(_zoom: number, _oldZoom: number) {
+      console.log("wwtZoomDeg watcher");
       this.sunOffset = null;
       this.updateIntersection();
     },
