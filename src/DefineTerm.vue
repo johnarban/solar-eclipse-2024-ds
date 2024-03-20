@@ -113,7 +113,8 @@ export default defineComponent({
 <style>
 
 .v-tooltip > .v-overlay__content {
-  background: #F5F5F5 !important;
+  background: #3b567f !important;
+  color: white !important;
 }
 
 .define-term-tooltip.inline {
