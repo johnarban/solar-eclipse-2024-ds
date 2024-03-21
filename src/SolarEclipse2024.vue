@@ -908,7 +908,7 @@
           <v-row>
             <v-col cols="12">
               <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
-              New! Location Search
+              New! Detailed Eclipse Times
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
@@ -1147,7 +1147,7 @@
               showEclipsePredictionSheet = true;
             }"
             >
-            <template #button>Eclipse Details</template>
+            <template #button>Timing Details</template>
           </icon-button>
         </template>
         <v-card>
@@ -2169,15 +2169,15 @@ export default defineComponent({
         // const maxTimeString = formatInTimeZone(maxTime[0], this.selectedTimezone, "HH:mm (zzz)");
         
         if (type == "T") {
-          const begins = formatInTimeZone(this.eclipsePrediction.centralStart[0], this.selectedTimezone, "HH:mm (zzz)");
-          return `Totallity begins at ${begins} and lasts ${duration}`;
+          const begins = formatInTimeZone(this.eclipsePrediction.centralStart[0], this.selectedTimezone, "HH:mm:ss (zzz)");
+          return `Totality begins at ${begins} and lasts ${duration}`;
         }
         
 
         if (duration === '') {
           // get the duration of the partial eclipse
           const starting = formatInTimeZone(this.eclipsePrediction.partialStart[0], this.selectedTimezone, "HH:mm (zzz)");
-          return `${typeString} starts at ${starting}`;
+          return `${typeString} eclipse starts at ${starting}`;
         }
       }
       return '';
@@ -4024,7 +4024,7 @@ body {
 .user-banner {
   position: relative;
   font-size: var(--default-font-size);
-  text-align: left;
+  text-align: center;
   padding-left: 2em;
   background-color: rgb(93, 93, 93);
 }

@@ -23,7 +23,8 @@
                     definition="The fraction (percentage) of the Sun covered by the Moon."
                     underlined
                     />: {{ coverage < 0.01 ? '<1' :(coverage*100).toFixed(0) }}%</p>
-      <p>Eclipse Duration: {{ duration }}</p>
+      <p v-if="eclipseDuration != ''">Eclipse Duration: {{ eclipseDuration }}</p>
+      <p v-if="isTotal">Totality Duration: {{ totalityDuration }}</p>
       <table id="time-container">
         <tr class="time">
           <td class="time-label">Partial Start</td>
@@ -71,6 +72,7 @@ import { formatInTimeZone } from "date-fns-tz";
 import { VBtnToggle } from 'vuetify/components/VBtnToggle';
 import { VBtn } from 'vuetify/components/VBtn';
 import DefineTerm from './DefineTerm.vue';
+import { toHMS } from './utils';
 
 const dayInMs = 1000 * 60 * 60 * 24;
 const hourInMs = 1000 * 60 * 60;
@@ -129,7 +131,7 @@ export default defineComponent({
       // partialEnd: this.prediction.partialEnd[0],
       // magnitude: this.prediction.magnitude[0],
       // coverage: this.prediction.coverage[0],
-      duration: this.prediction.duration,
+      // duration: this.prediction.duration,
       timeToEclipse: '',
     };
   },
@@ -190,6 +192,19 @@ export default defineComponent({
     coverage(): number {
       return this.prediction.coverage[0];
     },
+    
+    eclipseDuration(): string {
+      if (this.type === '') return '';
+      const start = this.prediction.partialStart[0];
+      const end = this.prediction.partialEnd[0];
+      if (start === null || end === null) return '';
+      const duration = end.getTime() - start.getTime();
+      return toHMS(duration);
+    },
+    
+    totalityDuration(): string {
+      return this.prediction.duration;
+    }
     
   },
   
