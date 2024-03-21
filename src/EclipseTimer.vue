@@ -3,13 +3,14 @@
     <h1> Eclipse Timer</h1>
     <div v-if="showTimer" class="eclipse-countdown">
       <div class="ec-timer">{{ timeToEclipse }}</div>
-      <div>
-        till max eclipse
+      <div v-if="!noEclipse">
+        until max eclipse
       </div>
     </div>
     
 
-    
+    <div v-if="!noEclipse" :class="['eclipse-icon', `eclipse-icon-${type.toLowerCase()}`]">
+    </div>
     <div v-if="noEclipse">
       <p>No eclipse is predicted for this location.</p>
     </div>
@@ -257,6 +258,28 @@ export default defineComponent({
 
   font-size: var(--default-font-size);
   ;
+}
+
+.eclipse-icon {
+  aspect-ratio: 1/1;
+  width: 10em;
+  background-size: contain;
+}
+
+.eclipse-icon-total {
+  background-image: url('./assets/total.png');
+}
+
+.eclipse-icon-partial {
+  background-image: url('./assets/partial.png');
+}
+
+.eclipse-icon-annular {
+  background-image: url('./assets/annular.png');
+}
+
+.eclipse-icon- {
+  background-image: url('./assets/none.png');
 }
 
 .eclipse-countdown {
