@@ -688,7 +688,7 @@
     }"
     />
   
-  <div class="user-banner">
+  <div v-if="!showGuidedContent" class="user-banner">
     <span class="banner-text"> {{ eclipsePredictionText }} </span>
   </div>
   
