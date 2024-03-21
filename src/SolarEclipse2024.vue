@@ -1734,7 +1734,7 @@ export default defineComponent({
           // RA/Dec of Sun in Nazas, Mexico close to max totality
           raRad: 3.481,
           decRad: -0.145,
-          zoomDeg: 1
+          zoomDeg: 20,
         };
       },
     },
@@ -1990,6 +1990,10 @@ export default defineComponent({
       this.updateSelectedLocationText();
     }
     this.createUserEntry();
+
+    // We just need to force these to get around some Safari issues whose cause is TBD
+    Planets._loadPlanetTextures();
+    Planets.updatePlanetLocations(false);
 
     this.waitForReady().then(async () => {
 
@@ -2561,6 +2565,10 @@ export default defineComponent({
     },
     
     updateIntersection() {
+
+      if (Planets['_planetLocations'] == null) {
+        return;
+      }
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -3657,7 +3665,7 @@ export default defineComponent({
       }
     },
 
-    wwtZoomDeg(_zoom: number) {
+    wwtZoomDeg(_zoom: number, _oldZoom: number) {
       this.sunOffset = null;
       this.updateIntersection();
     },
