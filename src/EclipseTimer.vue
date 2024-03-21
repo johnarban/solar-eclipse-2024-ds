@@ -21,7 +21,7 @@
                     term="Eclipsed %"
                     definition="The fraction (percentage) of the Sun covered by the Moon."
                     underlined
-                    />: {{ (coverage*100).toFixed(0) }}%</p>
+                    />: {{ coverage < 0.01 ? '<1' :(coverage*100).toFixed(0) }}%</p>
       <p>Eclipse Duration: {{ duration }}</p>
       <table id="time-container">
         <tr class="time">
