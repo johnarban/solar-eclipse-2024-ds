@@ -124,13 +124,14 @@
                 <div class=".d-flex">
                   <div>
                     This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">MODIS</a> on NASA's Aqua satellite.
-                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
+                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km). Learn more in the <v-btn style="padding-inline:2px;" :class="[smallSize ? 'text-caption' : '']" :color="accentColor" density="compact"  @click="showAdvancedWeather = true">Cloud Data Explorer</v-btn>.
                   </div>
                   <div>
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
                     />
                   </div>
+                  
                 </div>
               </span>
             </div>
@@ -5670,5 +5671,9 @@ a {
       }
     }
   }
+}
+
+.inline-button {
+  
 }
 </style>
