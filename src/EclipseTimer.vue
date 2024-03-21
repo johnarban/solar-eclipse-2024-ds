@@ -38,7 +38,7 @@
           <td> {{ eclipseDuration }}</td>
         </tr>
       </table>
-      
+      <hr class="eclipse-timer-dividier"/>
       <table id="time-container">
         <tr class="time">
           <td class="time-label">Partial Start</td>
@@ -289,6 +289,12 @@ export default defineComponent({
   ;
 }
 
+hr.eclipse-timer-dividier {
+  width: 100%;
+  margin: 1em 0;
+
+}
+
 .eclipse-icon {
   aspect-ratio: 1/1;
   width: 10em;
@@ -333,6 +339,10 @@ export default defineComponent({
 table#eclipse-values {
   width: 100%;
   border-collapse: collapse;
+}
+
+#eclipse-values tr {
+  line-height: 1.75;
 }
 
 #eclipse-values td:nth-child(2) {
