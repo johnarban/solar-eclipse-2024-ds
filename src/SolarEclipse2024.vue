@@ -1145,6 +1145,7 @@
             tooltip-location="start"
             @activate="() => {
               showEclipsePredictionSheet = true;
+              showEclipsePredictionText = true;
             }"
             >
             <template #button>Timing Details</template>
