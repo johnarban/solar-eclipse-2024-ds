@@ -9,22 +9,36 @@
     </div>
     
 
-    <div v-if="!noEclipse" :class="['eclipse-icon', `eclipse-icon-${type.toLowerCase()}`]">
-    </div>
     <div v-if="noEclipse">
       <p>No eclipse is predicted for this location.</p>
     </div>
     <div v-else>
       <h2 class="mb-4"> {{ type }} Eclipse</h2>
     </div>
+    <div v-if="!noEclipse" :class="['eclipse-icon', `eclipse-icon-${type.toLowerCase()}`]">
+    </div>
     <div class="eclipse-data-list" v-if="!noEclipse">
-      <p><define-term
-                    term="Max Eclipsed"
-                    definition="The fraction (percentage) of the Sun covered by the Moon."
-                    underlined
-                    />: {{ coverage < 0.01 ? '<1' :(coverage*100).toFixed(0) }}%</p>
-      <p v-if="eclipseDuration != ''">Eclipse Duration: {{ eclipseDuration }}</p>
-      <p v-if="isTotal">Totality Duration: {{ totalityDuration }}</p>
+      <table id="eclipse-values">
+        <tr>
+          <td>
+            <define-term
+              term="Max Eclipsed"
+              definition="The fraction (percentage) of the Sun covered by the Moon."
+              underlined
+              />:
+          </td>
+          <td> {{ coverage < 0.01 ? '<1' :(coverage*100).toFixed(0) }}% </td>
+        </tr>
+        <tr v-if="isTotal">
+          <td>Totality Duration:</td>
+          <td> {{ totalityDuration }}</td>
+        </tr>
+        <tr v-if="eclipseDuration != ''">
+          <td>Eclipse Duration:</td>
+          <td> {{ eclipseDuration }}</td>
+        </tr>
+      </table>
+      
       <table id="time-container">
         <tr class="time">
           <td class="time-label">Partial Start</td>
@@ -72,7 +86,7 @@ import { formatInTimeZone } from "date-fns-tz";
 import { VBtnToggle } from 'vuetify/components/VBtnToggle';
 import { VBtn } from 'vuetify/components/VBtn';
 import DefineTerm from './DefineTerm.vue';
-import { toHMS } from './utils';
+import { toHMS, spaceHMS } from './utils';
 
 const dayInMs = 1000 * 60 * 60 * 24;
 const hourInMs = 1000 * 60 * 60;
@@ -199,11 +213,11 @@ export default defineComponent({
       const end = this.prediction.partialEnd[0];
       if (start === null || end === null) return '';
       const duration = end.getTime() - start.getTime();
-      return toHMS(duration);
+      return spaceHMS(toHMS(duration));
     },
     
     totalityDuration(): string {
-      return this.prediction.duration;
+      return spaceHMS(this.prediction.duration);
     }
     
   },
@@ -316,19 +330,29 @@ export default defineComponent({
   text-transform: none;
 }
 
-table {
+table#eclipse-values {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#eclipse-values td:nth-child(2) {
+  text-align: right;
+}
+
+table#time-container {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1em;
-  
 }
 
-tr {
 
-}
 
-td {
+#time-container td {
   padding: 0.5em;
+}
+
+#time-container td.time-value {
+  text-align: right;
 }
 
 label {

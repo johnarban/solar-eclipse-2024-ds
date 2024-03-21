@@ -1544,7 +1544,7 @@ import pointInPolygon from 'point-in-polygon';
 
 import { recalculateForObserverUTC } from "./eclipse_predict";
 import { EclipseData } from "./eclipse_types";
-// import { toHMS } from './utils';
+import { spaceHMS } from './utils';
 
 
 interface CloudData {
@@ -2184,14 +2184,14 @@ export default defineComponent({
         
         if (type == "T") {
           const begins = formatInTimeZone(this.eclipsePrediction.centralStart[0], this.selectedTimezone, "HH:mm:ss (zzz)");
-          return `Totality begins at ${begins} and lasts ${duration}`;
+          return `Totality begins at ${begins} and lasts ${spaceHMS(duration)}`;
         }
         
 
         if (duration === '') {
           // get the duration of the partial eclipse
           const starting = formatInTimeZone(this.eclipsePrediction.partialStart[0], this.selectedTimezone, "HH:mm (zzz)");
-          return `${typeString} eclipse starts at ${starting}`;
+          return `${typeString} eclipse begins at ${starting}`;
         }
       }
       return '';
