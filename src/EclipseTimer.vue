@@ -2,14 +2,13 @@
   <div id="eclipse-timer-container">
     <h1> Eclipse Timer</h1>
     <div v-if="showTimer" class="eclipse-countdown">
+      <div class="ec-timer">{{ timeToEclipse }}</div>
       <div>
-        {{ timeToEclipse }}
-      </div> 
-      <div style="font-size:0.8em;">
         till max eclipse
       </div>
     </div>
     
+
     
     <div v-if="noEclipse">
       <p>No eclipse is predicted for this location.</p>
@@ -264,9 +263,14 @@ export default defineComponent({
 }
 
 .eclipse-countdown {
-  font-size: 1.5em;
-  margin-bottom: 0.5em;
   text-align: center;
+  margin-bottom: 0.5em;
+  min-width: 20em;
+}
+
+.ec-timer {
+  font-size: 1.5em;
+  font-family: Courier, monospace;
 }
 
 .eclipse-data-list{
