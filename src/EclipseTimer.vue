@@ -20,10 +20,12 @@
       <p>Eclipse <define-term
                     term="Coverage"
                     definition="The fraction (percentage) of the Sun covered by the Moon."
+                    underlined
                     />: {{ (coverage*100).toFixed(1) }}%</p>
       <p>Eclipse <define-term 
                     definition="The fraction of the Sun covered by the Moon. If a total eclipse, then it is the ratio of the area of the Moon to the area of the Sun. >1 means the apparent size of the Moon is larger than the Sun."
                     term="Magnitude"
+                    underlined
                     />: {{ magnitude }}</p>
       <p>Eclipse Duration: {{ duration }}</p>
       <table id="time-container">
