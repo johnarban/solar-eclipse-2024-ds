@@ -2030,7 +2030,6 @@ export default defineComponent({
       // Force the render of one frame so that planet textures will be loaded
       // We don't want to attach the callback before this so that we don't mess up sun tracking
       this.wwtControl.renderOneFrame();
-      console.log("Rendered frame");
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -3667,7 +3666,6 @@ export default defineComponent({
     },
 
     wwtZoomDeg(_zoom: number, _oldZoom: number) {
-      console.log("wwtZoomDeg watcher");
       this.sunOffset = null;
       this.updateIntersection();
     },
