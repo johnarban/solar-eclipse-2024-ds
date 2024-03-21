@@ -4936,7 +4936,6 @@ video, #info-video {
       left: 0.5rem;
       @media (max-width: 599px) {
         left: 0.5rem;
-        top: .75rem;
       }
     }
   }
