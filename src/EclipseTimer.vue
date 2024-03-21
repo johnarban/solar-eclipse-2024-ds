@@ -18,8 +18,8 @@
       <h2 class="mb-4"> {{ type }} Eclipse</h2>
     </div>
     <div class="eclipse-data-list" v-if="!noEclipse">
-      <p>Max <define-term
-                    term="Eclipsed %"
+      <p><define-term
+                    term="Max Eclipsed"
                     definition="The fraction (percentage) of the Sun covered by the Moon."
                     underlined
                     />: {{ coverage < 0.01 ? '<1' :(coverage*100).toFixed(0) }}%</p>
