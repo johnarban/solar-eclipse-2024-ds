@@ -227,7 +227,7 @@
           :disabled="smAndUp"
         >
           <div 
-            :class="[learnerPath === 'Location' ? 'show-after' : '']"
+            :class="[(learnerPath === 'Location' && showEclipsePredictionTextBanner) ? 'show-after' : '']"
             v-if="!smAndUp || smAndUp" id="map-container" :data-before-text="eclipsePredictionText">
             <!-- :places="places" -->
             <location-selector
@@ -688,7 +688,7 @@
     }"
     />
   
-  <div v-if="!showGuidedContent" class="user-banner">
+  <div v-if="!showGuidedContent && showEclipsePredictionTextBanner" class="user-banner">
     <span class="banner-text"> {{ eclipsePredictionText }} </span>
   </div>
   
@@ -1145,6 +1145,9 @@
             tooltip-location="start"
             @activate="() => {
               showEclipsePredictionSheet = true;
+              if (!showEclipsePredictionText) {
+                showEclipsePredictionTextBanner = true;
+              }
               showEclipsePredictionText = true;
             }"
             >
@@ -1212,8 +1215,8 @@
             />                      
             <v-checkbox
               :color="accentColor"
-              v-model="showEclipsePredictionText"
-              @keyup.enter="showEclipsePredictionText = !showEclipsePredictionText"
+              v-model="showEclipsePredictionTextBanner"
+              @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
               label="Eclipse Time on Map"
               hide-details 
             />
@@ -1874,6 +1877,7 @@ export default defineComponent({
       
       showEclipsePredictionSheet: false,
       showEclipsePredictionText: false,
+      showEclipsePredictionTextBanner: false,
       
       
       selectionProximity: 4,
@@ -2041,6 +2045,11 @@ export default defineComponent({
       this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
     }
+    
+    if (!this.showSplashScreen) {
+      this.showEclipsePredictionTextBanner = true;
+    }
+    
     this.createUserEntry();
 
     this.waitForReady().then(async () => {
@@ -2962,6 +2971,7 @@ export default defineComponent({
 
     closeSplashScreen() {
       this.showSplashScreen = false; 
+      this.showEclipsePredictionTextBanner = true;
     },
 
     updateWWTLocation() {
