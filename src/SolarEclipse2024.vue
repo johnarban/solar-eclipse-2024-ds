@@ -687,6 +687,11 @@
       updateLocationFromMap(loc);
     }"
     />
+  
+  <div class="user-banner">
+    <span class="banner-text"> {{ eclipsePredictionText }} </span>
+  </div>
+  
   <div
     id="main-content"
   > 
@@ -4016,6 +4021,15 @@ body {
   padding: 0.5em;
 }  
 
+.user-banner {
+  position: relative;
+  font-size: var(--default-font-size);
+  text-align: left;
+  padding-left: 2em;
+  background-color: rgb(93, 93, 93);
+}
+
+
 #main-content {
   position: relative;
   // top: var(--top-content-height);
@@ -4916,7 +4930,7 @@ video, #info-video {
     position: absolute;
     left: 1.5rem;
     z-index: 500;
-    top: 0.75rem;
+    top: calc(var(--default-font-size) + 0.75rem);
 
     &.budge {
       left: 0.5rem;
@@ -5671,9 +5685,5 @@ a {
       }
     }
   }
-}
-
-.inline-button {
-  
 }
 </style>
