@@ -4350,9 +4350,8 @@ body {
   backdrop-filter: blur(5px);
   justify-content: space-around;
   align-content: center;
-  padding-top: 4rem;
-  padding-bottom: 1rem;
-  box-sizing: content-box;
+  padding-top: 20px;
+  padding-bottom: 5px;
 
   border-radius: 10%;
   border: min(1.2vw, 0.9vh) solid var(--accent-color);
@@ -4423,7 +4422,7 @@ body {
   }
 
   #splash-screen-acknowledgements {
-    font-size: calc(1.3 * var(--default-font-size));
+    font-size: min(3vw, 2.4vh);
     line-height: calc(1.2 * var(--default-line-height));
     width: 80%; 
   }
