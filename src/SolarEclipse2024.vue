@@ -1209,6 +1209,13 @@
                 label="Amount Eclipsed"
                 hide-details
             />                      
+            <v-checkbox
+              :color="accentColor"
+              v-model="showEclipsePredictionText"
+              @keyup.enter="showEclipsePredictionText = !showEclipsePredictionText"
+              label="Eclipse Time on Map"
+              hide-details 
+            />
           </div>
         </transition-expand>
       </div>
@@ -1865,6 +1872,8 @@ export default defineComponent({
       showAWVFullScreen: false,
       
       showEclipsePredictionSheet: false,
+      showEclipsePredictionText: false,
+      
       
       selectionProximity: 4,
       pointerMoveThreshold: 6,
@@ -2155,6 +2164,11 @@ export default defineComponent({
   computed: {
     
     eclipsePredictionText(): string {
+      
+      if (!this.showEclipsePredictionText) {
+        return 'Open "Timing Details" to see eclipse predictions';
+      }
+      
       if (this.eclipsePrediction) {
         const { type, maxTime, duration } = this.eclipsePrediction;
         if (type === '' || type === null || maxTime[0] === null) {
