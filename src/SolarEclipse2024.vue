@@ -1156,35 +1156,37 @@
     
     <div class="bottom-content">
 
-      
+      <icon-button
+        id="eclipse-details-button"
+        md-icon="sun-clock"
+        md-size="24"
+        :color="accentColor"
+        :focus-color="accentColor"
+        tooltip-text="View eclipse timing details"
+        tooltip-location="start"
+        @activate="() => {
+          showEclipsePredictionSheet = true;
+          if (!showEclipsePredictionText) {
+            showEclipsePredictionTextBanner = true;
+          }
+          showEclipsePredictionText = true;
+        }"
+        >
+      </icon-button>
       <v-dialog
         v-model="showEclipsePredictionSheet"
         max-width="fit-content"
         transition="slide-y-transition"
         id="eclipse-prediction-sheet"
         >
-        <template v-slot:activator="{ props: activatorProps }">
-          <icon-button
-            v-bind="activatorProps"
-            id="eclipse-details-button"
-            md-icon="sun-clock"
-            md-size="24"
-            :color="accentColor"
-            :focus-color="accentColor"
-            tooltip-text="View eclipse timing details"
-            tooltip-location="start"
-            @activate="() => {
-              showEclipsePredictionSheet = true;
-              if (!showEclipsePredictionText) {
-                showEclipsePredictionTextBanner = true;
-              }
-              showEclipsePredictionText = true;
-            }"
-            >
-          </icon-button>
-        </template>
         <v-card>
           <v-card-text>
+            <button 
+              style="position:absolute;right:12px;cursor:pointer;"
+              id="close-eclipse-prediction-sheet"
+              @click="showEclipsePredictionSheet = false"
+              ><v-icon
+              >mdi-close</v-icon></button>
             <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor" :location="selectedLocationText"/>
           </v-card-text>
         </v-card>
