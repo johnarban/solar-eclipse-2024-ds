@@ -227,8 +227,20 @@
           :disabled="smAndUp"
         >
           <div 
-            :class="[(learnerPath === 'Location' && showEclipsePredictionTextBanner) ? 'show-after' : '']"
+            :class="['']"
             v-if="!smAndUp || smAndUp" id="map-container" :data-before-text="eclipsePredictionText">
+            <div 
+              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner"
+              id="map-banner" 
+              class="show-after"
+              >
+              <span v-if="showEclipsePredictionText">
+                {{ eclipsePredictionText }}
+              </span>
+              <span v-else>
+                Open "Timing Details" <v-icon style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> to see eclipse predictions'
+              </span>
+            </div>
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
@@ -694,8 +706,13 @@
     }"
     />
   
-  <div v-if="!showGuidedContent && showEclipsePredictionTextBanner" class="user-banner">
-    <span class="banner-text"> {{ eclipsePredictionText }} </span>
+  <div v-if="showEclipsePredictionTextBanner" class="user-banner">
+    <span class="banner-text" v-if="showEclipsePredictionText">
+      {{ eclipsePredictionText }}
+    </span>
+    <span class="banner-text" v-else>
+      Open "Timing Details" <v-icon>mdi-sun-clock</v-icon> to see eclipse predictions'
+    </span>
   </div>
   
   <div
@@ -1145,6 +1162,8 @@
           <icon-button
             v-bind="activatorProps"
             id="eclipse-details-button"
+            md-icon="sun-clock"
+            md-size="24"
             :color="accentColor"
             :focus-color="accentColor"
             tooltip-text="View eclipse timing details"
@@ -1157,7 +1176,6 @@
               showEclipsePredictionText = true;
             }"
             >
-            <template #button>Timing Details</template>
           </icon-button>
         </template>
         <v-card>
@@ -1181,7 +1199,7 @@
             tabindex="0"
           /> 
         </div>
-        <transition-expand>
+
           <div v-if="showControls" id="control-checkboxes">
             <v-checkbox
               :color="accentColor"
@@ -1227,7 +1245,7 @@
               hide-details 
             />
           </div>
-        </transition-expand>
+
       </div>
       
       <div id="eclipse-percent-chip">
@@ -2055,7 +2073,9 @@ export default defineComponent({
     if (!this.showSplashScreen) {
       this.showEclipsePredictionTextBanner = true;
     }
-
+    
+    this.searchOpen = this.smAndUp;
+    
     this.createUserEntry();
 
     this.waitForReady().then(async () => {
@@ -2327,7 +2347,7 @@ export default defineComponent({
       return {
         '--accent-color': this.accentColor,
         '--sky-color': this.skyColorLight,
-        '--app-content-height': this.showInfoSheet ? '100vh' : '100vh',
+        '--app-content-height': this.showInfoSheet ? '100%' : '100%',
         '--top-content-height': this.showGuidedContent? this.guidedContentHeight : this.guidedContentHeight,
         '--moon-color': this.moonColor,
       };
@@ -4069,7 +4089,7 @@ body {
   position: relative;
   // top: var(--top-content-height);
   width: 100%;
-  height: calc(var(--app-content-height) - var(--top-content-height));
+  height: calc(var(--app-content-height) - var(--top-content-height) - 1px);
   overflow: hidden;
   // border: 2px solid blue;
 
@@ -5192,6 +5212,26 @@ video, #info-video {
     width: 100%;
     
     display: flex;
+    
+    .show-after {
+      display:flex;
+      width: 100%;
+      min-height: 2.5em;
+      height: max-content;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(0.8 * var(--default-font-size));
+      padding: 0 10px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      
+      color: black;
+      background-color: #cccccc77;
+      z-index: 500;
+      
+      backdrop-filter: blur(5px) saturate(50%);
+    }
     
     
     &.show-after::after {
