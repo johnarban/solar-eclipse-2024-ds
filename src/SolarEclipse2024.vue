@@ -935,7 +935,7 @@
         <div id="splash-screen-guide">
           <v-row>
             <v-col cols="12">
-              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
+              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
               New! Detailed Eclipse Times
             </v-col>
             <v-col cols="12">
