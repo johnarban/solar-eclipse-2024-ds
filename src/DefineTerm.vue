@@ -121,7 +121,7 @@ export default defineComponent({
 
 </script>
 
-<style scoped>
+<style>
 
 .v-tooltip > .v-overlay__content {
   background: #3b567f !important;
