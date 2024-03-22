@@ -2220,6 +2220,9 @@ export default defineComponent({
         
         if (type == "T") {
           const begins = formatInTimeZone(this.eclipsePrediction.centralStart[0], this.selectedTimezone, "HH:mm:ss (zzz)");
+          if (this.$vuetify.display.xs) {
+            return `Totality starts: ${begins} Duration: ${spaceHMS(duration)}`;
+          }
           return `Totality begins at ${begins} and lasts ${spaceHMS(duration)}`;
         }
         
@@ -2227,6 +2230,9 @@ export default defineComponent({
         if (duration === '') {
           // get the duration of the partial eclipse
           const starting = formatInTimeZone(this.eclipsePrediction.partialStart[0], this.selectedTimezone, "HH:mm (zzz)");
+          if (this.$vuetify.display.xs) {
+            return `${typeString} starts: ${starting}`;
+          }
           return `${typeString} eclipse begins at ${starting}`;
         }
       }
