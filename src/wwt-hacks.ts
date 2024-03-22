@@ -391,11 +391,9 @@ export function renderOneFrame() {
       this.renderContext.drawImageSet(imageset, 100);
     }
   }
-  if (Settings.get_active().get_showSolarSystem()) {
-    this.constellation = Constellations.containment.findConstellationForPoint(this.renderContext.viewCamera.get_RA(), this.renderContext.viewCamera.get_dec());
-    this._drawSkyOverlays();
-    Planets.drawPlanets(this.renderContext, 1);
-  }
+  this.constellation = Constellations.containment.findConstellationForPoint(this.renderContext.viewCamera.get_RA(), this.renderContext.viewCamera.get_dec());
+  this._drawSkyOverlays();
+  Planets.drawPlanets(this.renderContext, 1);
 
   Annotation2.prepBatch(this.renderContext);
   for (const item of Annotation2.annotations) {

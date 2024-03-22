@@ -47,6 +47,8 @@ declare module "@wwtelescope/engine" {
     static _planetLocations: { RA: number; dec: number }[];
 
     static drawPlanets(renderContext: RenderContext, opacity: number): void;
+    static updatePlanetLocations(threeD: boolean): void;
+    static _loadPlanetTextures(): void;
   }
 
   export class CAAMoon {
