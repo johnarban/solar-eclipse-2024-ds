@@ -124,7 +124,7 @@ export default defineComponent({
 
 <style>
 
-.v-tooltip.define-term-tooltip > .v-overlay__content {
+.v-tooltip > .v-overlay__content {
   background: #3b567f !important;
   color: white !important;
 }
