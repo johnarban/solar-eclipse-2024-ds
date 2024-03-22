@@ -4541,8 +4541,8 @@ body {
   backdrop-filter: blur(5px);
   justify-content: space-around;
   align-content: center;
-  padding-top: 4rem;
-  padding-bottom: 1rem;
+  padding-top: 4vh;
+  padding-bottom: 1vh;
 
   border-radius: 10%;
   border: min(1.2vw, 0.9vh) solid var(--accent-color);
