@@ -237,9 +237,10 @@
               >
               <span v-if="showEclipsePredictionText">
                 {{ eclipsePredictionText }}
+                <v-icon v-if="$vuetify.display.width<600" style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> 
               </span>
               <span v-else>
-                {{ touchscreen ? "Tap" : "Click" }} <v-icon style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> to see eclipse predictions'
+                {{ touchscreen ? "Tap" : "Click" }} <v-icon style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> to see eclipse predictions
               </span>
             </div>
             <!-- :places="places" -->
@@ -712,7 +713,7 @@
       {{ eclipsePredictionText }}
     </span>
     <span class="banner-text" v-else>
-      {{ touchscreen ? "Tap" : "Click" }} <v-icon>mdi-sun-clock</v-icon> to see eclipse predictions'
+      {{ touchscreen ? "Tap" : "Click" }} <v-icon>mdi-sun-clock</v-icon> to see eclipse predictions
     </span>
     <span class="banner-close" @click="showEclipsePredictionTextBanner = false">
       <v-icon>mdi-close</v-icon>
