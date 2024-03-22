@@ -586,6 +586,9 @@
                     <h4 class="user-guide-header">Display Options:</h4>
                     <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
+                      <li class="mb-2">
+                        <span class="user-guide-emphasis-white">Timing Details:</span> Display detailed eclipse timing predictions for your selected location.
+                      </li>
                       <li>
                         <span class="user-guide-emphasis-white">Center Sun:</span> Recenter view on Sun.
                       </li>
@@ -600,6 +603,9 @@
                       </li>
                       <li>
                         <span class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
+                      </li>
+                      <li>
+                        <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
                       </li>
                     </ul>
                           
@@ -1217,7 +1223,7 @@
               :color="accentColor"
               v-model="showEclipsePredictionTextBanner"
               @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
-              label="Eclipse Time on Map"
+              label="Eclipse Timing"
               hide-details 
             />
           </div>
