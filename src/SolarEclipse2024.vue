@@ -238,7 +238,7 @@
                 {{ eclipsePredictionText }}
               </span>
               <span v-else>
-                Open "Timing Details" <v-icon style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> to see eclipse predictions'
+                {{ touchscreen ? "Tap" : "Click" }} <v-icon style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> to see eclipse predictions'
               </span>
             </div>
             <!-- :places="places" -->
@@ -711,7 +711,10 @@
       {{ eclipsePredictionText }}
     </span>
     <span class="banner-text" v-else>
-      Open "Timing Details" <v-icon>mdi-sun-clock</v-icon> to see eclipse predictions'
+      {{ touchscreen ? "Tap" : "Click" }} <v-icon>mdi-sun-clock</v-icon> to see eclipse predictions'
+    </span>
+    <span class="banner-close" @click="showEclipsePredictionTextBanner = false">
+      <v-icon>mdi-close</v-icon>
     </span>
   </div>
   
@@ -4080,8 +4083,14 @@ body {
   position: relative;
   font-size: var(--default-font-size);
   text-align: center;
-  padding-left: 2em;
   background-color: rgb(93, 93, 93);
+  
+  .banner-close {
+    position: absolute;
+    right: 5px;
+    cursor: pointer;
+  
+  }
 }
 
 
