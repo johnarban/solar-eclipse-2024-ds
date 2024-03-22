@@ -1185,7 +1185,7 @@
         </template>
         <v-card>
           <v-card-text>
-            <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor"/>
+            <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor" :location="selectedLocationText"/>
           </v-card-text>
         </v-card>
       </v-dialog>

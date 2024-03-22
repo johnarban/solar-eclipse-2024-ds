@@ -4,7 +4,7 @@
     <div v-if="showTimer" class="eclipse-countdown">
       <div class="ec-timer">{{ timeToEclipse }}</div>
       <div v-if="!noEclipse">
-        until max eclipse
+        until max eclipse {{ location !== '' ? 'at ' + location : '' }}
       </div>
     </div>
     
@@ -117,6 +117,12 @@ export default defineComponent({
     timezone: {
       type: String,
       default: 'UTC',
+      required: false,
+    },
+    
+    location: {
+      type: String,
+      default: '',
       required: false,
     },
     
