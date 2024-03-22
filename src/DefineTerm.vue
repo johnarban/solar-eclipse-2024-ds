@@ -144,7 +144,7 @@ export default defineComponent({
 
 .define-term-tooltip.definition {
   font-size: var(--default-font-size);
-  color: black;
+  color: white;
   padding-block: 0.5em;
 }
 
