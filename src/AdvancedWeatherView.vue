@@ -505,6 +505,11 @@ export default defineComponent({
       mapOptions: {
         templateUrl: "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}",
         attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
+        initialLocation: {
+          latitudeDeg: 35,
+          longitudeDeg: -100
+        },
+        initialZoom: 3
       },
       eclipsePaths: [{
         geojson: eclipseUmbra as GeoJSON.GeometryCollection,
