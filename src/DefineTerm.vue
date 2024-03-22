@@ -2,6 +2,7 @@
 import { tooltip } from 'leaflet';
 <template>
   <v-tooltip 
+    class="define-term-tooltip"
     v-model="tooltip"
     :width="width"
     :open-on-click="!noClick"
@@ -15,7 +16,7 @@ import { tooltip } from 'leaflet';
     >
     <template v-slot:activator="{props}" >
         <slot name="term" v-bind="props" tabindex="0" :props="props">
-          <span tabindex="0" :class="['define-term-tooltip', inline ? 'inline' : '']" v-bind="props" > {{  term }} </span>
+          <span tabindex="0" :class="['define-term-tooltip', inline ? 'inline' : '', bold ? 'define-term-bold' : '', underlined ? 'define-term-underline' : '' ]" v-bind="props" > {{  term }} </span>
         </slot>
     </template>
     
@@ -59,6 +60,17 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
+    
+    bold: {
+      type: Boolean,
+      default: true
+    },
+    
+    underlined: {
+      type: Boolean,
+      default: false
+    },
+    
     showFor: {
       type: Number,
       default: 0,
@@ -120,12 +132,20 @@ export default defineComponent({
 .define-term-tooltip.inline {
   display: inline;
   pointer-events: auto;
+}
+
+.define-term-bold {
   font-weight: bold;
+}
+
+.define-term-underline {
+  text-decoration: underline;
+  text-decoration-style: dotted;
 }
 
 .define-term-tooltip.definition {
   font-size: var(--default-font-size);
-  color: black;
+  color: white;
   padding-block: 0.5em;
 }
 

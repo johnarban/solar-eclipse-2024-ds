@@ -823,15 +823,23 @@ function gettime(elements: number[], circumstances: any[]): [string, SunBSR] {
     ans = ans + "0";
   }
   ans = ans + Math.floor(t);
-  if (circumstances[40] <= 1) {
-    // not sunrise or sunset
-    ans = ans + ":";
-    t = t * 60.0 - 60.0 * Math.floor(t);
-    if (t < 10.0) {
-      ans = ans + "0";
-    }
-    ans = ans + Math.floor(t);
+  // return the full time even if circumstances are b, s, r
+  // modern js Date requires a seconds value
+  // if (circumstances[40] <= 1) {
+  //   // not sunrise or sunset
+  //   ans = ans + ":";
+  //   t = t * 60.0 - 60.0 * Math.floor(t);
+  //   if (t < 10.0) {
+  //     ans = ans + "0";
+  //   }
+  //   ans = ans + Math.floor(t);
+  // }
+  ans = ans + ":";
+  t = t * 60.0 - 60.0 * Math.floor(t);
+  if (t < 10.0) {
+    ans = ans + "0";
   }
+  ans = ans + Math.floor(t);
   if (circumstances[40] == 1) {
     // below horizon
     return [ans,'b'];

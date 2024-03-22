@@ -124,13 +124,15 @@
                 <div class=".d-flex">
                   <div>
                     This map shows historical cloud cover data for the week of April 8 for the years 2003&#8211;2023 from <a href="https://modis.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">MODIS</a> on NASA's Aqua satellite.
-                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km).
+                    {{ touchscreen ? "Tap" : "Click" }} the map to display the <define-term term="median" definition="For <strong>half</strong> of the years from 2003–2023 on April 8, the cloud cover amount was <strong>less</strong> than the median value. For the other <strong>half</strong> of the years, the cloud cover was <strong>more</strong> than the median value."/> cloud coverage for a particular location (within about 100 km). Learn more in the <v-btn style="padding-inline:2px;" :class="[smallSize ? 'text-caption' : '']" :color="accentColor" density="compact"  @click="showAdvancedWeather = true">Cloud Data Explorer</v-btn>.
                   </div>
                   <div>
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
+                      @cloudIcon="cloudIcon = $event"
                     />
                   </div>
+                  
                 </div>
               </span>
             </div>
@@ -225,7 +227,25 @@
         <v-slide-y-transition
           :disabled="smAndUp"
         >
-          <div v-if="!smAndUp || smAndUp" id="map-container">
+          <div 
+            :class="['']"
+            v-if="!smAndUp || smAndUp" id="map-container" :data-before-text="eclipsePredictionText">
+            <div 
+              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner"
+              id="map-banner" 
+              class="show-after"
+              >
+              <span v-if="showEclipsePredictionText">
+                {{ eclipsePredictionText }}
+                <v-icon v-if="$vuetify.display.width<600" style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> 
+              </span>
+              <span v-else>
+                {{ touchscreen ? "Tap" : "Click" }} <v-icon style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> to see eclipse predictions
+              </span>
+              <span class="banner-close" @click="showEclipsePredictionTextBanner = false">
+                <v-icon>mdi-close</v-icon>
+              </span>
+            </div>
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
@@ -583,6 +603,14 @@
                     <h4 class="user-guide-header">Display Options:</h4>
                     <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
+                      <li class="mb-2">
+                        {{ touchscreen ? "Tap" : "Click" }}
+                        <v-icon
+                          class="bullet-icon"
+                          icon="mdi-sun-clock"
+                          size="medium">
+                        </v-icon> to display detailed <span class="user-guide-emphasis-white">eclipse timing</span> predictions for your selected location.
+                      </li>
                       <li>
                         <span class="user-guide-emphasis-white">Center Sun:</span> Recenter view on Sun.
                       </li>
@@ -597,6 +625,9 @@
                       </li>
                       <li>
                         <span class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
+                      </li>
+                      <li>
+                        <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
                       </li>
                     </ul>
                           
@@ -684,6 +715,19 @@
       updateLocationFromMap(loc);
     }"
     />
+  
+  <div v-if="!showGuidedContent && showEclipsePredictionTextBanner" class="user-banner">
+    <span class="banner-text" v-if="showEclipsePredictionText">
+      {{ eclipsePredictionText }}
+    </span>
+    <span class="banner-text" v-else>
+      {{ touchscreen ? "Tap" : "Click" }} <v-icon>mdi-sun-clock</v-icon> to see eclipse predictions
+    </span>
+    <span class="banner-close" @click="showEclipsePredictionTextBanner = false">
+      <v-icon>mdi-close</v-icon>
+    </span>
+  </div>
+  
   <div
     id="main-content"
   > 
@@ -899,8 +943,8 @@
         <div id="splash-screen-guide">
           <v-row>
             <v-col cols="12">
-              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
-              New! Location Search
+              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
+              New! Detailed Eclipse Times
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
@@ -1066,14 +1110,6 @@
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
       <div id="location-date-display">
         <v-chip 
-          :prepend-icon="smallSize ? `` : `mdi-clouds`"
-          v-if="mobile"
-          variant="outlined"
-          size="small"
-          elevation="2"
-          :text="selectedLocationCloudCoverString"
-        > </v-chip>
-        <v-chip 
         :prepend-icon="smallSize ? `` : `mdi-clock`"
         variant="outlined"
         size="small"
@@ -1081,7 +1117,7 @@
         :text="selectedLocaledTimeDateString"
       > </v-chip>
       <v-chip 
-          :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
+          :prepend-icon="cloudIcon"
           variant="outlined"
           size="small"
           elevation="2"
@@ -1120,6 +1156,42 @@
     
     <div class="bottom-content">
 
+      <icon-button
+        id="eclipse-details-button"
+        md-icon="sun-clock"
+        md-size="24"
+        :color="accentColor"
+        :focus-color="accentColor"
+        tooltip-text="View eclipse timing details"
+        tooltip-location="start"
+        @activate="() => {
+          showEclipsePredictionSheet = true;
+          if (!showEclipsePredictionText) {
+            showEclipsePredictionTextBanner = true;
+          }
+          showEclipsePredictionText = true;
+        }"
+        >
+      </icon-button>
+      <v-dialog
+        v-model="showEclipsePredictionSheet"
+        max-width="fit-content"
+        transition="slide-y-transition"
+        id="eclipse-prediction-sheet"
+        >
+        <v-card>
+          <v-card-text>
+            <button 
+              style="position:absolute;right:12px;cursor:pointer;"
+              id="close-eclipse-prediction-sheet"
+              @click="showEclipsePredictionSheet = false"
+              ><v-icon
+              >mdi-close</v-icon></button>
+            <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor" :location="selectedLocationText"/>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+      
       <div
         id="controls"
         class="control-icon-wrapper"
@@ -1134,7 +1206,7 @@
             tabindex="0"
           /> 
         </div>
-        <transition-expand>
+
           <div v-if="showControls" id="control-checkboxes">
             <v-checkbox
               :color="accentColor"
@@ -1172,8 +1244,15 @@
                 label="Amount Eclipsed"
                 hide-details
             />                      
+            <v-checkbox
+              :color="accentColor"
+              v-model="showEclipsePredictionTextBanner"
+              @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
+              label="Eclipse Timing"
+              hide-details 
+            />
           </div>
-        </transition-expand>
+
       </div>
       
       <div id="eclipse-percent-chip">
@@ -1500,6 +1579,7 @@ import pointInPolygon from 'point-in-polygon';
 
 import { recalculateForObserverUTC } from "./eclipse_predict";
 import { EclipseData } from "./eclipse_types";
+import { spaceHMS } from './utils';
 
 
 interface CloudData {
@@ -1826,6 +1906,11 @@ export default defineComponent({
       showAWVChartsByDefault: queryData.awv ?? false,
       showAWVFullScreen: false,
       
+      showEclipsePredictionSheet: false,
+      showEclipsePredictionText: false,
+      showEclipsePredictionTextBanner: false,
+      
+      
       selectionProximity: 4,
       pointerMoveThreshold: 6,
       isPointerMoving: false,
@@ -1965,6 +2050,8 @@ export default defineComponent({
       eclipseMid: 0 as number | null,
       eclipseEnd: 0 as number | null,
       eclipseApproach: 'entering' as 'entering' | 'leaving',
+      eclipseType: null as "Partial" | "Total" | "Annular" | 'None' | null,
+      showEclipseTimer:true,
     };
   },
 
@@ -1989,6 +2076,13 @@ export default defineComponent({
       this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
     }
+        
+    if (!this.showSplashScreen) {
+      this.showEclipsePredictionTextBanner = true;
+    }
+    
+    this.searchOpen = this.smAndUp;
+    
     this.createUserEntry();
 
     // We just need to force these to get around some Safari issues whose cause is TBD
@@ -2115,6 +2209,46 @@ export default defineComponent({
   },
 
   computed: {
+    
+    eclipsePredictionText(): string {
+      
+      if (!this.showEclipsePredictionText) {
+        return 'Open "Timing Details" to see eclipse predictions';
+      }
+      
+      if (this.eclipsePrediction) {
+        const { type, maxTime, duration } = this.eclipsePrediction;
+        if (type === '' || type === null || maxTime[0] === null) {
+          return "No eclipse";
+        }
+        const typeString = (new Map([
+          ["P", "Partial"],
+          ["T", "Total"],
+          ["A", "Annular"],
+        ])).get(type);
+        
+        // const maxTimeString = formatInTimeZone(maxTime[0], this.selectedTimezone, "HH:mm (zzz)");
+        
+        if (type == "T") {
+          const begins = formatInTimeZone(this.eclipsePrediction.centralStart[0], this.selectedTimezone, "HH:mm:ss (zzz)");
+          if (this.$vuetify.display.xs) {
+            return `Totality starts: ${begins} Duration: ${spaceHMS(duration)}`;
+          }
+          return `Totality begins at ${begins} and lasts ${spaceHMS(duration)}`;
+        }
+        
+
+        if (duration === '') {
+          // get the duration of the partial eclipse
+          const starting = formatInTimeZone(this.eclipsePrediction.partialStart[0], this.selectedTimezone, "HH:mm (zzz)");
+          if (this.$vuetify.display.xs) {
+            return `${typeString} starts: ${starting}`;
+          }
+          return `${typeString} eclipse begins at ${starting}`;
+        }
+      }
+      return '';
+    },
 
     selectedCloudCoverData(): CloudData[] | null {
       if (this.cloudCoverData != null) {
@@ -2155,6 +2289,25 @@ export default defineComponent({
       } else {
         return null;
       }
+    },
+    
+    cloudIcon() {
+    
+      if (this.selectedLocationCloudCover == null) {
+        return 'mdi-cloud-cancel';
+      } 
+      else if (this.selectedLocationCloudCover < .25) {
+        return 'mdi-weather-sunny';
+      }
+      else if (this.selectedLocationCloudCover < .5) {
+        return 'mdi-weather-partly-cloudy';
+      } 
+      else if (this.selectedLocationCloudCover < 0.9) {
+        return 'mdi-weather-cloudy';
+      } 
+      else {
+        return 'mdi-clouds';
+      } 
     },
     
     selectedLocationCloudCoverString():string {
@@ -2230,7 +2383,7 @@ export default defineComponent({
       return {
         '--accent-color': this.accentColor,
         '--sky-color': this.skyColorLight,
-        '--app-content-height': this.showInfoSheet ? '100vh' : '100vh',
+        '--app-content-height': this.showInfoSheet ? '100%' : '100%',
         '--top-content-height': this.showGuidedContent? this.guidedContentHeight : this.guidedContentHeight,
         '--moon-color': this.moonColor,
       };
@@ -3242,16 +3395,20 @@ export default defineComponent({
 
     updateGuidedContentHeight() {
       let guidedContentContainer = null as HTMLElement | null;
+      let height = 0;
       this.$nextTick(() => {
         guidedContentContainer = document.getElementById('guided-content-container') as HTMLElement;
         
         if (guidedContentContainer) {
-          const height = guidedContentContainer.clientHeight;
-          // console.log("height", height);
-          this.guidedContentHeight = `${height}px`;
-        } else {
-          this.guidedContentHeight = '0px';
+          height += guidedContentContainer.clientHeight;
         }
+        
+        const topbanner = document.querySelector('.user-banner');
+        if (topbanner) {
+          height += topbanner.clientHeight;
+        }
+        
+        this.guidedContentHeight = `${height}px`;
       });
     },
     
@@ -3428,6 +3585,22 @@ export default defineComponent({
       } else {
         this.eclipseMid = null;
       }
+      
+      switch (this.eclipsePrediction.type) {
+      case "T":
+        this.eclipseType = "Total";
+        break;
+      case "A":
+        this.eclipseType = "Annular";
+        break;
+      case "P":
+        this.eclipseType = "Partial";
+        break;
+      default:
+        this.eclipseType = "None";
+      }
+      
+      return eclipsePrediction;
       
     },
 
@@ -3620,6 +3793,13 @@ export default defineComponent({
       });
       
     },
+    
+    showEclipsePredictionTextBanner(_val: boolean) {
+      this.onResize();
+      this.$nextTick(() => {
+        this.onScroll();
+      });
+    },
 
     cssVars(_css: unknown) {
       // console.log(_css);
@@ -3632,6 +3812,7 @@ export default defineComponent({
     inIntro(value: boolean) {
       if (!value) {
         this.playing = true;
+        this.showEclipsePredictionTextBanner = true;
         if (!this.showSplashScreen && this.responseOptOut === null) {
           this.showPrivacyDialog = true;
         }
@@ -3942,11 +4123,25 @@ body {
   padding: 0.5em;
 }  
 
+.user-banner {
+  position: relative;
+  font-size: var(--default-font-size);
+  text-align: center;
+  background-color: rgb(93, 93, 93);
+  
+  .banner-close {
+    position: absolute;
+    right: 5px;
+    cursor: pointer;
+  }
+}
+
+
 #main-content {
   position: relative;
   // top: var(--top-content-height);
   width: 100%;
-  height: calc(var(--app-content-height) - var(--top-content-height));
+  height: calc(var(--app-content-height) - var(--top-content-height) - 1px);
   overflow: hidden;
   // border: 2px solid blue;
 
@@ -3961,18 +4156,6 @@ body {
     border-width: 2px;
   }
 }
-
-
-#test-content {
-  position: absolute;
-  width: 50%;
-  height: 60%;
-  padding: 1em;
-  top: 5%;
-  left: 5%;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
 
 #app {
   width: 100%;
@@ -4854,13 +5037,12 @@ video, #info-video {
     position: absolute;
     left: 1.5rem;
     z-index: 500;
-    top: 0.75rem;
+    top: calc(var(--default-font-size) + 0.75rem);
 
     &.budge {
       left: 0.5rem;
       @media (max-width: 599px) {
         left: 0.5rem;
-        top: .75rem;
       }
     }
   }
@@ -5082,6 +5264,57 @@ video, #info-video {
     width: 100%;
     
     display: flex;
+    
+    .show-after {
+      display:flex;
+      width: 100%;
+      min-height: 2.5em;
+      height: max-content;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(0.8 * var(--default-font-size));
+      padding: 0 10px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      
+      color: black;
+      background-color: #cccccc77;
+      z-index: 500;
+      
+      backdrop-filter: blur(5px) saturate(50%);
+      
+      
+      .banner-close {
+        position: absolute;
+        right: 5px;
+        cursor: pointer;
+      }
+      
+    }
+    
+    
+    &.show-after::after {
+      content: attr(data-before-text);
+      
+      display:flex;
+      width: 100%;
+      min-height: 2.5em;
+      height: max-content;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(0.8 * var(--default-font-size));
+      padding: 0 10px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      
+      color: black;
+      background-color: #cccccc77;
+      z-index: 500;
+      
+      backdrop-filter: blur(5px) saturate(50%);
+    }
     
     
     .map-container {
