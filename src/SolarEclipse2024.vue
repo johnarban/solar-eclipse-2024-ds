@@ -2052,10 +2052,6 @@ export default defineComponent({
       this.updateSelectedLocationText();
     }
     
-    if (!this.showSplashScreen) {
-      this.showEclipsePredictionTextBanner = true;
-    }
-    
     this.createUserEntry();
 
     this.waitForReady().then(async () => {
@@ -2977,7 +2973,6 @@ export default defineComponent({
 
     closeSplashScreen() {
       this.showSplashScreen = false; 
-      this.showEclipsePredictionTextBanner = true;
     },
 
     updateWWTLocation() {
@@ -3742,6 +3737,7 @@ export default defineComponent({
     inIntro(value: boolean) {
       if (!value) {
         this.playing = true;
+        this.showEclipsePredictionTextBanner = true;
         if (!this.showSplashScreen && this.responseOptOut === null) {
           this.showPrivacyDialog = true;
         }
