@@ -604,7 +604,12 @@
                     <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
                       <li class="mb-2">
-                        <span class="user-guide-emphasis-white">Timing Details:</span> Display detailed eclipse timing predictions for your selected location.
+                        {{ touchscreen ? "Tap" : "Click" }}
+                        <v-icon
+                          class="bullet-icon"
+                          icon="mdi-sun-clock"
+                          size="medium">
+                        </v-icon> to display detailed <span class="user-guide-emphasis-white">eclipse timing</span> predictions for your selected location.
                       </li>
                       <li>
                         <span class="user-guide-emphasis-white">Center Sun:</span> Recenter view on Sun.
