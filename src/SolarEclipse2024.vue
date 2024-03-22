@@ -2051,7 +2051,11 @@ export default defineComponent({
       this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
     }
-    
+        
+    if (!this.showSplashScreen) {
+      this.showEclipsePredictionTextBanner = true;
+    }
+
     this.createUserEntry();
 
     this.waitForReady().then(async () => {
