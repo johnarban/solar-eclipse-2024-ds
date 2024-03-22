@@ -61,9 +61,9 @@
           <td class="time-value">{{ partialEnd[1] === '' ? timeString(partialEnd[0]) : 'Sun below Horizon' }}</td>
         </tr>
       </table>
+      <hr class="mt-4" style="width:100%">
     </div>
     <!-- utc/local time preference switch -->
-    <hr class="mt-4" style="width:100%">
     <v-btn-toggle 
       class="mt-2"
       v-model="tzPref"  
