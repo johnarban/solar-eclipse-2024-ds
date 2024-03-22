@@ -1873,11 +1873,13 @@ export default defineComponent({
       userGuideTimeMs: 0,
       weatherTimeMs: 0,
       weatherInfoTimeMs: 0,
+      eclipseTimerTimeMs: 0,
       appStartTimestamp: Date.now(),
       infoStartTimestamp: null as number | null,
       userGuideStartTimestamp: null as number | null,
       weatherStartTimestamp: null as number | null,
       weatherInfoStartTimestamp: null as number | null,
+      eclipseTimerStartTimestamp: null as number | null,
       weatherInfoOpen: false,
       responseOptOut: responseOptOut as boolean | null,
 
@@ -3116,6 +3118,7 @@ export default defineComponent({
       const userGuideTime = (this.showWWTGuideSheet && this.userGuideStartTimestamp !== null) ? now - this.userGuideStartTimestamp : this.userGuideTimeMs;
       const weatherTime = (this.showAdvancedWeather && this.weatherStartTimestamp !== null) ? now - this.weatherStartTimestamp : this.weatherTimeMs;
       const weatherInfoTime = (this.weatherInfoOpen && this.weatherInfoStartTimestamp !== null) ? now - this.weatherInfoStartTimestamp : this.weatherInfoTimeMs;
+      const eclipseTimerTime = (this.showEclipsePredictionSheet && this.eclipseTimerStartTimestamp !== null) ? now - this.eclipseTimerStartTimestamp : this.eclipseTimerTimeMs;
       fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
         method: "PATCH",
         headers: {
@@ -3129,11 +3132,11 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          delta_info_time_ms: infoTime, delta_app_time_ms: Date.now() - this.appStartTimestamp,
+          delta_info_time_ms: infoTime, delta_app_time_ms: now - this.appStartTimestamp,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           delta_advanced_weather_time_ms: weatherTime, delta_weather_info_time_ms: weatherInfoTime,
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          delta_user_guide_time_ms: userGuideTime,
+          delta_user_guide_time_ms: userGuideTime, delta_eclipse_timer_time_ms: eclipseTimerTime,
         }),
         keepalive: true,
       }).then(() => {
@@ -3430,7 +3433,7 @@ export default defineComponent({
       this.wwtSettings.set_localHorizonMode(true);
       this.showAltAzGrid = false;
       this.skyColor = this.skyColorLight;
-      this.showHorizon = true; // automatically calls it's watcher and updates horizon
+      this.showHorizon = true; // automatically calls its watcher and updates horizon
       this.horizonOpacity = 1;
       // this.setForegroundImageByName("Digitized Sky Survey (Color)");
       this.sunPlace.set_zoomLevel(20);
@@ -3984,6 +3987,15 @@ export default defineComponent({
       } else if (this.userGuideStartTimestamp !== null) {
         this.userGuideTimeMs += (Date.now() - this.userGuideStartTimestamp);
         this.userGuideStartTimestamp = null;
+      }
+    },
+
+    showEclipsePredictionSheet(show: boolean) {
+      if (show) {
+        this.eclipseTimerStartTimestamp = Date.now();
+      } else if (this.eclipseTimerStartTimestamp !== null) {
+        this.eclipseTimerTimeMs += (Date.now() - this.eclipseTimerStartTimestamp);
+        this.eclipseTimerStartTimestamp = null;
       }
     },
 
