@@ -242,6 +242,9 @@
               <span v-else>
                 {{ touchscreen ? "Tap" : "Click" }} <v-icon style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> to see eclipse predictions
               </span>
+              <span class="banner-close" @click="showEclipsePredictionTextBanner = false">
+                <v-icon>mdi-close</v-icon>
+              </span>
             </div>
             <!-- :places="places" -->
             <location-selector
@@ -708,7 +711,7 @@
     }"
     />
   
-  <div v-if="showEclipsePredictionTextBanner" class="user-banner">
+  <div v-if="!showGuidedContent && showEclipsePredictionTextBanner" class="user-banner">
     <span class="banner-text" v-if="showEclipsePredictionText">
       {{ eclipsePredictionText }}
     </span>
@@ -3769,6 +3772,13 @@ export default defineComponent({
       });
       
     },
+    
+    showEclipsePredictionTextBanner(_val: boolean) {
+      this.onResize();
+      this.$nextTick(() => {
+        this.onScroll();
+      });
+    },
 
     cssVars(_css: unknown) {
       // console.log(_css);
@@ -4102,7 +4112,6 @@ body {
     position: absolute;
     right: 5px;
     cursor: pointer;
-  
   }
 }
 
@@ -5253,6 +5262,14 @@ video, #info-video {
       z-index: 500;
       
       backdrop-filter: blur(5px) saturate(50%);
+      
+      
+      .banner-close {
+        position: absolute;
+        right: 5px;
+        cursor: pointer;
+      }
+      
     }
     
     
