@@ -3335,16 +3335,20 @@ export default defineComponent({
 
     updateGuidedContentHeight() {
       let guidedContentContainer = null as HTMLElement | null;
+      let height = 0;
       this.$nextTick(() => {
         guidedContentContainer = document.getElementById('guided-content-container') as HTMLElement;
         
         if (guidedContentContainer) {
-          const height = guidedContentContainer.clientHeight;
-          // console.log("height", height);
-          this.guidedContentHeight = `${height}px`;
-        } else {
-          this.guidedContentHeight = '0px';
+          height += guidedContentContainer.clientHeight;
         }
+        
+        const topbanner = document.querySelector('.user-banner');
+        if (topbanner) {
+          height += topbanner.clientHeight;
+        }
+        
+        this.guidedContentHeight = `${height}px`;
       });
     },
     
