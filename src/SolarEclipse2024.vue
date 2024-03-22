@@ -1840,12 +1840,12 @@ export default defineComponent({
       initialZoom: 3.3
     };
 
-    const userSelectedLocationsVisited: [number, number][] = [];
+    const userSelectedLocations: [number, number][] = [];
     const [latitudeDeg, longitudeDeg] = [queryData.latitudeDeg, queryData.longitudeDeg];
     
     let initialMapOptions = initialView;
     if (latitudeDeg !== undefined && longitudeDeg !== undefined) {
-      userSelectedLocationsVisited.push([latitudeDeg, longitudeDeg]);
+      userSelectedLocations.push([latitudeDeg, longitudeDeg]);
       initialMapOptions = {
         initialLocation: { latitudeDeg, longitudeDeg },
         initialZoom: 5
@@ -2047,8 +2047,9 @@ export default defineComponent({
       ],
       
 
-      userSelectedLocations: userSelectedLocationsVisited,
+      userSelectedLocations,
       cloudCoverSelectedLocations: [] as [number, number][],
+      textSearchSelectedLocations: [] as [number, number][],
       eclipsePrediction: null as EclipseData<Date> | null,
       eclipseStart: 0 as number | null,
       eclipseMid: 0 as number | null,
@@ -3054,6 +3055,13 @@ export default defineComponent({
       }
       this.locationDeg = location;
       this.updateSelectedLocationText();
+
+      const visitedLocation: [number, number] = [location.latitudeDeg, location.longitudeDeg];
+      if (this.learnerPath === "Clouds") {
+        this.cloudCoverSelectedLocations.push(visitedLocation);
+      } else {
+        this.userSelectedLocations.push(visitedLocation);
+      }
     },
 
     onTimeSliderChange() {
@@ -3091,7 +3099,9 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          info_time_ms: 0, app_time_ms: 0,
+          text_search_selected_locations: toRaw(this.textSearchSelectedLocations),
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          info_time_ms: 0, app_time_ms: 0, user_guide_time_ms: 0,
         })
       });
     },
@@ -3099,6 +3109,7 @@ export default defineComponent({
     resetData() {
       this.userSelectedLocations = [];
       this.cloudCoverSelectedLocations = [];
+      this.textSearchSelectedLocations = [];
       this.infoTimeMs = 0;
       this.userGuideTimeMs = 0;
       this.weatherTimeMs = 0;
@@ -3135,6 +3146,8 @@ export default defineComponent({
           user_selected_locations: toRaw(this.userSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          text_search_selected_locations: toRaw(this.textSearchSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
           delta_info_time_ms: infoTime, delta_app_time_ms: now - this.appStartTimestamp,
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -3745,6 +3758,7 @@ export default defineComponent({
     setLocationFromSearchFeature(feature: MapBoxFeature) {
       this.setLocationFromFeature(feature);
       this.clearSearchData();
+      this.textSearchSelectedLocations.push(feature.center);
     },
     
     decreasePlaybackRate() {
@@ -3929,15 +3943,6 @@ export default defineComponent({
         //this.centerSun();
       } else {
         this.trackSunOffset();
-      }
-    },
-
-    locationDeg(loc: LocationDeg) {
-      const visitedLocation: [number, number] = [loc.latitudeDeg, loc.longitudeDeg];
-      if (this.learnerPath === "Clouds") {
-        this.cloudCoverSelectedLocations.push(visitedLocation);
-      } else {
-        this.userSelectedLocations.push(visitedLocation);
       }
     },
 
