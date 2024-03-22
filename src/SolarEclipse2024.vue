@@ -129,6 +129,7 @@
                   <div>
                     <cloud-cover
                       :cloud-cover="selectedLocationCloudCover"
+                      @cloudIcon="cloudIcon = $event"
                     />
                   </div>
                   
@@ -1100,14 +1101,6 @@
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
       <div id="location-date-display">
         <v-chip 
-          :prepend-icon="smallSize ? `` : `mdi-clouds`"
-          v-if="mobile"
-          variant="outlined"
-          size="small"
-          elevation="2"
-          :text="selectedLocationCloudCoverString"
-        > </v-chip>
-        <v-chip 
         :prepend-icon="smallSize ? `` : `mdi-clock`"
         variant="outlined"
         size="small"
@@ -1115,7 +1108,7 @@
         :text="selectedLocaledTimeDateString"
       > </v-chip>
       <v-chip 
-          :prepend-icon="smallSize ? `` : `mdi-map-marker-radius`"
+          :prepend-icon="cloudIcon"
           variant="outlined"
           size="small"
           elevation="2"
@@ -2275,6 +2268,25 @@ export default defineComponent({
       } else {
         return null;
       }
+    },
+    
+    cloudIcon() {
+    
+      if (this.selectedLocationCloudCover == null) {
+        return 'mdi-cloud-cancel';
+      } 
+      else if (this.selectedLocationCloudCover < .25) {
+        return 'mdi-weather-sunny';
+      }
+      else if (this.selectedLocationCloudCover < .5) {
+        return 'mdi-weather-partly-cloudy';
+      } 
+      else if (this.selectedLocationCloudCover < 0.9) {
+        return 'mdi-weather-cloudy';
+      } 
+      else {
+        return 'mdi-clouds';
+      } 
     },
     
     selectedLocationCloudCoverString():string {
