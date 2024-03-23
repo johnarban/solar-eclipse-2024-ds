@@ -1840,12 +1840,12 @@ export default defineComponent({
       initialZoom: 3.3
     };
 
-    const userSelectedLocationsVisited: [number, number][] = [];
+    const userSelectedLocations: [number, number][] = [];
     const [latitudeDeg, longitudeDeg] = [queryData.latitudeDeg, queryData.longitudeDeg];
     
     let initialMapOptions = initialView;
     if (latitudeDeg !== undefined && longitudeDeg !== undefined) {
-      userSelectedLocationsVisited.push([latitudeDeg, longitudeDeg]);
+      userSelectedLocations.push([latitudeDeg, longitudeDeg]);
       initialMapOptions = {
         initialLocation: { latitudeDeg, longitudeDeg },
         initialZoom: 5
@@ -1870,12 +1870,16 @@ export default defineComponent({
       
       uuid,
       infoTimeMs: 0,
+      userGuideTimeMs: 0,
       weatherTimeMs: 0,
       weatherInfoTimeMs: 0,
+      eclipseTimerTimeMs: 0,
       appStartTimestamp: Date.now(),
       infoStartTimestamp: null as number | null,
+      userGuideStartTimestamp: null as number | null,
       weatherStartTimestamp: null as number | null,
       weatherInfoStartTimestamp: null as number | null,
+      eclipseTimerStartTimestamp: null as number | null,
       weatherInfoOpen: false,
       responseOptOut: responseOptOut as boolean | null,
 
@@ -2043,8 +2047,9 @@ export default defineComponent({
       ],
       
 
-      userSelectedLocations: userSelectedLocationsVisited,
+      userSelectedLocations,
       cloudCoverSelectedLocations: [] as [number, number][],
+      textSearchSelectedLocations: [] as [number, number][],
       eclipsePrediction: null as EclipseData<Date> | null,
       eclipseStart: 0 as number | null,
       eclipseMid: 0 as number | null,
@@ -3050,6 +3055,13 @@ export default defineComponent({
       }
       this.locationDeg = location;
       this.updateSelectedLocationText();
+
+      const visitedLocation: [number, number] = [location.latitudeDeg, location.longitudeDeg];
+      if (this.learnerPath === "Clouds") {
+        this.cloudCoverSelectedLocations.push(visitedLocation);
+      } else {
+        this.userSelectedLocations.push(visitedLocation);
+      }
     },
 
     onTimeSliderChange() {
@@ -3087,7 +3099,9 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          info_time_ms: 0, app_time_ms: 0,
+          text_search_selected_locations: toRaw(this.textSearchSelectedLocations),
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          info_time_ms: 0, app_time_ms: 0, user_guide_time_ms: 0,
         })
       });
     },
@@ -3095,14 +3109,19 @@ export default defineComponent({
     resetData() {
       this.userSelectedLocations = [];
       this.cloudCoverSelectedLocations = [];
+      this.textSearchSelectedLocations = [];
       this.infoTimeMs = 0;
+      this.userGuideTimeMs = 0;
+      this.weatherTimeMs = 0;
+      this.weatherInfoTimeMs = 0;
+      this.eclipseTimerTimeMs = 0;
       const now = Date.now();
       this.appStartTimestamp = now;
       this.infoStartTimestamp = this.showInfoSheet ? now : null;
-      this.weatherTimeMs = 0;
-      this.weatherInfoTimeMs = 0;
+      this.userGuideStartTimestamp = this.showWWTGuideSheet ? now : null;
       this.weatherStartTimestamp = this.showAdvancedWeather ? now : null;
       this.weatherInfoStartTimestamp = this.weatherInfoOpen ? now : null;
+      this.eclipseTimerStartTimestamp = this.showEclipsePredictionSheet ? now : null;
     },
 
     sendUpdateData() {
@@ -3111,8 +3130,10 @@ export default defineComponent({
       }
       const now = Date.now();
       const infoTime = (this.showInfoSheet && this.infoStartTimestamp !== null) ? now - this.infoStartTimestamp : this.infoTimeMs;
+      const userGuideTime = (this.showWWTGuideSheet && this.userGuideStartTimestamp !== null) ? now - this.userGuideStartTimestamp : this.userGuideTimeMs;
       const weatherTime = (this.showAdvancedWeather && this.weatherStartTimestamp !== null) ? now - this.weatherStartTimestamp : this.weatherTimeMs;
       const weatherInfoTime = (this.weatherInfoOpen && this.weatherInfoStartTimestamp !== null) ? now - this.weatherInfoStartTimestamp : this.weatherInfoTimeMs;
+      const eclipseTimerTime = (this.showEclipsePredictionSheet && this.eclipseTimerStartTimestamp !== null) ? now - this.eclipseTimerStartTimestamp : this.eclipseTimerTimeMs;
       fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
         method: "PATCH",
         headers: {
@@ -3126,9 +3147,13 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           cloud_cover_selected_locations: toRaw(this.cloudCoverSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          delta_info_time_ms: infoTime, delta_app_time_ms: Date.now() - this.appStartTimestamp,
+          text_search_selected_locations: toRaw(this.textSearchSelectedLocations),
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_info_time_ms: infoTime, delta_app_time_ms: now - this.appStartTimestamp,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           delta_advanced_weather_time_ms: weatherTime, delta_weather_info_time_ms: weatherInfoTime,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_user_guide_time_ms: userGuideTime, delta_eclipse_timer_time_ms: eclipseTimerTime,
         }),
         keepalive: true,
       }).then(() => {
@@ -3425,7 +3450,7 @@ export default defineComponent({
       this.wwtSettings.set_localHorizonMode(true);
       this.showAltAzGrid = false;
       this.skyColor = this.skyColorLight;
-      this.showHorizon = true; // automatically calls it's watcher and updates horizon
+      this.showHorizon = true; // automatically calls its watcher and updates horizon
       this.horizonOpacity = 1;
       // this.setForegroundImageByName("Digitized Sky Survey (Color)");
       this.sunPlace.set_zoomLevel(20);
@@ -3733,6 +3758,7 @@ export default defineComponent({
     setLocationFromSearchFeature(feature: MapBoxFeature) {
       this.setLocationFromFeature(feature);
       this.clearSearchData();
+      this.textSearchSelectedLocations.push(feature.center);
     },
     
     decreasePlaybackRate() {
@@ -3920,15 +3946,6 @@ export default defineComponent({
       }
     },
 
-    locationDeg(loc: LocationDeg) {
-      const visitedLocation: [number, number] = [loc.latitudeDeg, loc.longitudeDeg];
-      if (this.learnerPath === "Clouds") {
-        this.cloudCoverSelectedLocations.push(visitedLocation);
-      } else {
-        this.userSelectedLocations.push(visitedLocation);
-      }
-    },
-
     searchText(text: string | null) {
       if (this.searchErrorMessage) {
         this.searchErrorMessage = null;
@@ -3970,6 +3987,24 @@ export default defineComponent({
       } else if (this.weatherStartTimestamp !== null) {
         this.weatherTimeMs += (Date.now() - this.weatherStartTimestamp);
         this.weatherStartTimestamp = null;
+      }
+    },
+
+    showWWTGuideSheet(show: boolean) {
+      if (show) {
+        this.userGuideStartTimestamp = Date.now();
+      } else if (this.userGuideStartTimestamp !== null) {
+        this.userGuideTimeMs += (Date.now() - this.userGuideStartTimestamp);
+        this.userGuideStartTimestamp = null;
+      }
+    },
+
+    showEclipsePredictionSheet(show: boolean) {
+      if (show) {
+        this.eclipseTimerStartTimestamp = Date.now();
+      } else if (this.eclipseTimerStartTimestamp !== null) {
+        this.eclipseTimerTimeMs += (Date.now() - this.eclipseTimerStartTimestamp);
+        this.eclipseTimerStartTimestamp = null;
       }
     },
 
