@@ -711,9 +711,11 @@
     :show-charts="showAWVChartsByDefault"
     :fullscreen="showAWVFullScreen"
     @location="(loc: LocationDeg) => {
-      locationDeg = loc;
-      updateLocationFromMap(loc);
       advancedWeatherSelectedCount += 1;
+      cloudCoverSelectedLocations.push([loc.latitudeDeg, loc.longitudeDeg]);
+    }"
+    @close="(loc: LocationDeg) => {
+      updateLocationFromMap(loc, false);
     }"
     />
   
@@ -3050,18 +3052,20 @@ export default defineComponent({
       this.wwtSettings.set_locationLng(R2D * this.location.longitudeRad);
     },
 
-    updateLocationFromMap(location: LocationDeg) {
+    updateLocationFromMap(location: LocationDeg, addToLocations=true) {
       if (location == null) {
         return;
       }
       this.locationDeg = location;
       this.updateSelectedLocationText();
 
-      const visitedLocation: [number, number] = [location.latitudeDeg, location.longitudeDeg];
-      if (this.learnerPath === "Clouds" || this.learnerPath === "CloudDetail") {
-        this.cloudCoverSelectedLocations.push(visitedLocation);
-      } else {
-        this.userSelectedLocations.push(visitedLocation);
+      if (addToLocations) {
+        const visitedLocation: [number, number] = [location.latitudeDeg, location.longitudeDeg];
+        if (this.learnerPath === "Clouds" || this.learnerPath === "CloudDetail") {
+          this.cloudCoverSelectedLocations.push(visitedLocation);
+        } else {
+          this.userSelectedLocations.push(visitedLocation);
+        }
       }
     },
 
@@ -3926,7 +3930,7 @@ export default defineComponent({
     },
 
     learnerPath(path: LearnerPath) {
-      if (!this.visitedCloudCover && (path === "Clouds") || (path === "CloudDetail")) {
+      if (!this.visitedCloudCover && ((path === "Clouds") || (path === "CloudDetail"))) {
         this.cloudCoverSelectedLocations.push([this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg]);
         this.visitedCloudCover = true;
       }
