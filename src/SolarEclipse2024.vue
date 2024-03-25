@@ -1968,6 +1968,7 @@ export default defineComponent({
       },
 
       learnerPath: "Location" as LearnerPath,
+      visitedCloudCover: false,
       
       playing: false,
       playingIntervalId: null as ReturnType<typeof setInterval> | null,
@@ -2288,9 +2289,7 @@ export default defineComponent({
     
     selectedLocationCloudCover(): number | null {
       if (this.locationDeg) {
-        const lat = this.locationDeg.latitudeDeg;
-        const lon = this.locationDeg.longitudeDeg;
-        return this.getCloudCover(lat, lon);
+        return this.getCloudCover(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg);
       } else {
         return null;
       }
@@ -3057,7 +3056,7 @@ export default defineComponent({
       this.updateSelectedLocationText();
 
       const visitedLocation: [number, number] = [location.latitudeDeg, location.longitudeDeg];
-      if (this.learnerPath === "Clouds") {
+      if (this.learnerPath === "Clouds" || this.learnerPath === "CloudDetail") {
         this.cloudCoverSelectedLocations.push(visitedLocation);
       } else {
         this.userSelectedLocations.push(visitedLocation);
@@ -3919,6 +3918,12 @@ export default defineComponent({
       this.updateFrontAnnotations(time);
     },
 
+    learnerPath(path: LearnerPath) {
+      if (!this.visitedCloudCover && (path === "Clouds") || (path === "CloudDetail")) {
+        this.cloudCoverSelectedLocations.push([this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg]);
+        this.visitedCloudCover = true;
+      }
+    },
 
     location(loc: LocationRad, oldLoc: LocationRad) {
       const locationDeg: [number, number] = [R2D * loc.latitudeRad, R2D * loc.longitudeRad];
