@@ -713,6 +713,7 @@
     @location="(loc: LocationDeg) => {
       locationDeg = loc;
       updateLocationFromMap(loc);
+      advancedWeatherSelectedCount += 1;
     }"
     />
   
@@ -2051,6 +2052,7 @@ export default defineComponent({
       userSelectedLocations,
       cloudCoverSelectedLocations: [] as [number, number][],
       textSearchSelectedLocations: [] as [number, number][],
+      advancedWeatherSelectedCount: 0,
       eclipsePrediction: null as EclipseData<Date> | null,
       eclipseStart: 0 as number | null,
       eclipseMid: 0 as number | null,
@@ -3101,6 +3103,8 @@ export default defineComponent({
           text_search_selected_locations: toRaw(this.textSearchSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
           info_time_ms: 0, app_time_ms: 0, user_guide_time_ms: 0,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          advanced_weather_selected_locations_count: this.advancedWeatherSelectedCount,
         })
       });
     },
@@ -3114,6 +3118,7 @@ export default defineComponent({
       this.weatherTimeMs = 0;
       this.weatherInfoTimeMs = 0;
       this.eclipseTimerTimeMs = 0;
+      this.advancedWeatherSelectedCount = 0;
       const now = Date.now();
       this.appStartTimestamp = now;
       this.infoStartTimestamp = this.showInfoSheet ? now : null;
@@ -3153,6 +3158,8 @@ export default defineComponent({
           delta_advanced_weather_time_ms: weatherTime, delta_weather_info_time_ms: weatherInfoTime,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           delta_user_guide_time_ms: userGuideTime, delta_eclipse_timer_time_ms: eclipseTimerTime,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_advanced_weather_selected_locations_count: this.advancedWeatherSelectedCount,
         }),
         keepalive: true,
       }).then(() => {
