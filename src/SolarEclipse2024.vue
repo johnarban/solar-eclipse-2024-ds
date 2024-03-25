@@ -738,6 +738,30 @@
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
+        <div id='geocoding-row' class="d-flex align-center ga-1">
+        <icon-button
+          v-if="getMyLocation"
+          class="geolocation-button"
+          id="my-location"
+          fa-icon="street-view"
+          :color="myLocationColor"
+          :focus-color="myLocationColor"
+          :box-shadow="false"
+          :tooltip-text="myLocationToolTip"
+          :show-tooltip="!mobile"
+          @update:modelValue="(value: boolean) => {
+            if(value) {
+              ($refs.geolocation as any).getLocation();
+              showMyLocationDialog = true;
+              learnerPath = 'Location';
+            }
+            else {
+              console.log('geolocation button pressed = false');
+            }
+
+          }"
+          faSize="1x"
+        ></icon-button>
         <div
           id="forward-geocoding-container"
           :style="forwardGeocodingCss"
@@ -800,6 +824,7 @@
             </div>
           </div>
         </div>
+      </div>
         <icon-button
           id="share"
           fa-icon="share-nodes"
@@ -809,29 +834,6 @@
           tooltip-text="Share view of this location"
           :show-tooltip="!mobile"
           @activate="copyShareURL"
-          faSize="1x"
-        ></icon-button>
-        <icon-button
-          v-if="getMyLocation"
-          class="geolocation-button"
-          id="my-location"
-          fa-icon="street-view"
-          :color="myLocationColor"
-          :focus-color="myLocationColor"
-          :box-shadow="false"
-          :tooltip-text="myLocationToolTip"
-          :show-tooltip="!mobile"
-          @update:modelValue="(value: boolean) => {
-            if(value) {
-              ($refs.geolocation as any).getLocation();
-              showMyLocationDialog = true;
-              learnerPath = 'Location';
-            }
-            else {
-              console.log('geolocation button pressed = false');
-            }
-
-          }"
           faSize="1x"
         ></icon-button>
       </div>
