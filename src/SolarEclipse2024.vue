@@ -776,6 +776,7 @@
             };
             locationDeg = myLocation;
             showMyLocationDialog = false;
+            updateSelectedLocationText();
             }"
           @error="(error: GeolocationPositionError) => { 
             $notify({
