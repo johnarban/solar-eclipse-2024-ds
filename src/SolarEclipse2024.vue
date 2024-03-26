@@ -3938,6 +3938,7 @@ export default defineComponent({
     learnerPath(path: LearnerPath) {
       if (!this.visitedCloudCover && ((path === "Clouds") || (path === "CloudDetail"))) {
         this.cloudCoverSelectedLocations.push([this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg]);
+        this.cloudCoverSelectedCount += 1;
         this.visitedCloudCover = true;
       }
     },
