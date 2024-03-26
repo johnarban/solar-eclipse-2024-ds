@@ -204,7 +204,7 @@ export default defineComponent({
         const key = `${lat},${lon}`;
 
         // Store cloudCover value in index
-        this.index[key] = cloudCover;
+        this.index[key] = index;
 
         const rect = this.createRectangle(lat, lon, cloudCover, index);
         if (rect) {
@@ -215,6 +215,8 @@ export default defineComponent({
       // Add rectangles to the map
       if (this.map !== null) {
         this.cloudCoverRectangles.addTo(this.map as Map);
+      } else {
+        return;
       }
 
       this.$emit('finishLoading');
@@ -468,9 +470,9 @@ export default defineComponent({
           const lon = latLng.lng;
           const key = `${lat},${lon}`;
 
-          const cloudCover = this.index[key];
+          const cloudCover = this.selectedCloudCover[this.index[key]].cloudCover;
           if (cloudCover !== undefined) {
-            layer.setStyle({ fillOpacity: cloudCover });
+            layer.setStyle({fillOpacity: this.cloudCoverOpacityFunction(cloudCover), opacity: cloudCover });
           }
         }
       });
