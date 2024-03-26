@@ -739,6 +739,70 @@
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
         <div id='geocoding-row' class="d-flex align-center ga-1">
+        
+        <div
+          id="forward-geocoding-container"
+          :style="forwardGeocodingCss"
+        >
+          <div
+            id="forward-geocoding-input-row"
+          >
+            <v-text-field
+              v-show="searchOpen"
+              v-model="searchText"
+              :class="['forward-geocoding-input', locationJustUpdated ? 'geocode-success' : '']"
+              :label="locationJustUpdated ? 'Location Updated' : 'Enter a location'"
+              bg-color="black"
+              density="compact"
+              hide-details
+              variant="solo"
+              :color="accentColor"
+              @keydown.stop
+              @keyup.enter="() => performForwardGeocodingSearch()"
+              @keyup.esc="searchResults = null"
+              @click:clear="searchResults = null"
+              :error-messages="searchErrorMessage"
+            ></v-text-field>
+            <font-awesome-icon
+              id="geocoding-search-icon"
+              icon="magnifying-glass"
+              :size="searchOpen ? 'xl' : '1x'"
+              :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
+              @click="() => {
+                if (searchOpen) {
+                  performForwardGeocodingSearch();
+                } else {
+                  searchOpen = true;
+                }
+              }"
+            ></font-awesome-icon>
+            <font-awesome-icon
+              id="geocoding-close-icon"
+              v-show="searchOpen"
+              icon="circle-xmark"
+              :size="searchOpen ? 'xl' : '1x'"
+              color="gray"
+              @click="() => {
+                searchOpen = false;
+                clearSearchData();
+              }"
+            ></font-awesome-icon>
+          </div>
+          <div
+            id="forward-geocoding-results"
+            v-if="searchResults !== null"
+          >
+            <div
+              v-for="(feature, index) in searchResults.features"
+              class="forward-geocoding-result"
+              :key="index"
+              @click="() => setLocationFromSearchFeature(feature)"
+            >
+              {{ feature.place_name }}
+            </div>
+          </div>
+        </div>
+        </div>
         <icon-button
           v-if="getMyLocation"
           class="geolocation-button"
@@ -803,70 +867,7 @@
               }
             }"
         ></geolocation-button>
-      </div>
-        <div
-          id="forward-geocoding-container"
-          :style="forwardGeocodingCss"
-        >
-          <div
-            id="forward-geocoding-input-row"
-          >
-            <v-text-field
-              v-show="searchOpen"
-              v-model="searchText"
-              :class="['forward-geocoding-input', locationJustUpdated ? 'geocode-success' : '']"
-              :label="locationJustUpdated ? 'Location Updated' : 'Enter a location'"
-              bg-color="black"
-              density="compact"
-              hide-details
-              variant="solo"
-              :color="accentColor"
-              @keydown.stop
-              @keyup.enter="() => performForwardGeocodingSearch()"
-              @keyup.esc="searchResults = null"
-              @click:clear="searchResults = null"
-              :error-messages="searchErrorMessage"
-            ></v-text-field>
-            <font-awesome-icon
-              id="geocoding-search-icon"
-              icon="magnifying-glass"
-              :size="searchOpen ? 'xl' : '1x'"
-              :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
-              @click="() => {
-                if (searchOpen) {
-                  performForwardGeocodingSearch();
-                } else {
-                  searchOpen = true;
-                }
-              }"
-            ></font-awesome-icon>
-            <font-awesome-icon
-              id="geocoding-close-icon"
-              v-show="searchOpen"
-              icon="circle-xmark"
-              :size="searchOpen ? 'xl' : '1x'"
-              color="gray"
-              @click="() => {
-                searchOpen = false;
-                clearSearchData();
-              }"
-            ></font-awesome-icon>
-          </div>
-          <div
-            id="forward-geocoding-results"
-            v-if="searchResults !== null"
-          >
-            <div
-              v-for="(feature, index) in searchResults.features"
-              class="forward-geocoding-result"
-              :key="index"
-              @click="() => setLocationFromSearchFeature(feature)"
-            >
-              {{ feature.place_name }}
-            </div>
-          </div>
         </div>
-      </div>
         <icon-button
           id="share"
           fa-icon="share-nodes"
