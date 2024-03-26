@@ -476,6 +476,7 @@ export default defineComponent({
           }
         }
       });
+      this.$emit('finishLoading');
     },
 
 
