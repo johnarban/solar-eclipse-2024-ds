@@ -28,7 +28,7 @@
     "build": "./patch.sh; vue-cli-service build",
     "clean": "rimraf dist",
     "lint": "vue-cli-service lint src --no-fix",
-    "serve": "./patch.sh; vue-cli-service serve"
+    "serve": "vue-cli-service serve"
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41",
