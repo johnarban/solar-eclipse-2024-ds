@@ -1126,7 +1126,7 @@
           elevation="2"
           :text="selectedLocationText"
           @click="() => {
-            showGuidedContent = true; 
+            searchOpen = true; 
             learnerPath = 'Location'
             }"
         > </v-chip>
