@@ -741,6 +741,8 @@
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
+        <div id='geocoding-row' class="d-flex align-center ga-1">
+        
         <div
           id="forward-geocoding-container"
           :style="forwardGeocodingCss"
@@ -803,6 +805,76 @@
             </div>
           </div>
         </div>
+        </div>
+        <div style="position:relative;">
+          <icon-button
+            v-if="getMyLocation"
+            class="geolocation-button"
+            id="my-location"
+            fa-icon="street-view"
+            :color="myLocationColor"
+            :focus-color="myLocationColor"
+            :box-shadow="false"
+            :tooltip-text="myLocationToolTip"
+            :show-tooltip="!mobile"
+            @update:modelValue="(value: boolean) => {
+              if(value) {
+                ($refs.geolocation as any).getLocation();
+                showMyLocationDialog = true;
+                learnerPath = 'Location';
+              }
+              else {
+                console.log('geolocation button pressed = false');
+              }
+
+            }"
+            faSize="1x"
+          ></icon-button>
+        
+          <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
+          <geolocation-button
+            :color="accentColor"
+            :show-text-progress = "true"
+            hide-button
+            show-progress-circle
+            ref="geolocation"
+            @geolocation="(loc: GeolocationCoordinates) => { 
+              myLocation = {
+                latitudeDeg: loc.latitude, 
+                longitudeDeg: loc.longitude
+              };
+              locationDeg = myLocation;
+              showMyLocationDialog = false;
+              updateSelectedLocationText();
+              }"
+            @error="(error: GeolocationPositionError) => { 
+              $notify({
+                group: 'geolocation-error',
+                title: 'Error',
+                text: error.message,
+                type: 'error',
+              }); 
+              if (error.code === 1) {
+                geolocationPermission = 'denied';
+              }
+              console.log(error);
+              }"
+              @permission="(p: PermissionState) => {
+                geolocationPermission = p;
+                // we're always gonna show the button,
+                // just leaving this if we wanna change
+                if (p == 'granted') {
+                  getMyLocation = true;
+                } else if (p == 'prompt') {
+                  getMyLocation = true;
+                } else {
+                  getMyLocation = true;
+                }
+              }"
+          ></geolocation-button>
+        </div>
+      </div>
+        
         <icon-button
           id="share"
           fa-icon="share-nodes"
@@ -814,70 +886,6 @@
           @activate="copyShareURL"
           faSize="1x"
         ></icon-button>
-        <icon-button
-          v-if="getMyLocation"
-          class="geolocation-button"
-          id="my-location"
-          fa-icon="street-view"
-          :color="myLocationColor"
-          :focus-color="myLocationColor"
-          :box-shadow="false"
-          :tooltip-text="myLocationToolTip"
-          :show-tooltip="!mobile"
-          @update:modelValue="(value: boolean) => {
-            if(value) {
-              ($refs.geolocation as any).getLocation();
-              showMyLocationDialog = true;
-              learnerPath = 'Location';
-            }
-            else {
-              console.log('geolocation button pressed = false');
-            }
-
-          }"
-          faSize="1x"
-        ></icon-button>
-      </div>
-      <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
-        <geolocation-button
-          :color="accentColor"
-          :show-text-progress = "true"
-          hide-button
-          show-progress-circle
-          ref="geolocation"
-          @geolocation="(loc: GeolocationCoordinates) => { 
-            myLocation = {
-              latitudeDeg: loc.latitude, 
-              longitudeDeg: loc.longitude
-            };
-            locationDeg = myLocation;
-            showMyLocationDialog = false;
-            }"
-          @error="(error: GeolocationPositionError) => { 
-            $notify({
-              group: 'geolocation-error',
-              title: 'Error',
-              text: error.message,
-              type: 'error',
-            }); 
-            if (error.code === 1) {
-              geolocationPermission = 'denied';
-            }
-            console.log(error);
-            }"
-            @permission="(p: PermissionState) => {
-              geolocationPermission = p;
-              // we're always gonna show the button,
-              // just leaving this if we wanna change
-              if (p == 'granted') {
-                getMyLocation = true;
-              } else if (p == 'prompt') {
-                getMyLocation = true;
-              } else {
-                getMyLocation = true;
-              }
-            }"
-        ></geolocation-button>
       </div>
       
       <!-- <div id="mobile-zoom-control"> -->
@@ -1126,7 +1134,7 @@
           elevation="2"
           :text="selectedLocationText"
           @click="() => {
-            showGuidedContent = true; 
+            searchOpen = true; 
             learnerPath = 'Location'
             }"
         > </v-chip>
@@ -4371,31 +4379,15 @@ body {
   }
 }
 
+
+
 #location-progress {
   position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 2.5rem;
 
-
-  @media (max-width: 599px) {
-    left: 1.2rem;
-    top: 7rem;
-  }
-
-  @media (min-width: 600px) {
-    left: 1rem;
-    top: 6.5rem;
-  }
-
-  &.budge {
-    left: 0.7rem;
-
-    @media (max-width: 599px) {
-      top: 9.5rem;
-    }
-
-    @media (min-width: 600px) {
-      top: 8.7rem;
-    }
-  }
+  
 }
 
 .url-notification {

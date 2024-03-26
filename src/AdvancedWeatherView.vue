@@ -118,8 +118,8 @@
               <div id="awv-cloud-cover-display" class="">
                 <div>
                   <!-- <hr> -->
-                  <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3>
-                  <h3 v-else> Cloud Cover for <strong class="attention">{{ locationName }}</strong>:</h3>
+                  <!-- <h3 v-if="selectedStat !== 'singleyear'"> Cloud Cover for <strong class="attention">{{ mapSubsets.get(dataSubset) }}</strong>:</h3> -->
+                  <h3> Cloud Cover for <strong class="attention">{{ locationName }}</strong>:</h3>
                   <span v-if="!inBounds" style="color: #ff0000;">Location not in bounds</span>
                   <cloud-cover-line
                     :value="locationValue"
@@ -128,7 +128,10 @@
                     :ranges="skyCoverCodeRanges"
                     :icons="skyCoverIcons"
                     variant="bold"
-                    />
+                    > 
+                    <span v-if="selectedStat === 'singleyear'">{{ selectedYear }}</span>
+                    <span v-else style="font-size: .91em;">{{ mapSubsets.get(dataSubset) }}  <br /> {{ statText.get(selectedStat) }} </span>
+                  </cloud-cover-line>
                 </div>
                 <hr>
                 <h3 style="color:#ccc;">For all years:</h3>
