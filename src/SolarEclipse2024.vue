@@ -2055,6 +2055,7 @@ export default defineComponent({
       cloudCoverSelectedLocations: [] as [number, number][],
       textSearchSelectedLocations: [] as [number, number][],
       advancedWeatherSelectedCount: 0,
+      cloudCoverSelectedCount: 0,
       eclipsePrediction: null as EclipseData<Date> | null,
       eclipseStart: 0 as number | null,
       eclipseMid: 0 as number | null,
@@ -3063,6 +3064,7 @@ export default defineComponent({
         const visitedLocation: [number, number] = [location.latitudeDeg, location.longitudeDeg];
         if (this.learnerPath === "Clouds" || this.learnerPath === "CloudDetail") {
           this.cloudCoverSelectedLocations.push(visitedLocation);
+          this.cloudCoverSelectedCount += 1;
         } else {
           this.userSelectedLocations.push(visitedLocation);
         }
@@ -3109,6 +3111,8 @@ export default defineComponent({
           info_time_ms: 0, app_time_ms: 0, user_guide_time_ms: 0,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           advanced_weather_selected_locations_count: this.advancedWeatherSelectedCount,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          cloud_cover_selected_locations_count: this.cloudCoverSelectedCount,
         })
       });
     },
@@ -3164,6 +3168,8 @@ export default defineComponent({
           delta_user_guide_time_ms: userGuideTime, delta_eclipse_timer_time_ms: eclipseTimerTime,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           delta_advanced_weather_selected_locations_count: this.advancedWeatherSelectedCount,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_cloud_cover_selected_locations_count: this.cloudCoverSelectedCount,
         }),
         keepalive: true,
       }).then(() => {

@@ -1263,7 +1263,11 @@ export default defineComponent({
       if (value.latitudeDeg === old.latitudeDeg && value.longitudeDeg === old.longitudeDeg) {
         return;
       }
-      if (value !== this.defaultLocation) {
+      if (
+        value.latitudeDeg !== this.defaultLocation.latitudeDeg
+        ||
+        value.longitudeDeg !== this.defaultLocation.longitudeDeg
+      ) {
         this.$emit('location', value);
       }
       this.updateLocationName();
