@@ -3127,6 +3127,7 @@ export default defineComponent({
       this.weatherInfoTimeMs = 0;
       this.eclipseTimerTimeMs = 0;
       this.advancedWeatherSelectedCount = 0;
+      this.cloudCoverSelectedCount = 0;
       const now = Date.now();
       this.appStartTimestamp = now;
       this.infoStartTimestamp = this.showInfoSheet ? now : null;
