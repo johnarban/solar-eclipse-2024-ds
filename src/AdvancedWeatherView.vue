@@ -1178,7 +1178,11 @@ export default defineComponent({
       const stat = this.selectedStat === 'singleyear' ? '' : this.statText.get(this.selectedStat);
       const subset = this.selectedStat === 'singleyear' ? this.selectedYear : this.mapSubsets.get(this.dataSubset);
       const modis = this.modisDataSet === '1day' ? '1-day' : '8-day';
-      this.mapDescriptionText = `Displaying ${modis} ${stat} cloud cover for ${subset}.`;
+      if (!this.displayData) {
+        this.mapDescriptionText = 'Press "Show on Map" to display cloud cover data.';
+      } else {
+        this.mapDescriptionText = `${this.showCloudCover ? '' : '(Hidden)'} Displaying ${modis} ${stat} cloud cover for ${subset}.`;
+      }
     },
     
     getCloudCoverText(val: number | null): [number | null, string | undefined] {
@@ -1283,7 +1287,11 @@ export default defineComponent({
 
     explainerOpen(open: boolean) {
       this.$emit('explainer-open', open);
-    }
+    },
+    
+    showCloudCover() {
+      this.updateMapDescriptionText();
+    },
   },
   
   
