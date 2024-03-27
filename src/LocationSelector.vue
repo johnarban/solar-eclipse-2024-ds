@@ -470,7 +470,7 @@ export default defineComponent({
           const lon = latLng.lng;
           const key = `${lat},${lon}`;
 
-          const cloudCover = this.selectedCloudCover[this.index[key]].cloudCover;
+          const cloudCover = this.selectedCloudCover[this.index[key]]?.cloudCover;
           if (cloudCover !== undefined) {
             layer.setStyle({fillOpacity: this.cloudCoverOpacityFunction(cloudCover), opacity: cloudCover });
           }
@@ -527,7 +527,7 @@ export default defineComponent({
   watch: {
 
     selectedCloudCover(val: CloudData[] | null) {
-      if (val !== null) {
+      if (val !== null && val !== undefined) {
         //this.updateRectangleIntensity();
         this.updateCloudCover(this.showCloudCover);
         this.bringLocationAndPathToFront();
