@@ -229,7 +229,8 @@
         >
           <div 
             :class="['']"
-            v-if="!smAndUp || smAndUp" id="map-container" :data-before-text="eclipsePredictionText">
+            id="map-container" :data-before-text="eclipsePredictionText">
+            
             <div 
               v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner"
               id="map-banner" 
@@ -246,6 +247,19 @@
                 <v-icon>mdi-close</v-icon>
               </span>
             </div>
+            
+            <!-- modelValue = false, starts with it closed, use stay-open to keep it open -->
+            <location-search
+              modelValue="false"
+              class="location-search-overmap"
+              v-if="$vuetify.display.width <= 600"
+              small
+              :search-provider="geocodingInfoForSearch"
+              :accentColor="accentColor"
+              @set-location="setLocationFromSearchFeature"
+              @error="searchErrorMessage = $event"
+            >
+            </location-search>
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
@@ -743,68 +757,13 @@
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
         <div id='geocoding-row' class="d-flex align-center ga-1">
         
-        <div
-          id="forward-geocoding-container"
-          :style="forwardGeocodingCss"
-        >
-          <div
-            id="forward-geocoding-input-row"
-          >
-            <v-text-field
-              v-show="searchOpen"
-              v-model="searchText"
-              :class="['forward-geocoding-input', locationJustUpdated ? 'geocode-success' : '']"
-              :label="locationJustUpdated ? 'Location Updated' : 'Enter a location'"
-              bg-color="black"
-              density="compact"
-              hide-details
-              variant="solo"
-              :color="accentColor"
-              @keydown.stop
-              @keyup.enter="() => performForwardGeocodingSearch()"
-              @keyup.esc="searchResults = null"
-              @click:clear="searchResults = null"
-              :error-messages="searchErrorMessage"
-            ></v-text-field>
-            <font-awesome-icon
-              id="geocoding-search-icon"
-              icon="magnifying-glass"
-              :size="searchOpen ? 'xl' : '1x'"
-              :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
-              @click="() => {
-                if (searchOpen) {
-                  performForwardGeocodingSearch();
-                } else {
-                  searchOpen = true;
-                }
-              }"
-            ></font-awesome-icon>
-            <font-awesome-icon
-              id="geocoding-close-icon"
-              v-show="searchOpen"
-              icon="circle-xmark"
-              :size="searchOpen ? 'xl' : '1x'"
-              color="gray"
-              @click="() => {
-                searchOpen = false;
-                clearSearchData();
-              }"
-            ></font-awesome-icon>
-          </div>
-          <div
-            id="forward-geocoding-results"
-            v-if="searchResults !== null"
-          >
-            <div
-              v-for="(feature, index) in searchResults.features"
-              class="forward-geocoding-result"
-              :key="index"
-              @click="() => setLocationFromSearchFeature(feature)"
-            >
-              {{ feature.place_name }}
-            </div>
-          </div>
-        </div>
+        <location-search
+          v-model="searchOpen"
+          :search-provider="geocodingInfoForSearch"
+          :accentColor="accentColor"
+          @set-location="setLocationFromSearchFeature"
+          @error="searchErrorMessage = $event"
+          />
         </div>
         <div style="position:relative;">
           <icon-button
@@ -3743,46 +3702,17 @@ export default defineComponent({
         })
         .catch((_err) => null);
     },
-
-    performForwardGeocodingSearch() {
-      if (this.searchText === null || this.searchText.length < 3) {
-        return;
-      }
-      this.geocodingInfoForSearch(this.searchText).then((info) => {
-        if (info !== null && info.features?.length === 1) {
-          this.setLocationFromSearchFeature(info.features[0]);
-        } else if (info !== null && info.features?.length == 0) {
-          this.searchErrorMessage = "No matching places were found";
-        } else {
-          this.searchResults = info;
-        }
-      });
-    },
     
-    timedJustUpdatedLocation() {
-      this.locationJustUpdated = true;
-      setTimeout(() => {
-        this.locationJustUpdated = false;
-      }, 5000);
-    },
 
     setLocationFromFeature(feature: MapBoxFeature) {
-      this.timedJustUpdatedLocation();
       this.locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] };
       this.textForLocation(feature.center[0], feature.center[1]).then((text) => {
         this.selectedLocationText = text;
       });
     },
 
-    clearSearchData() {
-      this.searchResults = null;
-      this.searchText = null;
-      this.searchErrorMessage = null;
-    },
-
     setLocationFromSearchFeature(feature: MapBoxFeature) {
       this.setLocationFromFeature(feature);
-      this.clearSearchData();
       this.textSearchSelectedLocations.push(feature.center);
     },
     
@@ -3975,15 +3905,6 @@ export default defineComponent({
         //this.centerSun();
       } else {
         this.trackSunOffset();
-      }
-    },
-
-    searchText(text: string | null) {
-      if (this.searchErrorMessage) {
-        this.searchErrorMessage = null;
-      }
-      if (!text || text.length === 0) {
-        this.searchResults = null;
       }
     },
 
@@ -5226,6 +5147,10 @@ video, #info-video {
     align-items: center;
     justify-content: space-evenly;
     
+    @media (max-width: 600px) {
+      max-height: unset;
+    }
+    
     // v-col
     #top-container-main-text { 
       max-height: 100%;
@@ -5365,6 +5290,14 @@ video, #info-video {
       z-index: 500;
       
       backdrop-filter: blur(5px) saturate(50%);
+    }
+    
+    .location-search-overmap {
+      height: fit-content;
+      position: absolute;
+      z-index: 600;
+      right: 1em;
+      top: 2em;
     }
     
     

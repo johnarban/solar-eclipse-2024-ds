@@ -18,6 +18,7 @@ import AdvancedWeatherView from "./AdvancedWeatherView.vue";
 import ColorBar from "./ColorBar.vue";
 import CloudDataExplainer from "./CloudDataExplainer.vue";
 import EclipseTimer from "./EclipseTimer.vue";
+import LocationSearch from "./LocationSearch.vue";
 
 import "./polyfills";
 
@@ -158,5 +159,6 @@ createApp(SolarEclipse2023, {
   .component('color-bar', ColorBar)
   .component('cloud-data-explainer', CloudDataExplainer)
   .component('eclipse-timer', EclipseTimer)
+  .component('location-search', LocationSearch)
   // Mount
   .mount("#app");
