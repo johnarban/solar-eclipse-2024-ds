@@ -462,7 +462,7 @@ export default defineComponent({
       return [location.latitudeDeg, location.longitudeDeg];
     },
 
-    updateRectangleIntensity(): void {
+    updateRectangleIntensity(val: number | null = null): void {
       (this.cloudCoverRectangles as L.LayerGroup<L.Rectangle>).eachLayer((layer) => {
         if (layer instanceof L.Rectangle) {
           const latLng = layer.getBounds().getCenter();
@@ -470,7 +470,7 @@ export default defineComponent({
           const lon = latLng.lng;
           const key = `${lat},${lon}`;
 
-          const cloudCover = this.selectedCloudCover[this.index[key]]?.cloudCover;
+          const cloudCover = val ?? this.selectedCloudCover[this.index[key]]?.cloudCover;
           if (cloudCover !== undefined) {
             layer.setStyle({fillOpacity: this.cloudCoverOpacityFunction(cloudCover), opacity: cloudCover });
           }
@@ -492,8 +492,10 @@ export default defineComponent({
         }
       } else {
         // Clear cloud cover rectangles if value is false
-        this.cloudCoverRectangles.clearLayers();
-        this.rectanglesCreated = false; // Reset the flag
+        // this.cloudCoverRectangles.clearLayers();
+        // this.rectanglesCreated = false; // Reset the flag
+        // set opacity to 0 instead of clearing re: J.C.
+        this.updateRectangleIntensity(0);
       }
     },
 
