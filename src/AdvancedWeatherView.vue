@@ -80,7 +80,7 @@
                 color="#eac402" 
                 @click="updateData()"
                 >
-                {{ displayData ? (needToUpdate ? 'Update Map' : 'Shown on Map') : 'Show on Map'  }}
+                {{ displayData ? (needToUpdate ? 'Update Map' : showCloudCover ? 'Shown on Map' : 'Show on Map') : 'Show on Map'  }}
               </v-btn>
               
               <v-radio-group 
