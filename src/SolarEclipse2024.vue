@@ -4016,6 +4016,7 @@ export default defineComponent({
     showAdvancedWeather(show: boolean) {
       if (show) {
         this.weatherStartTimestamp = Date.now();
+        this.playing = false;
       } else if (this.weatherStartTimestamp !== null) {
         this.weatherTimeMs += (Date.now() - this.weatherStartTimestamp);
         this.weatherStartTimestamp = null;
