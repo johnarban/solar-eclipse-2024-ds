@@ -175,6 +175,8 @@ export default defineComponent({
       map: null as Map | null,
       basemap: null as L.TileLayer | null,
       fromInside: null as boolean | null,
+      rectanglesCreated: false,
+      index: {} as { [key: string]: number }
     };
   },
 
@@ -185,25 +187,38 @@ export default defineComponent({
       if (this.cloudCoverRectangles === null) {
         return;
       }
+
+      // Create an index mapping indices to rectangle layers
+      this.index = {};
+
       result.forEach((row: {'lat': number, 'lon': number, 'cloudCover': number}, index: number) => {
         const lat = row.lat;
         const lon = row.lon;
         const cloudCover = row.cloudCover;
-        // check for nan
+
         if (isNaN(lat) || isNaN(lon) || isNaN(cloudCover)) {
           return;
         }
+
+        // Construct index key
+        const key = `${lat},${lon}`;
+
+        // Store cloudCover value in index
+        this.index[key] = index;
 
         const rect = this.createRectangle(lat, lon, cloudCover, index);
         if (rect) {
           this.cloudCoverRectangles.addLayer(rect);
         }
       });
-      // perhaps we should check if it is already added to the map. if it is, why remove it? 
-      if (this.map === null) {
+
+      // Add rectangles to the map
+      if (this.map !== null) {
+        this.cloudCoverRectangles.addTo(this.map as Map);
+      } else {
         return;
       }
-      this.cloudCoverRectangles.addTo(this.map as Map); // Not sure why, but TS is cranky w/o the Map cast
+
       this.$emit('finishLoading');
     },
 
@@ -447,15 +462,42 @@ export default defineComponent({
       return [location.latitudeDeg, location.longitudeDeg];
     },
 
+    updateRectangleIntensity(val: number | null = null): void {
+      (this.cloudCoverRectangles as L.LayerGroup<L.Rectangle>).eachLayer((layer) => {
+        if (layer instanceof L.Rectangle) {
+          const latLng = layer.getBounds().getCenter();
+          const lat = latLng.lat;
+          const lon = latLng.lng;
+          const key = `${lat},${lon}`;
+
+          const cloudCover = val ?? this.selectedCloudCover[this.index[key]]?.cloudCover;
+          if (cloudCover !== undefined) {
+            layer.setStyle({fillOpacity: this.cloudCoverOpacityFunction(cloudCover), opacity: cloudCover });
+          }
+        }
+      });
+      this.$emit('finishLoading');
+    },
+
+
     updateCloudCover(value: boolean) {
-      if (value && this.selectedCloudCover != null) {
-        this.cloudCoverRectangles.remove(); // do we need to remove it from the map? but how do we make sure it's not already on the map?
-        this.cloudCoverRectangles.clearLayers(); // clear the rectangles is what we want
-        this.parseResult(this.selectedCloudCover);
+      if (value) {
+        // If rectangles have been created already, update their intensity
+        if (this.rectanglesCreated) {
+          this.updateRectangleIntensity();
+        } else {
+          // If rectangles haven't been created yet, run parseResult to create them
+          this.parseResult(this.selectedCloudCover);
+          this.rectanglesCreated = true; // Set the flag to true
+        }
       } else {
-        this.cloudCoverRectangles.remove();
+        // Clear cloud cover rectangles if value is false
+        // this.cloudCoverRectangles.clearLayers();
+        // this.rectanglesCreated = false; // Reset the flag
+        // set opacity to 0 instead of clearing re: J.C.
+        this.updateRectangleIntensity(0);
       }
-    }
+    },
 
   },
 
@@ -487,7 +529,8 @@ export default defineComponent({
   watch: {
 
     selectedCloudCover(val: CloudData[] | null) {
-      if (val !== null) {
+      if (val !== null && val !== undefined) {
+        //this.updateRectangleIntensity();
         this.updateCloudCover(this.showCloudCover);
         this.bringLocationAndPathToFront();
       }

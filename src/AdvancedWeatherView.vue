@@ -80,7 +80,7 @@
                 color="#eac402" 
                 @click="updateData()"
                 >
-                {{ displayData ? (needToUpdate ? 'Update Map' : 'Shown on Map') : 'Show on Map'  }}
+                {{ displayData ? (needToUpdate ? 'Update Map' : showCloudCover ? 'Shown on Map' : 'Show on Map') : 'Show on Map'  }}
               </v-btn>
               
               <v-radio-group 
@@ -549,6 +549,8 @@ export default defineComponent({
       selectedDataIndex: null as number | null,
       selectedDataCloudCover: null as number | null,
       mapDescriptionText: '',
+      mapDetailsText: '',
+      mapShowHideText: '',
       locationName: '',
       inBounds: false,
       displayData: false,
@@ -1049,6 +1051,7 @@ export default defineComponent({
       // simulate data loading
       this.displayData = display;
       if (display){
+        this.showCloudCover = true;
         this.needToUpdate = false;
         this.loadingNewMap = true;
       }
@@ -1173,11 +1176,19 @@ export default defineComponent({
     },
     
     updateMapDescriptionText() {
-      // Displaying {{ selectedStat === 'singleyear' ? '' : statText.get(selectedStat)?.toLowerCase() }}  cloud cover for {{ selectedStat === 'singleyear' ? selectedYear : mapSubsets.get(dataSubset) }}.
       const stat = this.selectedStat === 'singleyear' ? '' : this.statText.get(this.selectedStat);
       const subset = this.selectedStat === 'singleyear' ? this.selectedYear : this.mapSubsets.get(this.dataSubset);
       const modis = this.modisDataSet === '1day' ? '1-day' : '8-day';
-      this.mapDescriptionText = `Displaying ${modis} ${stat} cloud cover for ${subset}.`;
+      this.mapDetailsText = `  ${modis} ${stat} cloud cover for ${subset}.`;
+      if (!this.displayData) {
+        this.mapDescriptionText = 'Press "Show on Map" to display cloud cover data.';
+      } else {
+        this.mapDescriptionText = `${this.showCloudCover ? 'Displaying' : '(Hidden)'}  ${this.mapDetailsText}`;
+      }
+    },
+
+    updateMapShowHideText() {
+      this.mapDescriptionText = `${this.showCloudCover ? 'Displaying' : '(Hidden)'}  ${this.mapDetailsText}`;
     },
     
     getCloudCoverText(val: number | null): [number | null, string | undefined] {
@@ -1282,7 +1293,11 @@ export default defineComponent({
 
     explainerOpen(open: boolean) {
       this.$emit('explainer-open', open);
-    }
+    },
+    
+    showCloudCover() {
+      this.updateMapShowHideText();
+    },
   },
   
   
