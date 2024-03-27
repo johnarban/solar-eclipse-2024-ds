@@ -549,6 +549,8 @@ export default defineComponent({
       selectedDataIndex: null as number | null,
       selectedDataCloudCover: null as number | null,
       mapDescriptionText: '',
+      mapDetailsText: '',
+      mapShowHideText: '',
       locationName: '',
       inBounds: false,
       displayData: false,
@@ -1174,15 +1176,19 @@ export default defineComponent({
     },
     
     updateMapDescriptionText() {
-      // Displaying {{ selectedStat === 'singleyear' ? '' : statText.get(selectedStat)?.toLowerCase() }}  cloud cover for {{ selectedStat === 'singleyear' ? selectedYear : mapSubsets.get(dataSubset) }}.
       const stat = this.selectedStat === 'singleyear' ? '' : this.statText.get(this.selectedStat);
       const subset = this.selectedStat === 'singleyear' ? this.selectedYear : this.mapSubsets.get(this.dataSubset);
       const modis = this.modisDataSet === '1day' ? '1-day' : '8-day';
+      this.mapDetailsText = `  ${modis} ${stat} cloud cover for ${subset}.`;
       if (!this.displayData) {
         this.mapDescriptionText = 'Press "Show on Map" to display cloud cover data.';
       } else {
-        this.mapDescriptionText = `${this.showCloudCover ? 'Displaying' : '(Hidden)'}  ${modis} ${stat} cloud cover for ${subset}.`;
+        this.mapDescriptionText = `${this.showCloudCover ? 'Displaying' : '(Hidden)'}  ${this.mapDetailsText}`;
       }
+    },
+
+    updateMapShowHideText() {
+      this.mapDescriptionText = `${this.showCloudCover ? 'Displaying' : '(Hidden)'}  ${this.mapDetailsText}`;
     },
     
     getCloudCoverText(val: number | null): [number | null, string | undefined] {
@@ -1290,7 +1296,7 @@ export default defineComponent({
     },
     
     showCloudCover() {
-      this.updateMapDescriptionText();
+      this.updateMapShowHideText();
     },
   },
   
