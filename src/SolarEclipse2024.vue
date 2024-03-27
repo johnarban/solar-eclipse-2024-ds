@@ -4034,6 +4034,7 @@ export default defineComponent({
 
     showEclipsePredictionSheet(show: boolean) {
       if (show) {
+        this.playing = false;
         this.eclipseTimerStartTimestamp = Date.now();
       } else if (this.eclipseTimerStartTimestamp !== null) {
         this.eclipseTimerTimeMs += (Date.now() - this.eclipseTimerStartTimestamp);
