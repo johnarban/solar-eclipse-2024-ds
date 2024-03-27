@@ -711,8 +711,11 @@
     :show-charts="showAWVChartsByDefault"
     :fullscreen="showAWVFullScreen"
     @location="(loc: LocationDeg) => {
-      locationDeg = loc;
-      updateLocationFromMap(loc);
+      advancedWeatherSelectedCount += 1;
+      cloudCoverSelectedLocations.push([loc.latitudeDeg, loc.longitudeDeg]);
+    }"
+    @close="(loc: LocationDeg) => {
+      updateLocationFromMap(loc, false);
     }"
     />
   
@@ -738,6 +741,8 @@
     ></WorldWideTelescope>
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
+        <div id='geocoding-row' class="d-flex align-center ga-1">
+        
         <div
           id="forward-geocoding-container"
           :style="forwardGeocodingCss"
@@ -800,6 +805,76 @@
             </div>
           </div>
         </div>
+        </div>
+        <div style="position:relative;">
+          <icon-button
+            v-if="getMyLocation"
+            class="geolocation-button"
+            id="my-location"
+            fa-icon="street-view"
+            :color="myLocationColor"
+            :focus-color="myLocationColor"
+            :box-shadow="false"
+            :tooltip-text="myLocationToolTip"
+            :show-tooltip="!mobile"
+            @update:modelValue="(value: boolean) => {
+              if(value) {
+                ($refs.geolocation as any).getLocation();
+                showMyLocationDialog = true;
+                learnerPath = 'Location';
+              }
+              else {
+                console.log('geolocation button pressed = false');
+              }
+
+            }"
+            faSize="1x"
+          ></icon-button>
+        
+          <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
+          <geolocation-button
+            :color="accentColor"
+            :show-text-progress = "true"
+            hide-button
+            show-progress-circle
+            ref="geolocation"
+            @geolocation="(loc: GeolocationCoordinates) => { 
+              myLocation = {
+                latitudeDeg: loc.latitude, 
+                longitudeDeg: loc.longitude
+              };
+              locationDeg = myLocation;
+              showMyLocationDialog = false;
+              updateSelectedLocationText();
+              }"
+            @error="(error: GeolocationPositionError) => { 
+              $notify({
+                group: 'geolocation-error',
+                title: 'Error',
+                text: error.message,
+                type: 'error',
+              }); 
+              if (error.code === 1) {
+                geolocationPermission = 'denied';
+              }
+              console.log(error);
+              }"
+              @permission="(p: PermissionState) => {
+                geolocationPermission = p;
+                // we're always gonna show the button,
+                // just leaving this if we wanna change
+                if (p == 'granted') {
+                  getMyLocation = true;
+                } else if (p == 'prompt') {
+                  getMyLocation = true;
+                } else {
+                  getMyLocation = true;
+                }
+              }"
+          ></geolocation-button>
+        </div>
+      </div>
+        
         <icon-button
           id="share"
           fa-icon="share-nodes"
@@ -811,70 +886,6 @@
           @activate="copyShareURL"
           faSize="1x"
         ></icon-button>
-        <icon-button
-          v-if="getMyLocation"
-          class="geolocation-button"
-          id="my-location"
-          fa-icon="street-view"
-          :color="myLocationColor"
-          :focus-color="myLocationColor"
-          :box-shadow="false"
-          :tooltip-text="myLocationToolTip"
-          :show-tooltip="!mobile"
-          @update:modelValue="(value: boolean) => {
-            if(value) {
-              ($refs.geolocation as any).getLocation();
-              showMyLocationDialog = true;
-              learnerPath = 'Location';
-            }
-            else {
-              console.log('geolocation button pressed = false');
-            }
-
-          }"
-          faSize="1x"
-        ></icon-button>
-      </div>
-      <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
-        <geolocation-button
-          :color="accentColor"
-          :show-text-progress = "true"
-          hide-button
-          show-progress-circle
-          ref="geolocation"
-          @geolocation="(loc: GeolocationCoordinates) => { 
-            myLocation = {
-              latitudeDeg: loc.latitude, 
-              longitudeDeg: loc.longitude
-            };
-            locationDeg = myLocation;
-            showMyLocationDialog = false;
-            }"
-          @error="(error: GeolocationPositionError) => { 
-            $notify({
-              group: 'geolocation-error',
-              title: 'Error',
-              text: error.message,
-              type: 'error',
-            }); 
-            if (error.code === 1) {
-              geolocationPermission = 'denied';
-            }
-            console.log(error);
-            }"
-            @permission="(p: PermissionState) => {
-              geolocationPermission = p;
-              // we're always gonna show the button,
-              // just leaving this if we wanna change
-              if (p == 'granted') {
-                getMyLocation = true;
-              } else if (p == 'prompt') {
-                getMyLocation = true;
-              } else {
-                getMyLocation = true;
-              }
-            }"
-        ></geolocation-button>
       </div>
       
       <!-- <div id="mobile-zoom-control"> -->
@@ -1123,7 +1134,7 @@
           elevation="2"
           :text="selectedLocationText"
           @click="() => {
-            showGuidedContent = true; 
+            searchOpen = true; 
             learnerPath = 'Location'
             }"
         > </v-chip>
@@ -1968,6 +1979,7 @@ export default defineComponent({
       },
 
       learnerPath: "Location" as LearnerPath,
+      visitedCloudCover: false,
       
       playing: false,
       playingIntervalId: null as ReturnType<typeof setInterval> | null,
@@ -2050,6 +2062,8 @@ export default defineComponent({
       userSelectedLocations,
       cloudCoverSelectedLocations: [] as [number, number][],
       textSearchSelectedLocations: [] as [number, number][],
+      advancedWeatherSelectedCount: 0,
+      cloudCoverSelectedCount: 0,
       eclipsePrediction: null as EclipseData<Date> | null,
       eclipseStart: 0 as number | null,
       eclipseMid: 0 as number | null,
@@ -2288,9 +2302,7 @@ export default defineComponent({
     
     selectedLocationCloudCover(): number | null {
       if (this.locationDeg) {
-        const lat = this.locationDeg.latitudeDeg;
-        const lon = this.locationDeg.longitudeDeg;
-        return this.getCloudCover(lat, lon);
+        return this.getCloudCover(this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg);
       } else {
         return null;
       }
@@ -3049,18 +3061,21 @@ export default defineComponent({
       this.wwtSettings.set_locationLng(R2D * this.location.longitudeRad);
     },
 
-    updateLocationFromMap(location: LocationDeg) {
+    updateLocationFromMap(location: LocationDeg, addToLocations=true) {
       if (location == null) {
         return;
       }
       this.locationDeg = location;
       this.updateSelectedLocationText();
 
-      const visitedLocation: [number, number] = [location.latitudeDeg, location.longitudeDeg];
-      if (this.learnerPath === "Clouds") {
-        this.cloudCoverSelectedLocations.push(visitedLocation);
-      } else {
-        this.userSelectedLocations.push(visitedLocation);
+      if (addToLocations) {
+        const visitedLocation: [number, number] = [location.latitudeDeg, location.longitudeDeg];
+        if (this.learnerPath === "Clouds" || this.learnerPath === "CloudDetail") {
+          this.cloudCoverSelectedLocations.push(visitedLocation);
+          this.cloudCoverSelectedCount += 1;
+        } else {
+          this.userSelectedLocations.push(visitedLocation);
+        }
       }
     },
 
@@ -3102,6 +3117,10 @@ export default defineComponent({
           text_search_selected_locations: toRaw(this.textSearchSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
           info_time_ms: 0, app_time_ms: 0, user_guide_time_ms: 0,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          advanced_weather_selected_locations_count: this.advancedWeatherSelectedCount,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          cloud_cover_selected_locations_count: this.cloudCoverSelectedCount,
         })
       });
     },
@@ -3115,6 +3134,8 @@ export default defineComponent({
       this.weatherTimeMs = 0;
       this.weatherInfoTimeMs = 0;
       this.eclipseTimerTimeMs = 0;
+      this.advancedWeatherSelectedCount = 0;
+      this.cloudCoverSelectedCount = 0;
       const now = Date.now();
       this.appStartTimestamp = now;
       this.infoStartTimestamp = this.showInfoSheet ? now : null;
@@ -3154,6 +3175,10 @@ export default defineComponent({
           delta_advanced_weather_time_ms: weatherTime, delta_weather_info_time_ms: weatherInfoTime,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           delta_user_guide_time_ms: userGuideTime, delta_eclipse_timer_time_ms: eclipseTimerTime,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_advanced_weather_selected_locations_count: this.advancedWeatherSelectedCount,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_cloud_cover_selected_locations_count: this.cloudCoverSelectedCount,
         }),
         keepalive: true,
       }).then(() => {
@@ -3919,6 +3944,13 @@ export default defineComponent({
       this.updateFrontAnnotations(time);
     },
 
+    learnerPath(path: LearnerPath) {
+      if (!this.visitedCloudCover && ((path === "Clouds") || (path === "CloudDetail"))) {
+        this.cloudCoverSelectedLocations.push([this.locationDeg.latitudeDeg, this.locationDeg.longitudeDeg]);
+        this.cloudCoverSelectedCount += 1;
+        this.visitedCloudCover = true;
+      }
+    },
 
     location(loc: LocationRad, oldLoc: LocationRad) {
       const locationDeg: [number, number] = [R2D * loc.latitudeRad, R2D * loc.longitudeRad];
@@ -4347,31 +4379,15 @@ body {
   }
 }
 
+
+
 #location-progress {
   position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 2.5rem;
 
-
-  @media (max-width: 599px) {
-    left: 1.2rem;
-    top: 7rem;
-  }
-
-  @media (min-width: 600px) {
-    left: 1rem;
-    top: 6.5rem;
-  }
-
-  &.budge {
-    left: 0.7rem;
-
-    @media (max-width: 599px) {
-      top: 9.5rem;
-    }
-
-    @media (min-width: 600px) {
-      top: 8.7rem;
-    }
-  }
+  
 }
 
 .url-notification {

@@ -435,7 +435,7 @@ export default defineComponent({
     'define-term': DefineTerm,
   },
   
-  emits: ['update:modelValue','close', 'explainer-open', 'location'],
+  emits: ['update:modelValue','close', 'explainer-open', 'location', 'close'],
   
   props: {
     modelValue: {
@@ -589,7 +589,7 @@ export default defineComponent({
       set(value: boolean) {
         console.log('AdvancedWeatherView showValue set to', value);
         if (!value) {
-          this.$emit('location', this.location);
+          this.$emit('close', this.location);
         }
         this.$emit('update:modelValue', value);
       },
@@ -1265,6 +1265,13 @@ export default defineComponent({
       console.log('location', value);
       if (value.latitudeDeg === old.latitudeDeg && value.longitudeDeg === old.longitudeDeg) {
         return;
+      }
+      if (
+        value.latitudeDeg !== this.defaultLocation.latitudeDeg
+        ||
+        value.longitudeDeg !== this.defaultLocation.longitudeDeg
+      ) {
+        this.$emit('location', value);
       }
       this.updateLocationName();
       this.checkInBounds(value).then((inBounds) => {
