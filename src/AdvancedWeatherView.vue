@@ -1049,6 +1049,7 @@ export default defineComponent({
       // simulate data loading
       this.displayData = display;
       if (display){
+        this.showCloudCover = true;
         this.needToUpdate = false;
         this.loadingNewMap = true;
       }
