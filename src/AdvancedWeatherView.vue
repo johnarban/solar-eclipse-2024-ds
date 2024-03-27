@@ -1181,7 +1181,7 @@ export default defineComponent({
       if (!this.displayData) {
         this.mapDescriptionText = 'Press "Show on Map" to display cloud cover data.';
       } else {
-        this.mapDescriptionText = `${this.showCloudCover ? '' : '(Hidden)'} Displaying ${modis} ${stat} cloud cover for ${subset}.`;
+        this.mapDescriptionText = `${this.showCloudCover ? 'Displaying' : '(Hidden)'}  ${modis} ${stat} cloud cover for ${subset}.`;
       }
     },
     
