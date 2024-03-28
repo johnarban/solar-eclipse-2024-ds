@@ -1138,7 +1138,7 @@
         > </v-chip>
       </div>
       <div id="top-switches">
-        <div v-if="!simpleMode" id="track-sun-switch"> 
+        <div id="track-sun-switch"> 
           <hover-tooltip
               location="left"
               :disabled="mobile"
