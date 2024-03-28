@@ -251,7 +251,7 @@
             <!-- modelValue = false, starts with it closed, use stay-open to keep it open -->
             <location-search
               modelValue="false"
-              class="location-search-overmap"
+              :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '']"
               v-if="$vuetify.display.width <= 600"
               small
               :search-provider="geocodingInfoForSearch"
@@ -260,6 +260,24 @@
               @error="searchErrorMessage = $event"
             >
             </location-search>
+            <icon-button
+              v-if="$vuetify.display.width <= 600"
+              id="eclipse-details-overmap"
+              md-icon="sun-clock"
+              md-size="24"
+              :color="accentColor"
+              :focus-color="accentColor"
+              tooltip-text="View eclipse timing details"
+              tooltip-location="start"
+              @activate="() => {
+                showEclipsePredictionSheet = true;
+                if (!showEclipsePredictionText) {
+                  showEclipsePredictionTextBanner = false;
+                }
+                showEclipsePredictionText = true;
+              }"
+              >
+            </icon-button>
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
@@ -1051,7 +1069,7 @@
         <div id="intro-bottom-controls">
           <div>
             <v-btn
-              v-if="introSlide > 1"
+              v-if="(introSlide > 1) && (!simpleMode)"
               id="intro-next-button"
               :color="accentColor"
               @click="introSlide--"
@@ -1080,22 +1098,22 @@
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
       <div id="location-date-display">
         <v-chip 
-        :prepend-icon="smallSize ? `` : `mdi-clock`"
-        variant="outlined"
-        size="small"
-        elevation="2"
-        :text="selectedLocaledTimeDateString"
-      > </v-chip>
-      <v-chip 
           :prepend-icon="cloudIcon"
           variant="outlined"
           size="small"
-          elevation="2"
+          elevation="3"
           :text="selectedLocationText"
           @click="() => {
             searchOpen = true; 
             learnerPath = 'Location'
             }"
+        > </v-chip>
+        <v-chip 
+          :prepend-icon="smallSize ? `` : `mdi-clock`"
+          variant="outlined"
+          size="small"
+          elevation="0"
+          :text="selectedLocaledTimeDateString"
         > </v-chip>
       </div>
       <div id="top-switches">
@@ -1137,7 +1155,7 @@
         @activate="() => {
           showEclipsePredictionSheet = true;
           if (!showEclipsePredictionText) {
-            showEclipsePredictionTextBanner = true;
+            showEclipsePredictionTextBanner = false;
           }
           showEclipsePredictionText = true;
         }"
@@ -1214,13 +1232,13 @@
                 label="Amount Eclipsed"
                 hide-details
             />                      
-            <v-checkbox
+            <!-- <v-checkbox
               :color="accentColor"
               v-model="showEclipsePredictionTextBanner"
               @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
               label="Eclipse Timing"
               hide-details 
-            />
+            /> -->
           </div>
 
       </div>
@@ -1835,6 +1853,9 @@ export default defineComponent({
       { latitudeRad: D2R * latitudeDeg, longitudeRad: D2R * longitudeDeg } :
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
+      
+      simpleMode: true,
+      
       selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
       cloudCoverData: cloudDataArray as CloudData[],
       
@@ -2056,7 +2077,7 @@ export default defineComponent({
     }
         
     if (!this.showSplashScreen) {
-      this.showEclipsePredictionTextBanner = true;
+      this.showEclipsePredictionTextBanner = false;
     }
     
     this.searchOpen = this.smAndUp;
@@ -3793,7 +3814,7 @@ export default defineComponent({
     inIntro(value: boolean) {
       if (!value) {
         this.playing = true;
-        this.showEclipsePredictionTextBanner = true;
+        this.showEclipsePredictionTextBanner = false;
         if (!this.showSplashScreen && this.responseOptOut === null) {
           this.showPrivacyDialog = true;
         }
@@ -3921,6 +3942,9 @@ export default defineComponent({
     showSplashScreen(val: boolean) {
       if (!val) {
         this.inIntro = true; 
+        if (this.simpleMode) {
+          this.introSlide = 2;
+        }
       }
     },
 
@@ -5009,7 +5033,7 @@ video, #info-video {
     position: absolute;
     left: 1.5rem;
     z-index: 500;
-    top: calc(var(--default-font-size) + 0.75rem);
+    top: calc(var(--default-font-size) + 0.5rem);
 
     &.budge {
       left: 0.5rem;
@@ -5248,7 +5272,7 @@ video, #info-video {
       height: max-content;
       align-items: center;
       justify-content: center;
-      font-size: calc(0.8 * var(--default-font-size));
+      font-size: calc(1.15 * var(--default-font-size));
       padding: 0 10px;
       position: absolute;
       top: 0;
@@ -5297,9 +5321,20 @@ video, #info-video {
       position: absolute;
       z-index: 600;
       right: 1em;
-      top: 2em;
+      top: 1em;
+      
+      &.overmap-budge {
+        right: 4em;
+      }
     }
     
+    #eclipse-details-overmap-button {
+      height: fit-content;
+      position: absolute;
+      z-index: 600;
+      bottom: 1rem;
+      left: 1rem;
+    }
     
     .map-container {
       height: 100%;
@@ -5543,7 +5578,7 @@ video, #info-video {
 
 #top-wwt-content {
   position: absolute;
-  top: 0.5rem;
+  top: calc(var(--default-font-size) + 0.5rem);
   right: 0.5rem;
 
   #location-date-display  {
