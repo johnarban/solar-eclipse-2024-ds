@@ -251,7 +251,7 @@
             <!-- modelValue = false, starts with it closed, use stay-open to keep it open -->
             <location-search
               :modelValue="false"
-              :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', simpleMode ? '' : 'overmap-low']"
+              :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
               v-if="$vuetify.display.width <= 600"
               small
               :search-provider="geocodingInfoForSearch"
@@ -272,7 +272,7 @@
               @activate="() => {
                 showEclipsePredictionSheet = true;
                 if (!showEclipsePredictionText) {
-                  showEclipsePredictionTextBanner = !simpleMode;
+                  showEclipsePredictionTextBanner = !showNewMobileUI;
                 }
                 showEclipsePredictionText = true;
               }"
@@ -597,13 +597,13 @@
                       </li>
                       <li>
                       <span 
-                        v-if="simpleMode"
+                        v-if="showNewMobileUI"
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
                         font-weight: bold ">Eclipsed</span>: The fraction of the Sun that is eclipsed in the currenty view (for the selected time and location).
                       </li>
-                      <li v-if="!simpleMode" class="switch-bullets">
+                      <li v-if="!showNewMobileUI" class="switch-bullets">
                         <v-switch
                           class="display-only-switch"
                           v-model="displaySwitchOn"
@@ -617,7 +617,7 @@
                         </v-switch>
                         <span class="user-guide-emphasis"> Track Sun:</span> Camera follows the Sun.
                       </li>
-                      <li v-if="!simpleMode" class="switch-bullets mb-5">
+                      <li v-if="!showNewMobileUI" class="switch-bullets mb-5">
                         <v-switch
                           class="display-only-switch"
                           v-model="displaySwitchOff"
@@ -659,7 +659,7 @@
                         <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
                       </li>
                       <li>
-                        <span v-if="!simpleMode" class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
+                        <span v-if="!showNewMobileUI" class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
                       </li>
                       <li>
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
@@ -931,14 +931,6 @@
           </div>
         </div>
 
-        <div v-if="mobile">
-          <p class="splash-small-text">
-            <a 
-              href="#" 
-              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "old" : "new" }} interface
-          </p>
-        </div>
-        
         <div v-if="mobile && showNewMobileUI" id="splash-screen-guide">
           <v-row>
             <v-col cols="12">
@@ -954,8 +946,8 @@
               <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
               Detailed eclipse times
             </v-col>
-            <v-col cols="12" flex="horizontal">
-              <icon-button :color="accentColor"><template v-slot:button>Map & Weather</template></icon-button> More info
+            <v-col cols="12" flex="horizontal" class="pt-1">
+              <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em;">Map & Weather</span> for more info
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
@@ -997,14 +989,22 @@
           </v-row>
         </div>
         
-        <!-- create div with v-checkbox to have simpleMode on -->
+        <!-- create div with v-checkbox to have showNewMobileUI on -->
         <div id="splash-screen-simple-mode">
+          <div v-if="mobile">
+          <p class="splash-small-text">
+            <a 
+              href="#" 
+              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "old" : "new" }} interface
+          </p>
+        </div>
+        
           <v-checkbox
             v-if="mobile"
-            v-model="simpleMode"
+            v-model="showNewMobileUI"
             label="Use new layout"
             color="grey"
-            @keyup.enter="() => {simpleMode = !simpleMode}"
+            @keyup.enter="() => {showNewMobileUI = !showNewMobileUI}"
             hide-details
             density="compact"
           ></v-checkbox>
@@ -1120,7 +1120,7 @@
         <div id="intro-bottom-controls">
           <div>
             <v-btn
-              v-if="(introSlide > 1) && (!simpleMode)"
+              v-if="(introSlide > 1) && (!showNewMobileUI)"
               id="intro-next-button"
               :color="accentColor"
               @click="introSlide--"
@@ -1167,7 +1167,7 @@
           :text="selectedLocaledTimeDateString"
         > </v-chip>
         <v-chip 
-          v-if="showEclipsePercentage && simpleMode"
+          v-if="showEclipsePercentage && showNewMobileUI"
           :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
           variant="outlined"
           elevation="2"
@@ -1213,7 +1213,7 @@
         @activate="() => {
           showEclipsePredictionSheet = true;
           if (!showEclipsePredictionText) {
-            showEclipsePredictionTextBanner = !simpleMode;
+            showEclipsePredictionTextBanner = !showNewMobileUI;
           }
           showEclipsePredictionText = true;
         }"
@@ -1291,12 +1291,12 @@
                 hide-details
             />          
             <v-checkbox
-              v-model="simpleMode"
+              v-model="showNewMobileUI"
               label="Use new layout"
               :color="accentColor"
-              @keyup.enter="simpleMode = !simpleMode"
+              @keyup.enter="showNewMobileUI = !showNewMobileUI"
               @update:modelValue="(value) => {
-                console.log('simpleMode', value);
+                console.log('showNewMobileUI', value);
                 showEclipsePredictionTextBanner = !value;
               }"
               hide-details
@@ -1314,7 +1314,7 @@
       
       <div id="eclipse-percent-chip">
         <v-chip 
-          v-if="showEclipsePercentage && !simpleMode"
+          v-if="showEclipsePercentage && !showNewMobileUI"
           :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
           variant="outlined"
           elevation="2"
@@ -1922,7 +1922,7 @@ export default defineComponent({
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
       
-      simpleMode: false,
+      showNewMobileUI: false,
       
       selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
       cloudCoverData: cloudDataArray as CloudData[],
@@ -2053,7 +2053,7 @@ export default defineComponent({
       moonColor: "#CFD8DC",
       guidedContentHeight: "300px",
       showGuidedContent: true,
-      showNewMobileUI: true,
+
       inIntro: false,
       displaySwitchOn: true,
       displaySwitchOff: false,
@@ -2145,10 +2145,10 @@ export default defineComponent({
       this.updateSelectedLocationText();
     }
     
-    this.simpleMode = this.mobile;
+    this.showNewMobileUI = this.mobile;
         
     if (!this.showSplashScreen) {
-      this.showEclipsePredictionTextBanner = !this.simpleMode;
+      this.showEclipsePredictionTextBanner = !this.showNewMobileUI;
     }
     
     this.searchOpen = this.smAndUp;
@@ -3885,7 +3885,7 @@ export default defineComponent({
     inIntro(value: boolean) {
       if (!value) {
         this.playing = true;
-        this.showEclipsePredictionTextBanner = !this.simpleMode;
+        this.showEclipsePredictionTextBanner = !this.showNewMobileUI;
         if (!this.showSplashScreen && this.responseOptOut === null) {
           this.showPrivacyDialog = true;
         }
@@ -4013,7 +4013,7 @@ export default defineComponent({
     showSplashScreen(val: boolean) {
       if (!val) {
         this.inIntro = true; 
-        if (this.simpleMode) {
+        if (this.showNewMobileUI) {
           this.introSlide = 2;
         }
       }
