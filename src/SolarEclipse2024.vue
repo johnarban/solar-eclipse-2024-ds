@@ -958,6 +958,17 @@
           </v-row>
         </div>
         
+        <!-- create div with v-checkbox to have simpleMode on -->
+        <div id="splash-screen-simple-mode">
+          <v-checkbox
+            v-model="simpleMode"
+            label="Use new layout"
+            color="grey"
+            @keyup.enter="simpleMode = !simpleMode"
+            hide-details
+            density="compact"
+          ></v-checkbox>
+        </div>
         <div id="splash-screen-acknowledgements">
           Brought to you by <a href="https://www.cosmicds.cfa.harvard.edu/" target="_blank" rel="noopener noreferrer">Cosmic Data Stories</a> and <a href="https://www.worldwidetelescope.org/home/" target="_blank" rel="noopener noreferrer">WorldWide Telescope</a>.
           
@@ -1098,6 +1109,7 @@
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
       <div id="location-date-display">
         <v-chip 
+          v-if="!simpleMode"
           :prepend-icon="cloudIcon"
           variant="outlined"
           size="small"
@@ -1231,7 +1243,14 @@
                 @keyup.enter="showEclipsePercentage = !showEclipsePercentage"
                 label="Amount Eclipsed"
                 hide-details
-            />                      
+            />          
+            <v-checkbox
+              v-model="simpleMode"
+              label="Use new layout"
+              :color="accentColor"
+              @keyup.enter="simpleMode = !simpleMode"
+              hide-details
+            ></v-checkbox>            
             <!-- <v-checkbox
               :color="accentColor"
               v-model="showEclipsePredictionTextBanner"
@@ -1250,6 +1269,18 @@
           variant="outlined"
           elevation="2"
           :text="percentEclipsedText"
+        > </v-chip>
+        <v-chip 
+          v-if="simpleMode"
+          :prepend-icon="cloudIcon"
+          variant="outlined"
+          size="small"
+          elevation="3"
+          :text="selectedLocationText"
+          @click="() => {
+            searchOpen = true; 
+            learnerPath = 'Location'
+            }"
         > </v-chip>
       </div>
       
@@ -5562,6 +5593,9 @@ video, #info-video {
   // position: absolute;
   // right: 0.5rem;
   // top: calc(-1.5 * var(--default-line-height));
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
 
   .v-chip.v-chip--density-default {
     height: var(--default-line-height);
