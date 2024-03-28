@@ -54,8 +54,6 @@ export default defineComponent({
   emits: ["place", "update:modelValue", "error", "dataclick", "finishLoading"],
 
   props: {
-    
-    
     activatorColor: {
       type: String,
       default: "#ffffff"
@@ -161,10 +159,15 @@ export default defineComponent({
       this.getLocation(true);
     }
     this.setup(true);
+
+    // We shouldn't need to ever reset this,
+    // unlike the regular setup which can get called again
+    this.setupResizeObserver();
   },
 
   data() {
     return {
+      resizeObserver: null as ResizeObserver | null,
       eclipsePath: [] as L.GeoJSON[],
       placeCircles: [] as L.CircleMarker[],
       hoveredPlace: null as Place | null,
@@ -179,6 +182,14 @@ export default defineComponent({
   },
 
   methods: {
+
+    setupResizeObserver() {
+      const container = document.querySelector("#map-container") as HTMLDivElement;
+      this.resizeObserver = new ResizeObserver(() => {
+        this.map?.invalidateSize();
+      });
+      this.resizeObserver.observe(container);
+    },
     
     // eslint-disable-next-line @typescript-eslint/naming-convention
     parseResult(result: CloudData[]) {
