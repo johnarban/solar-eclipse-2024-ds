@@ -939,7 +939,7 @@
           </p>
         </div>
         
-        <div v-if="mobile && showNewMobileUI" id="splash-screen-guide">
+        <div v-if="mobile && showNewMobileUI" id="splash-screen-guide" class="mb-7">
           <v-row>
             <v-col cols="12">
               <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
@@ -956,12 +956,6 @@
             </v-col>
             <v-col cols="12" flex="horizontal" class="pt-1">
               <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em; color:#eac402;">Map & Weather</span> for more info
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="gear"
-              />
-              More controls 
             </v-col>
           </v-row>
         </div>
@@ -4672,7 +4666,7 @@ body {
 
   .splash-small-text {
     margin-block: 0.5rem;
-    font-size: calc(1.1*var(--default-font-size));    
+    font-size: calc(1.4*var(--default-font-size));    
   }
 
   #splash-screen-acknowledgements {
