@@ -964,6 +964,7 @@
         <!-- create div with v-checkbox to have simpleMode on -->
         <div id="splash-screen-simple-mode">
           <v-checkbox
+            v-if="mobile"
             v-model="simpleMode"
             label="Use new layout"
             color="grey"
