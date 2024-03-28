@@ -777,13 +777,12 @@
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
         <div id='geocoding-row' class="d-flex align-center ga-1">
-        
-        <location-search
-          v-model="searchOpen"
-          :search-provider="geocodingInfoForSearch"
-          :accentColor="accentColor"
-          @set-location="setLocationFromSearchFeature"
-          @error="searchErrorMessage = $event"
+          <location-search
+            v-model="searchOpen"
+            :search-provider="geocodingInfoForSearch"
+            :accentColor="accentColor"
+            @set-location="setLocationFromSearchFeature"
+            @error="searchErrorMessage = $event"
           />
         </div>
         <div style="position:relative;">
@@ -812,48 +811,48 @@
           ></icon-button>
         
           <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
-          <geolocation-button
-            :color="accentColor"
-            :show-text-progress = "true"
-            hide-button
-            show-progress-circle
-            ref="geolocation"
-            @geolocation="(loc: GeolocationCoordinates) => { 
-              myLocation = {
-                latitudeDeg: loc.latitude, 
-                longitudeDeg: loc.longitude
-              };
-              locationDeg = myLocation;
-              showMyLocationDialog = false;
-              updateSelectedLocationText();
-              }"
-            @error="(error: GeolocationPositionError) => { 
-              $notify({
-                group: 'geolocation-error',
-                title: 'Error',
-                text: error.message,
-                type: 'error',
-              }); 
-              if (error.code === 1) {
-                geolocationPermission = 'denied';
-              }
-              console.log(error);
-              }"
-              @permission="(p: PermissionState) => {
-                geolocationPermission = p;
-                // we're always gonna show the button,
-                // just leaving this if we wanna change
-                if (p == 'granted') {
-                  getMyLocation = true;
-                } else if (p == 'prompt') {
-                  getMyLocation = true;
-                } else {
-                  getMyLocation = true;
+            <geolocation-button
+              :color="accentColor"
+              :show-text-progress = "true"
+              hide-button
+              show-progress-circle
+              ref="geolocation"
+              @geolocation="(loc: GeolocationCoordinates) => { 
+                myLocation = {
+                  latitudeDeg: loc.latitude, 
+                  longitudeDeg: loc.longitude
+                };
+                locationDeg = myLocation;
+                showMyLocationDialog = false;
+                updateSelectedLocationText();
+                }"
+              @error="(error: GeolocationPositionError) => { 
+                $notify({
+                  group: 'geolocation-error',
+                  title: 'Error',
+                  text: error.message,
+                  type: 'error',
+                }); 
+                if (error.code === 1) {
+                  geolocationPermission = 'denied';
                 }
-              }"
-          ></geolocation-button>
+                console.log(error);
+                }"
+                @permission="(p: PermissionState) => {
+                  geolocationPermission = p;
+                  // we're always gonna show the button,
+                  // just leaving this if we wanna change
+                  if (p == 'granted') {
+                    getMyLocation = true;
+                  } else if (p == 'prompt') {
+                    getMyLocation = true;
+                  } else {
+                    getMyLocation = true;
+                  }
+                }"
+            ></geolocation-button>
+          </div>
         </div>
-      </div>
         
         <icon-button
           id="share"
