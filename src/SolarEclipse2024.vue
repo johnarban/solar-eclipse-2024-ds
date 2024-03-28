@@ -950,8 +950,44 @@
             <p class="highlight">TOTAL<br/>Solar Eclipse</p>
           </div>
         </div>
+
+        <div v-if="mobile">
+          <p class="splash-small-text">
+            <a 
+              href="#" 
+              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "old" : "new" }} interface
+          </p>
+        </div>
         
-        <div id="splash-screen-guide">
+        <div v-if="mobile && showNewMobileUI" id="splash-screen-guide">
+          <v-row>
+            <v-col cols="12">
+              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
+              New! Updated mobile interface
+            </v-col>
+            <v-col cols="12">
+              <font-awesome-icon
+                icon="magnifying-glass"
+              /> Search for a location 
+            </v-col>
+            <v-col cols="12">
+              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
+              Detailed eclipse times
+            </v-col>
+            <v-col cols="12" flex="horizontal">
+              <icon-button :color="accentColor"><template v-slot:button>Map & Weather</template></icon-button> More info
+            </v-col>
+            <v-col cols="12">
+              <font-awesome-icon
+                icon="gear"
+              />
+              More controls 
+            </v-col>
+          </v-row>
+        </div>
+
+        <div v-if="!mobile || !showNewMobileUI " id="splash-screen-guide">
+        <!-- <div v-if="false" id="splash-screen-guide"> -->
           <v-row>
             <v-col cols="12">
               <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
@@ -2005,6 +2041,7 @@ export default defineComponent({
       moonColor: "#CFD8DC",
       guidedContentHeight: "300px",
       showGuidedContent: true,
+      showNewMobileUI: true,
       inIntro: false,
       displaySwitchOn: true,
       displaySwitchOff: false,
@@ -4653,7 +4690,7 @@ body {
     margin-block: 1em;
     font-size: min(4.5vw, 3.6vh);
     line-height: 160%;
-    width: 75%;
+    width: 85%;
 
     .v-col{
       padding: 0;
@@ -4663,6 +4700,11 @@ body {
       color:var(--accent-color);
       margin: 0 10px;
     }
+  }
+
+  .splash-small-text {
+    margin-block: 0.5rem;
+    font-size: calc(1.1*var(--default-font-size));    
   }
 
   #splash-screen-acknowledgements {
