@@ -578,16 +578,10 @@
 
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
                     
-                    <h4 class="user-guide-header">Viewing Mode:</h4>
+                    <h4 class="user-guide-header" v-if="!simpleMode">Viewing Mode:</h4>
                     <p  class="mb-3">(Upper-right of the screen)</p>
                     <ul class="text-list">
                       <li class="mb-2">
-                        The <span 
-                        v-if="mobile"
-                        style="color: blue; background-color: white;
-                        padding-inline: 0.7em;
-                        border-radius: 20px;
-                        font-weight: bold ">historical cloud cover</span><span v-if="mobile">, </span>
                         <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
@@ -1109,7 +1103,6 @@
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
       <div id="location-date-display">
         <v-chip 
-          v-if="!simpleMode"
           :prepend-icon="cloudIcon"
           variant="outlined"
           size="small"
@@ -1126,6 +1119,13 @@
           size="small"
           elevation="0"
           :text="selectedLocaledTimeDateString"
+        > </v-chip>
+        <v-chip 
+          v-if="showEclipsePercentage && simpleMode"
+          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
+          variant="outlined"
+          elevation="2"
+          :text="percentEclipsedText"
         > </v-chip>
       </div>
       <div id="top-switches">
@@ -1264,23 +1264,11 @@
       
       <div id="eclipse-percent-chip">
         <v-chip 
-          v-if="showEclipsePercentage"
+          v-if="showEclipsePercentage && !simpleMode"
           :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
           variant="outlined"
           elevation="2"
           :text="percentEclipsedText"
-        > </v-chip>
-        <v-chip 
-          v-if="simpleMode"
-          :prepend-icon="cloudIcon"
-          variant="outlined"
-          size="small"
-          elevation="3"
-          :text="selectedLocationText"
-          @click="() => {
-            searchOpen = true; 
-            learnerPath = 'Location'
-            }"
         > </v-chip>
       </div>
       
