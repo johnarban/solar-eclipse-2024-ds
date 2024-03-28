@@ -931,11 +931,19 @@
           </div>
         </div>
 
+        <div v-if="mobile">
+          <p class="splash-small-text">
+            <a 
+              href="#" 
+              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "old" : "new" }} interface
+          </p>
+        </div>
+        
         <div v-if="mobile && showNewMobileUI" id="splash-screen-guide">
           <v-row>
             <v-col cols="12">
               <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
-              New! Updated mobile interface
+              Updated mobile interface
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
@@ -947,7 +955,7 @@
               Detailed eclipse times
             </v-col>
             <v-col cols="12" flex="horizontal" class="pt-1">
-              <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em;">Map & Weather</span> for more info
+              <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em; color:#eac402;">Map & Weather</span> for more info
             </v-col>
             <v-col cols="12">
               <font-awesome-icon
@@ -989,26 +997,6 @@
           </v-row>
         </div>
         
-        <!-- create div with v-checkbox to have showNewMobileUI on -->
-        <div id="splash-screen-simple-mode">
-          <div v-if="mobile">
-          <p class="splash-small-text">
-            <a 
-              href="#" 
-              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "old" : "new" }} interface
-          </p>
-        </div>
-        
-          <v-checkbox
-            v-if="mobile"
-            v-model="showNewMobileUI"
-            label="Use new layout"
-            color="grey"
-            @keyup.enter="() => {showNewMobileUI = !showNewMobileUI}"
-            hide-details
-            density="compact"
-          ></v-checkbox>
-        </div>
         <div id="splash-screen-acknowledgements">
           Brought to you by <a href="https://www.cosmicds.cfa.harvard.edu/" target="_blank" rel="noopener noreferrer">Cosmic Data Stories</a> and <a href="https://www.worldwidetelescope.org/home/" target="_blank" rel="noopener noreferrer">WorldWide Telescope</a>.
           
