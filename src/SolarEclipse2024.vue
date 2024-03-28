@@ -1885,7 +1885,7 @@ export default defineComponent({
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
       
-      simpleMode: true,
+      simpleMode: false,
       
       selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
       cloudCoverData: cloudDataArray as CloudData[],
@@ -2106,6 +2106,8 @@ export default defineComponent({
       this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
     }
+    
+    this.simpleMode = this.mobile;
         
     if (!this.showSplashScreen) {
       this.showEclipsePredictionTextBanner = !this.simpleMode;
