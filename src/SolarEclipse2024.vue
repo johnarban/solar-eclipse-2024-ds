@@ -250,8 +250,8 @@
             
             <!-- modelValue = false, starts with it closed, use stay-open to keep it open -->
             <location-search
-              modelValue="false"
-              :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '']"
+              :modelValue="false"
+              :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', simpleMode ? '' : 'overmap-low']"
               v-if="$vuetify.display.width <= 600"
               small
               :search-provider="geocodingInfoForSearch"
@@ -272,7 +272,7 @@
               @activate="() => {
                 showEclipsePredictionSheet = true;
                 if (!showEclipsePredictionText) {
-                  showEclipsePredictionTextBanner = false;
+                  showEclipsePredictionTextBanner = !simpleMode;
                 }
                 showEclipsePredictionText = true;
               }"
@@ -967,7 +967,7 @@
             v-model="simpleMode"
             label="Use new layout"
             color="grey"
-            @keyup.enter="simpleMode = !simpleMode"
+            @keyup.enter="() => {simpleMode = !simpleMode}"
             hide-details
             density="compact"
           ></v-checkbox>
@@ -1176,7 +1176,7 @@
         @activate="() => {
           showEclipsePredictionSheet = true;
           if (!showEclipsePredictionText) {
-            showEclipsePredictionTextBanner = false;
+            showEclipsePredictionTextBanner = !simpleMode;
           }
           showEclipsePredictionText = true;
         }"
@@ -1258,6 +1258,10 @@
               label="Use new layout"
               :color="accentColor"
               @keyup.enter="simpleMode = !simpleMode"
+              @update:modelValue="(value) => {
+                console.log('simpleMode', value);
+                showEclipsePredictionTextBanner = !value;
+              }"
               hide-details
             ></v-checkbox>            
             <!-- <v-checkbox
@@ -1375,7 +1379,6 @@
                 }"
                 :color="accentColor"
                 :focus-color="accentColor"
-                border="none"
                 tooltip-text="Reset"
                 tooltip-location="top"
                 tooltip-offset="5px"
@@ -2105,7 +2108,7 @@ export default defineComponent({
     }
         
     if (!this.showSplashScreen) {
-      this.showEclipsePredictionTextBanner = false;
+      this.showEclipsePredictionTextBanner = !this.simpleMode;
     }
     
     this.searchOpen = this.smAndUp;
@@ -3842,7 +3845,7 @@ export default defineComponent({
     inIntro(value: boolean) {
       if (!value) {
         this.playing = true;
-        this.showEclipsePredictionTextBanner = false;
+        this.showEclipsePredictionTextBanner = !this.simpleMode;
         if (!this.showSplashScreen && this.responseOptOut === null) {
           this.showPrivacyDialog = true;
         }
@@ -5350,6 +5353,11 @@ video, #info-video {
       z-index: 600;
       right: 1em;
       top: 1em;
+      
+      &.overmap-low {
+        top: 2em;
+      }
+      
       
       &.overmap-budge {
         right: 4em;
