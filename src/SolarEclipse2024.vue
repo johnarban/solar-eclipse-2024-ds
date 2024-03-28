@@ -1061,10 +1061,15 @@
           
           <v-window-item :value="2">
             <div class="intro-text mb-3">
-              <p class="mb-3">
+              <div v-if="xSmallSize" class="mb-3">
+                <p class="mb-3">
+                Access these features in  
+                </p> 
+                <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em; color:#eac402; white-space: nowrap">Map & Weather</span>
+              </div>
+              <p v-else class="mb-3">
                 In this interactive page you can:
               </p>
-              
               <ul>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -1082,7 +1087,7 @@
                   <template v-slot:prepend>
                     <font-awesome-icon icon="chart-column" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                  <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon><strong>NEW! Explore historical cloud data</strong> as individual years or filter by El Niño/La Niña climate patterns.
+                  <strong>Explore historical cloud data</strong> as individual years or filter by El Niño/La Niña climate patterns.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -1097,10 +1102,6 @@
                     Access <strong>User Guide</strong> on how to navigate this app. 
                 </v-list-item>
               </ul>
-              <p v-if="xSmallSize" class="mt-3">
-                To access all features, {{ touchscreen ? "tap" : "click" }} 
-                <span class="span-accent">Map & Weather</span> at top left.
-              </p> 
             </div>
           </v-window-item>
         </v-window>
