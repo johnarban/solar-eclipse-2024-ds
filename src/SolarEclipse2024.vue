@@ -578,23 +578,32 @@
 
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
                     
-                    <h4 class="user-guide-header" v-if="!simpleMode">Viewing Mode:</h4>
+                    <h4 class="user-guide-header">Viewing Mode:</h4>
                     <p  class="mb-3">(Upper-right of the screen)</p>
                     <ul class="text-list">
+                      <li>
+                        <span 
+                        style="color: blue; background-color: white;
+                        padding-inline: 0.7em;
+                        border-radius: 20px;
+                        font-weight: bold ">selected location</span>: The currently selected location.  
+                      </li>
                       <li class="mb-2">
                         <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">date/time</span><span v-if="mobile">,</span> and
-                        <span 
+                        font-weight: bold ">date/time</span>: The date and time being displayed by WorldWide Telescopse
+                      </li>
+                      <li>
+                      <span 
+                        v-if="simpleMode"
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">selected location</span>   
-                        are displayed under the map.
+                        font-weight: bold ">Eclipsed</span>: The fraction of the Sun that is eclipsed in the currenty view (for the selected time and location).
                       </li>
-                      <li class="switch-bullets">
+                      <li v-if="!simpleMode" class="switch-bullets">
                         <v-switch
                           class="display-only-switch"
                           v-model="displaySwitchOn"
@@ -608,7 +617,7 @@
                         </v-switch>
                         <span class="user-guide-emphasis"> Track Sun:</span> Camera follows the Sun.
                       </li>
-                      <li class="switch-bullets mb-5">
+                      <li v-if="!simpleMode" class="switch-bullets mb-5">
                         <v-switch
                           class="display-only-switch"
                           v-model="displaySwitchOff"
@@ -650,7 +659,7 @@
                         <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
                       </li>
                       <li>
-                        <span class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
+                        <span v-if="!simpleMode" class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
                       </li>
                       <li>
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
@@ -1129,7 +1138,7 @@
         > </v-chip>
       </div>
       <div id="top-switches">
-        <div id="track-sun-switch"> 
+        <div v-if="!simpleMode" id="track-sun-switch"> 
           <hover-tooltip
               location="left"
               :disabled="mobile"
