@@ -262,6 +262,29 @@
             >
             </location-search>
             <icon-button
+            v-if="getMyLocation && narrow && showNewMobileUI"
+            :class="['geolocation-button-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
+            id="my-location-overmap"
+            fa-icon="street-view"
+            :color="myLocationColor"
+            :focus-color="myLocationColor"
+            :box-shadow="false"
+            :tooltip-text="myLocationToolTip"
+            :show-tooltip="!mobile"
+            @update:modelValue="(value: boolean) => {
+              if(value) {
+                ($refs.geolocation as any).getLocation();
+                showMyLocationDialog = true;
+                learnerPath = 'Location';
+              }
+              else {
+                console.log('geolocation button pressed = false');
+              }
+
+            }"
+            faSize="1x"
+          ></icon-button>
+            <icon-button
               v-if="narrow"
               id="eclipse-details-overmap"
               md-icon="sun-clock"
@@ -5400,6 +5423,25 @@ video, #info-video {
       
       &.overmap-low {
         top: 2em;
+      }
+      
+      
+      &.overmap-budge {
+        right: 4em;
+      }
+    }
+    
+    #my-location-overmap-button {
+      height: fit-content;
+      position: absolute;
+      z-index: 550;
+      right: 1em;
+      top: 5.5em;
+      
+      
+      
+      &.overmap-low {
+        top: 4em;
       }
       
       
