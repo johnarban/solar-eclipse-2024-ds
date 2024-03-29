@@ -1161,14 +1161,14 @@
           :prepend-icon="smallSize ? `` : `mdi-clock`"
           variant="outlined"
           size="small"
-          elevation="0"
+          elevation="1"
           :text="selectedLocaledTimeDateString"
         > </v-chip>
         <v-chip 
           v-if="showEclipsePercentage && showNewMobileUI"
           :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
           variant="outlined"
-          elevation="2"
+          elevation="1"
           :text="percentEclipsedText"
         > </v-chip>
       </div>
@@ -1317,7 +1317,7 @@
           v-if="showEclipsePercentage && !showNewMobileUI"
           :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
           variant="outlined"
-          elevation="2"
+          elevation="1"
           :text="percentEclipsedText"
         > </v-chip>
       </div>
@@ -5691,12 +5691,12 @@ video, #info-video {
     @media (max-width: 700px) {
       .v-chip.v-chip--density-default {
         height: var(--default-line-height);
-        padding-inline: 0.8rem;
-        padding-block: 0.8rem;
+        padding-inline: calc(0.6 * var(--default-line-height));
+        padding-block: calc(0.8 * var(--default-line-height));
       }
 
       .v-chip__content {
-        font-size: calc(0.8 * var(--default-font-size));
+        font-size: calc(1.2 * var(--default-font-size));
       }
     }
 
