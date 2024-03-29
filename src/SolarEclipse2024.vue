@@ -2225,11 +2225,6 @@ export default defineComponent({
       this.wwtControl._updateViewParameters = updateViewParameters.bind(this.wwtControl);
 
       this.wwtMove = this.wwtControl.move;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      this.wwtControl.roll = function(_angle) {};
-      this.wwtControl._tilt = function(_angle) {};
-      this.updatePanForUI();
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
