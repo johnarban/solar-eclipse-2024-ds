@@ -5,11 +5,11 @@
 >
 
   <!-- Top content box with map, location, time, and option icons -->
-  <div id="closed-top-container" :class="[!showGuidedContent ?'budge' : '']">
+  <div id="closed-top-container" :class="[!showGuidedContent ?'budge' : 'open']">
     <icon-button
       v-model="showGuidedContent"
-      :fa-icon="showGuidedContent ? 'chevron-up' : 'chevron-down'"
-      :fa-size="showGuidedContent ? 'lg' : 'xl'"
+      :fa-icon="showGuidedContent ? 'times' : 'chevron-down'"
+      :fa-size="showGuidedContent ? 'lg' : 'lg'"
       :color="accentColor"
       :focus-color="accentColor"
       :tooltip-text="showGuidedContent ? 'Hide' : 'Click to learn more'"
@@ -1244,7 +1244,9 @@
               style="position:absolute;right:12px;cursor:pointer;"
               id="close-eclipse-prediction-sheet"
               @click="showEclipsePredictionSheet = false"
-              ><v-icon
+              ><v-icon 
+                  class="elevation-2"
+                  :color="accentColor"
               >mdi-close</v-icon></button>
             <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor" :location="selectedLocationText"/>
           </v-card-text>
@@ -5131,7 +5133,16 @@ video, #info-video {
     position: absolute;
     left: 1.5rem;
     z-index: 500;
-    top: calc(var(--default-font-size) + 0.5rem);
+    top: calc(var(--default-font-size) + 1px);
+    
+    &.open > .icon-wrapper {
+      --color: black !important;
+      --background-color: var(--accent-color)  !important;
+      --focus-color: white  !important;
+      border: none;
+      border-radius: 2px;
+      padding: 4px;
+    }
 
     &.budge {
       left: 0.5rem;
