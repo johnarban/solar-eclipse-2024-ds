@@ -1884,6 +1884,8 @@ cloudData.forEach((row, i) => {
 
 console.log("cloud cover data loaded");
 
+const wwtMove = WWTControl.singleton.move;
+
 /* READ IN Eclipse Umbra */
 import eclipseUmbra from "./assets/upath_hi.json";
 
@@ -1981,8 +1983,6 @@ export default defineComponent({
       layersLoaded: false,
       positionSet: false,
       imagesetFolder: null as Folder | null,
-
-      wwtMove: null as ((x: number, y: number) => void) | null,
 
       searchOpen: true,
       searchText: null as string | null,
@@ -2222,7 +2222,6 @@ export default defineComponent({
       // @ts-ignore
       this.wwtControl._updateViewParameters = updateViewParameters.bind(this.wwtControl);
 
-      this.wwtMove = this.wwtControl.move;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.wwtControl.roll = function(_angle) {};
@@ -2717,9 +2716,7 @@ export default defineComponent({
       if (this.showNewMobileUI) {
         this.wwtControl.move = function(_x, _y) {};
       } else {
-        if (this.wwtMove) {
-          this.wwtControl.move = this.wwtMove;
-        }
+        this.wwtControl.move = wwtMove;
       }
     },
 
@@ -3924,7 +3921,7 @@ export default defineComponent({
 
   watch: {
 
-    mobile(_val: boolean) {
+    showNewMobileUI(_val: boolean) {
       this.updatePanForMobile(); 
     },
 
