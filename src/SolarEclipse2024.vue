@@ -2073,7 +2073,7 @@ export default defineComponent({
       forceRate: false,
       playbackVisible: false,
       
-      horizonRate: 100, 
+      horizonRate: 500, 
       scopeRate: 100, 
 
       startPaused: false,
@@ -2131,7 +2131,7 @@ export default defineComponent({
   },
 
   mounted() {  
-     
+
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
@@ -2336,9 +2336,9 @@ export default defineComponent({
     
     selectedLocaledTimeDateString() {
       if (this.smallSize) {
-        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm:ss');
+        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, h:mm:ss aa');
       } else {
-        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd/yyyy HH:mm:ss (zzz)');
+        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd/yyyy h:mm:ss aa (zzz)');
       }
 
     },
