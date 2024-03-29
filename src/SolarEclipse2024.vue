@@ -8,6 +8,7 @@
   <div id="closed-top-container" :class="[!showGuidedContent ?'budge' : 'open']">
     <icon-button
       v-model="showGuidedContent"
+      id="show-guided-content"
       ref="showGuidedContent"
       :fa-icon="showGuidedContent ? 'times' : 'chevron-down'"
       :fa-size="showGuidedContent ? 'lg' : 'lg'"
@@ -3931,6 +3932,10 @@ export default defineComponent({
       if (show) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.$refs.showGuidedContent as any).tooltip = false;
+        const element = document.activeElement;
+        if (element && element.id === "show-guided-content-button") {
+          (element as HTMLElement).blur();
+        }
       }
     },
     
