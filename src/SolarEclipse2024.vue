@@ -5417,8 +5417,8 @@ video, #info-video {
       height: 100%;
       width: 100%;
       aspect-ratio: 5/3;
+      position: absolute;
     }
-  
   
     span {
       padding: 0;
