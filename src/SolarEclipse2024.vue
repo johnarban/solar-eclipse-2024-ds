@@ -1164,7 +1164,7 @@
           :text="percentEclipsedText"
         > </v-chip>
       </div>
-      <div id="top-switches" v-if="!mobile">
+      <div id="top-switches" v-if="!showNewMobileUI">
         <div id="track-sun-switch"> 
           <hover-tooltip
               location="left"
