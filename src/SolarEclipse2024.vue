@@ -761,7 +761,7 @@
     }"
     />
   
-  <div v-if="!showGuidedContent && showEclipsePredictionTextBanner" class="user-banner">
+  <div v-show="!showGuidedContent && showEclipsePredictionTextBanner" class="user-banner">
     <span class="banner-text" v-if="showEclipsePredictionText">
       {{ eclipsePredictionText }}
     </span>
