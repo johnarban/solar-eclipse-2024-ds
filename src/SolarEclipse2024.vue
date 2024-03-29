@@ -679,7 +679,7 @@
                           size="medium">
                         </v-icon> to display detailed <span class="user-guide-emphasis-white">eclipse timing</span> predictions for your selected location.
                       </li>
-                      <li>
+                      <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Center Sun:</span> Recenter view on Sun.
                       </li>
                       <li>
@@ -696,6 +696,9 @@
                       </li>
                       <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
+                      </li>
+                      <li v-if="narrow">
+                        <span class="user-guide-emphasis-white">New Interface:</span> Use new streamlined interface for small screens. (Uncheck to revert to old mobile interface.)                   
                       </li>
                       <li v-if="!showNewMobileUI"  class="mt-2">
                         <span 
@@ -1199,7 +1202,7 @@
           :text="percentEclipsedText"
         > </v-chip>
       </div>
-      <div id="top-switches" v-if="!mobile">
+      <div id="top-switches" v-if="!showNewMobileUI">
         <div id="track-sun-switch"> 
           <hover-tooltip
               location="left"
@@ -1282,6 +1285,7 @@
 
           <div v-if="showControls" id="control-checkboxes">
             <v-checkbox
+              v-if="!showNewMobileUI"
               :color="accentColor"
               v-model="sunCenteredTracking"
               @change="centerSun()"
@@ -2710,7 +2714,7 @@ export default defineComponent({
   methods: {
 
     updatePanForMobile() {
-      if (this.mobile) {
+      if (this.showNewMobileUI) {
         this.wwtControl.move = function(_x, _y) {};
       } else {
         if (this.wwtMove) {
@@ -3053,7 +3057,7 @@ export default defineComponent({
 
 
     onWWTRenderFrame(wwtControl: WWTControl) {
-      if (this.mobile) {
+      if (this.showNewMobileUI) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         if (wwtControl._trackingObject !== this.sunPlace) {
@@ -5203,6 +5207,7 @@ video, #info-video {
 #guided-content-container {  
   --top-content-max-height: max(30vmin, 35vh);
   --top-content-min-height: 200px;
+  z-index: 400;
   
   @media (max-width: 600px) {
     --top-content-max-height: calc(100% - 1rem);
