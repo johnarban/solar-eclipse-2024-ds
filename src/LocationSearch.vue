@@ -26,7 +26,7 @@
       <font-awesome-icon
         id="geocoding-search-icon"
         icon="magnifying-glass"
-        :size="searchOpen ? 'xl' : '1x'"
+        :size="searchOpen ? 'xl' : buttonSize"
         :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
         @click="() => {
           if (searchOpen) {
@@ -142,7 +142,12 @@ export default defineComponent({
     theme: {
       type: String,
       default: 'dark',
-    }
+    },
+    
+    buttonSize: {
+      type: String,
+      default: '1x',
+    },
     
   },
   

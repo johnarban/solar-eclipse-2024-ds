@@ -254,6 +254,7 @@
               :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
               v-if="$vuetify.display.width <= 600"
               small
+              buttonSize="xl"
               :search-provider="geocodingInfoForSearch"
               :accentColor="accentColor"
               @set-location="setLocationFromSearchFeature"
@@ -4160,7 +4161,7 @@ html {
   margin: 0;
   padding: 0;
   background-color: #000;
-
+  
   overflow: hidden;
   -ms-overflow-style: none;
 
@@ -4248,6 +4249,7 @@ body {
     // border-style: none;
     // border-width: 0;
     // border: 3px solid red;
+    overflow: hidden;
     margin: 0;
     padding: 0;
   }
