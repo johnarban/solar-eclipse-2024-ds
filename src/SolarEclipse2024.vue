@@ -73,7 +73,14 @@
                     "Watch" the eclipse from the location shared in your link, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
                   </p>
                   <p>
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">other</span> location and view the eclipse from there, or <br> <strong>Enter a location</strong> in the search box below.
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">other</span> location and view the eclipse from there, or
+                  </p>
+                  <p v-if="narrow">
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong>  <font-awesome-icon icon="magnifying-glass" class="bullet-icon"
+                    size="lg"/> button on map to search for a location.
+                  </p>
+                  <p v-else>
+                    <strong>Enter a location</strong> in the search box below.
                   </p>
                 </div>
 
@@ -791,6 +798,7 @@
             :accentColor="accentColor"
             @set-location="setLocationFromSearchFeature"
             @error="searchErrorMessage = $event"
+            small
           />
         </div>
         <div style="position:relative;">
