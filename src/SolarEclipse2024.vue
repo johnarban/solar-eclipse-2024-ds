@@ -786,6 +786,7 @@
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
         <div id='geocoding-row' class="d-flex align-center ga-1">
           <location-search
+            class="location-search-overwwt"
             v-model="searchOpen"
             :search-provider="geocodingInfoForSearch"
             :accentColor="accentColor"
@@ -794,7 +795,7 @@
             small
           />
         </div>
-        <div style="position:relative;">
+        <div>
           <icon-button
             v-if="getMyLocation"
             class="geolocation-button"
@@ -4237,6 +4238,10 @@ body {
   #my-location-button {
     border-width: 2px;
   }
+
+  .location-search-overwwt {
+    z-index: 600;
+  }
 }
 
 #app {
@@ -5391,7 +5396,7 @@ video, #info-video {
       
       backdrop-filter: blur(5px) saturate(50%);
     }
-    
+
     .location-search-overmap {
       height: fit-content;
       position: absolute;
@@ -5408,7 +5413,7 @@ video, #info-video {
         right: 4em;
       }
     }
-    
+
     #eclipse-details-overmap-button {
       height: fit-content;
       position: absolute;
