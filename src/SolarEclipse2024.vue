@@ -229,9 +229,10 @@
         >
           <div 
             :class="['']"
-            v-if="!smAndUp || smAndUp" id="map-container" :data-before-text="eclipsePredictionText">
+            id="map-container" :data-before-text="eclipsePredictionText">
+            
             <div 
-              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner"
+              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner && !mobile" 
               id="map-banner" 
               class="show-after"
               >
@@ -246,6 +247,38 @@
                 <v-icon>mdi-close</v-icon>
               </span>
             </div>
+            
+            <!-- modelValue = false, starts with it closed, use stay-open to keep it open -->
+            <location-search
+              :modelValue="false"
+              :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
+              v-if="$vuetify.display.width <= 600"
+              small
+              buttonSize="xl"
+              :search-provider="geocodingInfoForSearch"
+              :accentColor="accentColor"
+              @set-location="setLocationFromSearchFeature"
+              @error="searchErrorMessage = $event"
+            >
+            </location-search>
+            <icon-button
+              v-if="$vuetify.display.width <= 600"
+              id="eclipse-details-overmap"
+              md-icon="sun-clock"
+              md-size="24"
+              :color="accentColor"
+              :focus-color="accentColor"
+              tooltip-text="View eclipse timing details"
+              tooltip-location="start"
+              @activate="() => {
+                showEclipsePredictionSheet = true;
+                if (!showEclipsePredictionText) {
+                  showEclipsePredictionTextBanner = !showNewMobileUI;
+                }
+                showEclipsePredictionText = true;
+              }"
+              >
+            </icon-button>
             <!-- :places="places" -->
             <location-selector
               :model-value="locationDeg"
@@ -549,26 +582,29 @@
                     <h4 class="user-guide-header">Viewing Mode:</h4>
                     <p  class="mb-3">(Upper-right of the screen)</p>
                     <ul class="text-list">
-                      <li class="mb-2">
-                        The <span 
-                        v-if="mobile"
-                        style="color: blue; background-color: white;
-                        padding-inline: 0.7em;
-                        border-radius: 20px;
-                        font-weight: bold ">historical cloud cover</span><span v-if="mobile">, </span>
+                      <li>
                         <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">date/time</span><span v-if="mobile">,</span> and
-                        <span 
-                        style="color: blue; background-color: white;
-                        padding-inline: 0.7em;
-                        border-radius: 20px;
-                        font-weight: bold ">selected location</span>   
-                        are displayed under the map.
+                        font-weight: bold ">selected location</span> The currently selected location.  
                       </li>
-                      <li class="switch-bullets">
+                      <li class="mb-2">
+                        <span 
+                        style="color: blue; background-color: white;
+                        padding-inline: 0.7em;
+                        border-radius: 20px;
+                        font-weight: bold ">date/time</span> The date and time being displayed by WorldWide Telescopse
+                      </li>
+                      <li v-if="showNewMobileUI">
+                        <span 
+                          style="color: blue; background-color: white;
+                          padding-inline: 0.7em;
+                          border-radius: 20px;
+                          font-weight: bold ">Eclipsed:
+                        </span> The fraction of the Sun that is eclipsed in the currenty view (for the selected time and location).
+                      </li>
+                      <li v-if="!showNewMobileUI" class="switch-bullets">
                         <v-switch
                           class="display-only-switch"
                           v-model="displaySwitchOn"
@@ -582,7 +618,7 @@
                         </v-switch>
                         <span class="user-guide-emphasis"> Track Sun:</span> Camera follows the Sun.
                       </li>
-                      <li class="switch-bullets mb-5">
+                      <li v-if="!showNewMobileUI" class="switch-bullets mb-5">
                         <v-switch
                           class="display-only-switch"
                           v-model="displaySwitchOff"
@@ -626,8 +662,15 @@
                       <li>
                         <span class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
                       </li>
-                      <li>
+                      <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
+                      </li>
+                      <li v-if="!showNewMobileUI"  class="mt-2">
+                        <span 
+                          style="color: blue; background-color: white;
+                          padding-inline: 0.7em;
+                          border-radius: 20px;
+                          font-weight: bold ">Eclipsed:</span> The fraction of the Sun that is eclipsed in the currenty view (for the selected time and location).
                       </li>
                     </ul>
                           
@@ -644,19 +687,19 @@
                             ></font-awesome-icon> to search for a specific location name.
                       </li>
                       <li>
-                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="share-nodes"
-                              size="lg" 
-                            ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
-                      </li>
-                      <li>
                         {{ touchscreen ? "Tap" : "Click" }}
                         <font-awesome-icon
                           class="bullet-icon"
                           icon="street-view"
                           size="lg" 
                         ></font-awesome-icon> to view from <strong>My Location</strong>. (If icon is grayed out, consult your device's user guide to enable location services. This feature works most reliably on Chrome and might not be available on every browser+operating system combination.)                    
+                      </li>
+                      <li>
+                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
+                              class="bullet-icon"
+                              icon="share-nodes"
+                              size="lg" 
+                            ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
                       </li>
                     </ul>
 
@@ -719,7 +762,7 @@
     }"
     />
   
-  <div v-if="!showGuidedContent && showEclipsePredictionTextBanner" class="user-banner">
+  <div v-show="!showGuidedContent && showEclipsePredictionTextBanner" class="user-banner">
     <span class="banner-text" v-if="showEclipsePredictionText">
       {{ eclipsePredictionText }}
     </span>
@@ -742,69 +785,13 @@
     <div>
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
         <div id='geocoding-row' class="d-flex align-center ga-1">
-        
-        <div
-          id="forward-geocoding-container"
-          :style="forwardGeocodingCss"
-        >
-          <div
-            id="forward-geocoding-input-row"
-          >
-            <v-text-field
-              v-show="searchOpen"
-              v-model="searchText"
-              :class="['forward-geocoding-input', locationJustUpdated ? 'geocode-success' : '']"
-              :label="locationJustUpdated ? 'Location Updated' : 'Enter a location'"
-              bg-color="black"
-              density="compact"
-              hide-details
-              variant="solo"
-              :color="accentColor"
-              @keydown.stop
-              @keyup.enter="() => performForwardGeocodingSearch()"
-              @keyup.esc="searchResults = null"
-              @click:clear="searchResults = null"
-              :error-messages="searchErrorMessage"
-            ></v-text-field>
-            <font-awesome-icon
-              id="geocoding-search-icon"
-              icon="magnifying-glass"
-              :size="searchOpen ? 'xl' : '1x'"
-              :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
-              @click="() => {
-                if (searchOpen) {
-                  performForwardGeocodingSearch();
-                } else {
-                  searchOpen = true;
-                }
-              }"
-            ></font-awesome-icon>
-            <font-awesome-icon
-              id="geocoding-close-icon"
-              v-show="searchOpen"
-              icon="circle-xmark"
-              :size="searchOpen ? 'xl' : '1x'"
-              color="gray"
-              @click="() => {
-                searchOpen = false;
-                clearSearchData();
-              }"
-            ></font-awesome-icon>
-          </div>
-          <div
-            id="forward-geocoding-results"
-            v-if="searchResults !== null"
-          >
-            <div
-              v-for="(feature, index) in searchResults.features"
-              class="forward-geocoding-result"
-              :key="index"
-              @click="() => setLocationFromSearchFeature(feature)"
-            >
-              {{ feature.place_name }}
-            </div>
-          </div>
-        </div>
+          <location-search
+            v-model="searchOpen"
+            :search-provider="geocodingInfoForSearch"
+            :accentColor="accentColor"
+            @set-location="setLocationFromSearchFeature"
+            @error="searchErrorMessage = $event"
+          />
         </div>
         <div style="position:relative;">
           <icon-button
@@ -832,48 +819,48 @@
           ></icon-button>
         
           <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
-          <geolocation-button
-            :color="accentColor"
-            :show-text-progress = "true"
-            hide-button
-            show-progress-circle
-            ref="geolocation"
-            @geolocation="(loc: GeolocationCoordinates) => { 
-              myLocation = {
-                latitudeDeg: loc.latitude, 
-                longitudeDeg: loc.longitude
-              };
-              locationDeg = myLocation;
-              showMyLocationDialog = false;
-              updateSelectedLocationText();
-              }"
-            @error="(error: GeolocationPositionError) => { 
-              $notify({
-                group: 'geolocation-error',
-                title: 'Error',
-                text: error.message,
-                type: 'error',
-              }); 
-              if (error.code === 1) {
-                geolocationPermission = 'denied';
-              }
-              console.log(error);
-              }"
-              @permission="(p: PermissionState) => {
-                geolocationPermission = p;
-                // we're always gonna show the button,
-                // just leaving this if we wanna change
-                if (p == 'granted') {
-                  getMyLocation = true;
-                } else if (p == 'prompt') {
-                  getMyLocation = true;
-                } else {
-                  getMyLocation = true;
+            <geolocation-button
+              :color="accentColor"
+              :show-text-progress = "true"
+              hide-button
+              show-progress-circle
+              ref="geolocation"
+              @geolocation="(loc: GeolocationCoordinates) => { 
+                myLocation = {
+                  latitudeDeg: loc.latitude, 
+                  longitudeDeg: loc.longitude
+                };
+                locationDeg = myLocation;
+                showMyLocationDialog = false;
+                updateSelectedLocationText();
+                }"
+              @error="(error: GeolocationPositionError) => { 
+                $notify({
+                  group: 'geolocation-error',
+                  title: 'Error',
+                  text: error.message,
+                  type: 'error',
+                }); 
+                if (error.code === 1) {
+                  geolocationPermission = 'denied';
                 }
-              }"
-          ></geolocation-button>
+                console.log(error);
+                }"
+                @permission="(p: PermissionState) => {
+                  geolocationPermission = p;
+                  // we're always gonna show the button,
+                  // just leaving this if we wanna change
+                  if (p == 'granted') {
+                    getMyLocation = true;
+                  } else if (p == 'prompt') {
+                    getMyLocation = true;
+                  } else {
+                    getMyLocation = true;
+                  }
+                }"
+            ></geolocation-button>
+          </div>
         </div>
-      </div>
         
         <icon-button
           id="share"
@@ -950,8 +937,38 @@
             <p class="highlight">TOTAL<br/>Solar Eclipse</p>
           </div>
         </div>
+
+        <div v-if="mobile">
+          <p class="splash-small-text">
+            <a 
+              href="#" 
+              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "old" : "new" }} interface
+          </p>
+        </div>
         
-        <div id="splash-screen-guide">
+        <div v-if="mobile && showNewMobileUI" id="splash-screen-guide" class="mb-7">
+          <v-row>
+            <v-col cols="12">
+              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
+              Updated mobile interface
+            </v-col>
+            <v-col cols="12">
+              <font-awesome-icon
+                icon="magnifying-glass"
+              /> Search for a location 
+            </v-col>
+            <v-col cols="12">
+              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
+              Detailed eclipse times
+            </v-col>
+            <v-col cols="12" flex="horizontal" class="pt-1">
+              <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em; color:#eac402;">Map & Weather</span> for more info
+            </v-col>
+          </v-row>
+        </div>
+
+        <div v-if="!mobile || !showNewMobileUI " id="splash-screen-guide">
+        <!-- <div v-if="false" id="splash-screen-guide"> -->
           <v-row>
             <v-col cols="12">
               <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
@@ -1045,10 +1062,15 @@
           
           <v-window-item :value="2">
             <div class="intro-text mb-3">
-              <p class="mb-3">
+              <div v-if="xSmallSize" class="mb-3">
+                <p class="mb-3">
+                Access these features in  
+                </p> 
+                <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em; color:#eac402; white-space: nowrap">Map & Weather</span>
+              </div>
+              <p v-else class="mb-3">
                 In this interactive page you can:
               </p>
-              
               <ul>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -1066,7 +1088,7 @@
                   <template v-slot:prepend>
                     <font-awesome-icon icon="chart-column" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
-                  <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon><strong>NEW! Explore historical cloud data</strong> as individual years or filter by El Niño/La Niña climate patterns.
+                  <strong>Explore historical cloud data</strong> as individual years or filter by El Niño/La Niña climate patterns.
                 </v-list-item>
                 <v-list-item density="compact">
                   <template v-slot:prepend>
@@ -1081,10 +1103,6 @@
                     Access <strong>User Guide</strong> on how to navigate this app. 
                 </v-list-item>
               </ul>
-              <p v-if="xSmallSize" class="mt-3">
-                To access all features, {{ touchscreen ? "tap" : "click" }} 
-                <span class="span-accent">Map & Weather</span> at top left.
-              </p> 
             </div>
           </v-window-item>
         </v-window>
@@ -1092,7 +1110,7 @@
         <div id="intro-bottom-controls">
           <div>
             <v-btn
-              v-if="introSlide > 1"
+              v-if="(introSlide > 1) && (!showNewMobileUI)"
               id="intro-next-button"
               :color="accentColor"
               @click="introSlide--"
@@ -1121,22 +1139,29 @@
     <!-- <p> in total eclipse {{ locationInTotality }}</p> -->
       <div id="location-date-display">
         <v-chip 
-        :prepend-icon="smallSize ? `` : `mdi-clock`"
-        variant="outlined"
-        size="small"
-        elevation="2"
-        :text="selectedLocaledTimeDateString"
-      > </v-chip>
-      <v-chip 
           :prepend-icon="cloudIcon"
           variant="outlined"
           size="small"
-          elevation="2"
+          elevation="3"
           :text="selectedLocationText"
           @click="() => {
             searchOpen = true; 
             learnerPath = 'Location'
             }"
+        > </v-chip>
+        <v-chip 
+          :prepend-icon="smallSize ? `` : `mdi-clock`"
+          variant="outlined"
+          size="small"
+          elevation="0"
+          :text="selectedLocaledTimeDateString"
+        > </v-chip>
+        <v-chip 
+          v-if="showEclipsePercentage && showNewMobileUI"
+          :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
+          variant="outlined"
+          elevation="2"
+          :text="percentEclipsedText"
         > </v-chip>
       </div>
       <div id="top-switches">
@@ -1178,7 +1203,7 @@
         @activate="() => {
           showEclipsePredictionSheet = true;
           if (!showEclipsePredictionText) {
-            showEclipsePredictionTextBanner = true;
+            showEclipsePredictionTextBanner = !showNewMobileUI;
           }
           showEclipsePredictionText = true;
         }"
@@ -1254,21 +1279,34 @@
                 @keyup.enter="showEclipsePercentage = !showEclipsePercentage"
                 label="Amount Eclipsed"
                 hide-details
-            />                      
+            />        
             <v-checkbox
+              v-show="!showNewMobileUI"
               :color="accentColor"
               v-model="showEclipsePredictionTextBanner"
               @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
               label="Eclipse Timing"
               hide-details 
-            />
+            />  
+            <v-checkbox
+              v-show="mobile"
+              v-model="showNewMobileUI"
+              label="New Interface"
+              :color="accentColor"
+              @keyup.enter="showNewMobileUI = !showNewMobileUI"
+              @update:modelValue="(value) => {
+                console.log('showNewMobileUI', value);
+                showEclipsePredictionTextBanner = !value;
+              }"
+              hide-details
+            ></v-checkbox>            
           </div>
 
       </div>
       
       <div id="eclipse-percent-chip">
         <v-chip 
-          v-if="showEclipsePercentage"
+          v-if="showEclipsePercentage && !showNewMobileUI"
           :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
           variant="outlined"
           elevation="2"
@@ -1370,7 +1408,6 @@
                 }"
                 :color="accentColor"
                 :focus-color="accentColor"
-                border="none"
                 tooltip-text="Reset"
                 tooltip-location="top"
                 tooltip-offset="5px"
@@ -1876,6 +1913,9 @@ export default defineComponent({
       { latitudeRad: D2R * latitudeDeg, longitudeRad: D2R * longitudeDeg } :
       { latitudeRad: D2R * 25.2866667, longitudeRad: D2R * -104.1383333 };
     return {
+      
+      showNewMobileUI: false,
+      
       selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
       cloudCoverData: cloudDataArray as CloudData[],
       
@@ -2005,6 +2045,7 @@ export default defineComponent({
       moonColor: "#CFD8DC",
       guidedContentHeight: "300px",
       showGuidedContent: true,
+
       inIntro: false,
       displaySwitchOn: true,
       displaySwitchOff: false,
@@ -2032,7 +2073,7 @@ export default defineComponent({
       forceRate: false,
       playbackVisible: false,
       
-      horizonRate: 100, 
+      horizonRate: 500, 
       scopeRate: 100, 
 
       startPaused: false,
@@ -2089,15 +2130,17 @@ export default defineComponent({
     queryData.awv = awv === "true";
   },
 
-  mounted() {
-    
+  mounted() {  
+
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
     }
+    
+    this.showNewMobileUI = this.mobile;
         
     if (!this.showSplashScreen) {
-      this.showEclipsePredictionTextBanner = true;
+      this.showEclipsePredictionTextBanner = !this.showNewMobileUI;
     }
     
     this.searchOpen = this.smAndUp;
@@ -2293,9 +2336,9 @@ export default defineComponent({
     
     selectedLocaledTimeDateString() {
       if (this.smallSize) {
-        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, HH:mm:ss');
+        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd, h:mm:ss aa');
       } else {
-        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd/yyyy HH:mm:ss (zzz)');
+        return formatInTimeZone(this.dateTime, this.selectedTimezone, 'MM/dd/yyyy h:mm:ss aa (zzz)');
       }
 
     },
@@ -3743,46 +3786,17 @@ export default defineComponent({
         })
         .catch((_err) => null);
     },
-
-    performForwardGeocodingSearch() {
-      if (this.searchText === null || this.searchText.length < 3) {
-        return;
-      }
-      this.geocodingInfoForSearch(this.searchText).then((info) => {
-        if (info !== null && info.features?.length === 1) {
-          this.setLocationFromSearchFeature(info.features[0]);
-        } else if (info !== null && info.features?.length == 0) {
-          this.searchErrorMessage = "No matching places were found";
-        } else {
-          this.searchResults = info;
-        }
-      });
-    },
     
-    timedJustUpdatedLocation() {
-      this.locationJustUpdated = true;
-      setTimeout(() => {
-        this.locationJustUpdated = false;
-      }, 5000);
-    },
 
     setLocationFromFeature(feature: MapBoxFeature) {
-      this.timedJustUpdatedLocation();
       this.locationDeg = { longitudeDeg: feature.center[0], latitudeDeg: feature.center[1] };
       this.textForLocation(feature.center[0], feature.center[1]).then((text) => {
         this.selectedLocationText = text;
       });
     },
 
-    clearSearchData() {
-      this.searchResults = null;
-      this.searchText = null;
-      this.searchErrorMessage = null;
-    },
-
     setLocationFromSearchFeature(feature: MapBoxFeature) {
       this.setLocationFromFeature(feature);
-      this.clearSearchData();
       this.textSearchSelectedLocations.push(feature.center);
     },
     
@@ -3863,7 +3877,7 @@ export default defineComponent({
     inIntro(value: boolean) {
       if (!value) {
         this.playing = true;
-        this.showEclipsePredictionTextBanner = true;
+        this.showEclipsePredictionTextBanner = !this.showNewMobileUI;
         if (!this.showSplashScreen && this.responseOptOut === null) {
           this.showPrivacyDialog = true;
         }
@@ -3978,15 +3992,6 @@ export default defineComponent({
       }
     },
 
-    searchText(text: string | null) {
-      if (this.searchErrorMessage) {
-        this.searchErrorMessage = null;
-      }
-      if (!text || text.length === 0) {
-        this.searchResults = null;
-      }
-    },
-
     playing(play: boolean) {
       console.log(`${play ? 'Playing:' : 'Stopping:'} at ${this.playbackRate}x real time`);
       this.setClockSync(play);
@@ -4000,6 +4005,9 @@ export default defineComponent({
     showSplashScreen(val: boolean) {
       if (!val) {
         this.inIntro = true; 
+        if (this.showNewMobileUI) {
+          this.introSlide = 2;
+        }
       }
     },
 
@@ -4153,8 +4161,9 @@ html {
   margin: 0;
   padding: 0;
   background-color: #000;
-
+  
   overflow: hidden;
+  overflow-y: hidden !important; 
   -ms-overflow-style: none;
 
   // We don't want a scrollbar for the overall canvas
@@ -4241,6 +4250,7 @@ body {
     // border-style: none;
     // border-width: 0;
     // border: 3px solid red;
+    overflow: hidden;
     margin: 0;
     padding: 0;
   }
@@ -4653,7 +4663,7 @@ body {
     margin-block: 1em;
     font-size: min(4.5vw, 3.6vh);
     line-height: 160%;
-    width: 75%;
+    width: 85%;
 
     .v-col{
       padding: 0;
@@ -4663,6 +4673,11 @@ body {
       color:var(--accent-color);
       margin: 0 10px;
     }
+  }
+
+  .splash-small-text {
+    margin-block: 0.5rem;
+    font-size: calc(1.4*var(--default-font-size));    
   }
 
   #splash-screen-acknowledgements {
@@ -5090,7 +5105,7 @@ video, #info-video {
     position: absolute;
     left: 1.5rem;
     z-index: 500;
-    top: calc(var(--default-font-size) + 0.75rem);
+    top: calc(var(--default-font-size) + 0.5rem);
 
     &.budge {
       left: 0.5rem;
@@ -5228,6 +5243,10 @@ video, #info-video {
     align-items: center;
     justify-content: space-evenly;
     
+    @media (max-width: 600px) {
+      max-height: unset;
+    }
+    
     // v-col
     #top-container-main-text { 
       max-height: 100%;
@@ -5325,7 +5344,7 @@ video, #info-video {
       height: max-content;
       align-items: center;
       justify-content: center;
-      font-size: calc(0.8 * var(--default-font-size));
+      font-size: calc(1.15 * var(--default-font-size));
       padding: 0 10px;
       position: absolute;
       top: 0;
@@ -5369,6 +5388,30 @@ video, #info-video {
       backdrop-filter: blur(5px) saturate(50%);
     }
     
+    .location-search-overmap {
+      height: fit-content;
+      position: absolute;
+      z-index: 600;
+      right: 1em;
+      top: 1em;
+      
+      &.overmap-low {
+        top: 2em;
+      }
+      
+      
+      &.overmap-budge {
+        right: 4em;
+      }
+    }
+    
+    #eclipse-details-overmap-button {
+      height: fit-content;
+      position: absolute;
+      z-index: 600;
+      bottom: 1rem;
+      left: 1rem;
+    }
     
     .map-container {
       height: 100%;
@@ -5596,6 +5639,9 @@ video, #info-video {
   // position: absolute;
   // right: 0.5rem;
   // top: calc(-1.5 * var(--default-line-height));
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
 
   .v-chip.v-chip--density-default {
     height: var(--default-line-height);
@@ -5612,7 +5658,7 @@ video, #info-video {
 
 #top-wwt-content {
   position: absolute;
-  top: 0.5rem;
+  top: calc(var(--default-font-size) + 0.5rem);
   right: 0.5rem;
 
   #location-date-display  {
