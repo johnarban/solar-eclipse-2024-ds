@@ -5177,6 +5177,10 @@ video, #info-video {
       border-radius: 2px;
       padding: 4px;
     }
+    
+    &.open > .icon-wrapper:hover {
+      --color: var(--sky-color)  !important;
+    }
 
 
     &.budge {
