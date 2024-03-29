@@ -5178,9 +5178,9 @@ video, #info-video {
       padding: 4px;
     }
     
-    &.open > .icon-wrapper:hover {
-      --color: var(--sky-color)  !important;
-    }
+    // &.open > .icon-wrapper:hover {
+    //   --color: var(--sky-color)  !important;
+    // }
 
 
     &.budge {
