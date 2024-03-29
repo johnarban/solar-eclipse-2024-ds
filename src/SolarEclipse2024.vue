@@ -2186,7 +2186,7 @@ export default defineComponent({
       // @ts-ignore
       this.wwtControl.roll = function(_angle) {};
       this.wwtControl._tilt = function(_angle) {};
-      this.updatePanForMobile();
+      this.updatePanForUI();
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -2669,8 +2669,8 @@ export default defineComponent({
 
   methods: {
 
-    updatePanForMobile() {
-      if (this.mobile) {
+    updatePanForUI() {
+      if (this.showNewMobileUI) {
         this.wwtControl.move = function(_x, _y) {};
       } else {
         if (this.wwtMove) {
@@ -3880,8 +3880,8 @@ export default defineComponent({
 
   watch: {
 
-    mobile(_val: boolean) {
-      this.updatePanForMobile(); 
+    showNewMobileUI(_val: boolean) {
+      this.updatePanForUI(); 
     },
 
     showGuidedContent(_val: boolean) {
