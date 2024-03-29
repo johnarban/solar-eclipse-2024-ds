@@ -1370,7 +1370,7 @@
                 id="reverse-speed"
                 :fa-icon="'angles-left'"
                 @activate="() => {
-                      decreasePlaybackRate();
+                      reversePlaybackRate();
                       // playing = true;
                     }"
                 :color="accentColor"
@@ -1437,7 +1437,7 @@
                 :fa-icon="'rotate'"
                 @activate="() => {
                   selectedTime = (new Date('2024-04-08T18:18:00Z')).getTime() - 60*60*1000*1.5;
-                  playbackRate = 100;
+                  playbackRate = 500;
                   playing = false;
                   toggleTrackSun = true;
                   forceRate = false;
@@ -3867,11 +3867,11 @@ export default defineComponent({
       this.textSearchSelectedLocations.push(feature.center);
     },
     
-    decreasePlaybackRate() {
+    reversePlaybackRate() {
       this.forceRate = false;
       const sign = Math.sign(this.playbackRate);
       if (sign > 0 ) {
-        this.playbackRate = -Math.min(this.playbackRate,100);
+        this.playbackRate = -Math.min(this.playbackRate,1);
         return;
       }
       const abs = Math.abs(this.playbackRate);
@@ -3883,7 +3883,7 @@ export default defineComponent({
     increasePlaybackRate() {
       this.forceRate = false;
       if (Math.sign(this.playbackRate) < 0 ) {
-        this.playbackRate = -Math.max(this.playbackRate,-100);
+        this.playbackRate = -Math.max(this.playbackRate,-1);
         return;
       }
       const sign = Math.sign(this.playbackRate);
