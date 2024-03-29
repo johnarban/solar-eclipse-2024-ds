@@ -8,6 +8,7 @@
   <div id="closed-top-container" :class="[!showGuidedContent ?'budge' : 'open']">
     <icon-button
       v-model="showGuidedContent"
+      ref="showGuidedContent"
       :fa-icon="showGuidedContent ? 'times' : 'chevron-down'"
       :fa-size="showGuidedContent ? 'lg' : 'lg'"
       :color="accentColor"
@@ -3922,12 +3923,15 @@ export default defineComponent({
       this.updatePanForMobile(); 
     },
 
-    showGuidedContent(_val: boolean) {
+    showGuidedContent(show: boolean) {
       this.onResize();
       this.$nextTick(() => {
         this.onScroll();
       });
-      
+      if (show) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this.$refs.showGuidedContent as any).tooltip = false;
+      }
     },
     
     showEclipsePredictionTextBanner(_val: boolean) {
