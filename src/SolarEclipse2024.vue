@@ -238,7 +238,7 @@
               >
               <span v-if="showEclipsePredictionText">
                 {{ eclipsePredictionText }}
-                <v-icon v-if="$vuetify.display.width<600" style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> 
+                <v-icon v-if="narrow" style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> 
               </span>
               <span v-else>
                 {{ touchscreen ? "Tap" : "Click" }} <v-icon style="padding: 2px; border-radius:3px; background-color:#ddd;" class="elevation-2" @click="showEclipsePredictionSheet = true; showEclipsePredictionText = true">mdi-sun-clock</v-icon> to see eclipse predictions
@@ -252,7 +252,7 @@
             <location-search
               :modelValue="false"
               :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
-              v-if="$vuetify.display.width <= 600"
+              v-if="narrow"
               small
               buttonSize="xl"
               :search-provider="geocodingInfoForSearch"
@@ -262,7 +262,7 @@
             >
             </location-search>
             <icon-button
-              v-if="$vuetify.display.width <= 600"
+              v-if="narrow"
               id="eclipse-details-overmap"
               md-icon="sun-clock"
               md-size="24"
@@ -938,7 +938,7 @@
           </div>
         </div>
 
-        <div v-if="mobile">
+        <div v-if="narrow">
           <p class="splash-small-text">
             <a 
               href="#" 
@@ -946,7 +946,7 @@
           </p>
         </div>
         
-        <div v-if="mobile && showNewMobileUI" id="splash-screen-guide" class="mb-7">
+        <div v-if="showNewMobileUI" id="splash-screen-guide" class="mb-7">
           <v-row>
             <v-col cols="12">
               <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
@@ -967,7 +967,7 @@
           </v-row>
         </div>
 
-        <div v-if="!mobile || !showNewMobileUI " id="splash-screen-guide">
+        <div v-if="!showNewMobileUI " id="splash-screen-guide">
         <!-- <div v-if="false" id="splash-screen-guide"> -->
           <v-row>
             <v-col cols="12">
@@ -1289,7 +1289,7 @@
               hide-details 
             />  
             <v-checkbox
-              v-show="mobile"
+              v-show="narrow"
               v-model="showNewMobileUI"
               label="New Interface"
               :color="accentColor"
@@ -2137,7 +2137,7 @@ export default defineComponent({
       this.updateSelectedLocationText();
     }
     
-    this.showNewMobileUI = this.mobile;
+    this.showNewMobileUI = this.narrow;
         
     if (!this.showSplashScreen) {
       this.showEclipsePredictionTextBanner = !this.showNewMobileUI;
@@ -2434,6 +2434,9 @@ export default defineComponent({
     },
     xSmallSize(): boolean {
       return this.$vuetify.display.xs;
+    },
+    narrow(): boolean {
+      return this.$vuetify.display.width <= 600;
     },
     
     mobile(): boolean {
