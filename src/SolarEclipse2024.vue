@@ -816,6 +816,7 @@
       <div id="left-buttons-wrapper" :class="[!showGuidedContent ?'budge' : '']">
         <div id='geocoding-row' class="d-flex align-center ga-1">
           <location-search
+            class="location-search-overwwt"
             v-model="searchOpen"
             :search-provider="geocodingInfoForSearch"
             :accentColor="accentColor"
@@ -825,7 +826,7 @@
             buttonSize="lg"
           />
         </div>
-        <div style="position:relative;">
+        <div>
           <icon-button
             v-if="getMyLocation"
             class="geolocation-button"
@@ -865,7 +866,7 @@
                 locationDeg = myLocation;
                 showMyLocationDialog = false;
                 updateSelectedLocationText();
-                }"
+              }"
               @error="(error: GeolocationPositionError) => { 
                 $notify({
                   group: 'geolocation-error',
@@ -877,19 +878,19 @@
                   geolocationPermission = 'denied';
                 }
                 console.log(error);
-                }"
-                @permission="(p: PermissionState) => {
-                  geolocationPermission = p;
-                  // we're always gonna show the button,
-                  // just leaving this if we wanna change
-                  if (p == 'granted') {
-                    getMyLocation = true;
-                  } else if (p == 'prompt') {
-                    getMyLocation = true;
-                  } else {
-                    getMyLocation = true;
-                  }
-                }"
+              }"
+              @permission="(p: PermissionState) => {
+                geolocationPermission = p;
+                // we're always gonna show the button,
+                // just leaving this if we wanna change
+                if (p == 'granted') {
+                  getMyLocation = true;
+                } else if (p == 'prompt') {
+                  getMyLocation = true;
+                } else {
+                  getMyLocation = true;
+                }
+              }"
             ></geolocation-button>
           </div>
         </div>
@@ -4291,6 +4292,10 @@ body {
   #my-location-button {
     border-width: 2px;
   }
+
+  .location-search-overwwt {
+    z-index: 600;
+  }
 }
 
 #app {
@@ -5454,7 +5459,7 @@ video, #info-video {
       
       backdrop-filter: blur(5px) saturate(50%);
     }
-    
+
     .location-search-overmap {
       height: fit-content;
       position: absolute;
@@ -5471,7 +5476,7 @@ video, #info-video {
         right: 4em;
       }
     }
-    
+
     #my-location-overmap-button {
       height: fit-content;
       position: absolute;
