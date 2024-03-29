@@ -266,6 +266,7 @@
             :class="['geolocation-button-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
             id="my-location-overmap"
             fa-icon="location-crosshairs"
+            fa-size="xl"
             :color="myLocationColor"
             :focus-color="myLocationColor"
             :box-shadow="false"
