@@ -232,7 +232,7 @@
             id="map-container" :data-before-text="eclipsePredictionText">
             
             <div 
-              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner"
+              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner" 
               id="map-banner" 
               class="show-after"
               >
@@ -586,22 +586,22 @@
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">selected location</span>: The currently selected location.  
+                        font-weight: bold ">selected location</span> The currently selected location.  
                       </li>
                       <li class="mb-2">
                         <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">date/time</span>: The date and time being displayed by WorldWide Telescopse
+                        font-weight: bold ">date/time</span> The date and time being displayed by WorldWide Telescopse
                       </li>
-                      <li>
-                      <span 
-                        v-if="showNewMobileUI"
-                        style="color: blue; background-color: white;
-                        padding-inline: 0.7em;
-                        border-radius: 20px;
-                        font-weight: bold ">Eclipsed</span>: The fraction of the Sun that is eclipsed in the currenty view (for the selected time and location).
+                      <li v-if="showNewMobileUI">
+                        <span 
+                          style="color: blue; background-color: white;
+                          padding-inline: 0.7em;
+                          border-radius: 20px;
+                          font-weight: bold ">Eclipsed:
+                        </span> The fraction of the Sun that is eclipsed in the currenty view (for the selected time and location).
                       </li>
                       <li v-if="!showNewMobileUI" class="switch-bullets">
                         <v-switch
@@ -659,10 +659,17 @@
                         <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
                       </li>
                       <li>
-                        <span v-if="!showNewMobileUI" class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
+                        <span class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
                       </li>
-                      <li>
+                      <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
+                      </li>
+                      <li v-if="!showNewMobileUI"  class="mt-2">
+                        <span 
+                          style="color: blue; background-color: white;
+                          padding-inline: 0.7em;
+                          border-radius: 20px;
+                          font-weight: bold ">Eclipsed:</span> The fraction of the Sun that is eclipsed in the currenty view (for the selected time and location).
                       </li>
                     </ul>
                           
@@ -679,19 +686,19 @@
                             ></font-awesome-icon> to search for a specific location name.
                       </li>
                       <li>
-                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
-                              class="bullet-icon"
-                              icon="share-nodes"
-                              size="lg" 
-                            ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
-                      </li>
-                      <li>
                         {{ touchscreen ? "Tap" : "Click" }}
                         <font-awesome-icon
                           class="bullet-icon"
                           icon="street-view"
                           size="lg" 
                         ></font-awesome-icon> to view from <strong>My Location</strong>. (If icon is grayed out, consult your device's user guide to enable location services. This feature works most reliably on Chrome and might not be available on every browser+operating system combination.)                    
+                      </li>
+                      <li>
+                        {{ touchscreen ? "Tap" : "Click" }} <font-awesome-icon
+                              class="bullet-icon"
+                              icon="share-nodes"
+                              size="lg" 
+                            ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
                       </li>
                     </ul>
 
@@ -1271,10 +1278,19 @@
                 @keyup.enter="showEclipsePercentage = !showEclipsePercentage"
                 label="Amount Eclipsed"
                 hide-details
-            />          
+            />        
             <v-checkbox
+              v-show="!showNewMobileUI"
+              :color="accentColor"
+              v-model="showEclipsePredictionTextBanner"
+              @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
+              label="Eclipse Timing"
+              hide-details 
+            />  
+            <v-checkbox
+              v-show="mobile"
               v-model="showNewMobileUI"
-              label="Use new layout"
+              label="New Interface"
               :color="accentColor"
               @keyup.enter="showNewMobileUI = !showNewMobileUI"
               @update:modelValue="(value) => {
@@ -1283,13 +1299,6 @@
               }"
               hide-details
             ></v-checkbox>            
-            <!-- <v-checkbox
-              :color="accentColor"
-              v-model="showEclipsePredictionTextBanner"
-              @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
-              label="Eclipse Timing"
-              hide-details 
-            /> -->
           </div>
 
       </div>
