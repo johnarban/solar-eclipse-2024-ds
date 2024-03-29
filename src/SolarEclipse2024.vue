@@ -86,7 +86,7 @@
                   </p>
                   <p v-if="getMyLocation">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong>
-                    <font-awesome-icon icon="street-view" class="bullet-icon"/>:
+                    <font-awesome-icon icon="location-crosshairs" class="bullet-icon"/>:
                     view eclipse from <strong>My Location</strong> (Location services must be enabled on device)
                   </p>
                 </div>
@@ -265,7 +265,7 @@
             v-if="getMyLocation && narrow && showNewMobileUI"
             :class="['geolocation-button-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
             id="my-location-overmap"
-            fa-icon="street-view"
+            fa-icon="location-crosshairs"
             :color="myLocationColor"
             :focus-color="myLocationColor"
             :box-shadow="false"
@@ -713,7 +713,7 @@
                         {{ touchscreen ? "Tap" : "Click" }}
                         <font-awesome-icon
                           class="bullet-icon"
-                          icon="street-view"
+                          icon="location-crosshairs"
                           size="lg" 
                         ></font-awesome-icon> to view from <strong>My Location</strong>. (If icon is grayed out, consult your device's user guide to enable location services. This feature works most reliably on Chrome and might not be available on every browser+operating system combination.)                    
                       </li>
@@ -814,6 +814,7 @@
             :accentColor="accentColor"
             @set-location="setLocationFromSearchFeature"
             @error="searchErrorMessage = $event"
+            buttonSize="lg"
           />
         </div>
         <div style="position:relative;">
@@ -821,7 +822,7 @@
             v-if="getMyLocation"
             class="geolocation-button"
             id="my-location"
-            fa-icon="street-view"
+            fa-icon="location-crosshairs"
             :color="myLocationColor"
             :focus-color="myLocationColor"
             :box-shadow="false"
@@ -838,7 +839,7 @@
               }
 
             }"
-            faSize="1x"
+            faSize="lg"
           ></icon-button>
         
           <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
@@ -894,7 +895,7 @@
           tooltip-text="Share view of this location"
           :show-tooltip="!mobile"
           @activate="copyShareURL"
-          faSize="1x"
+          faSize="lg"
         ></icon-button>
       </div>
       
