@@ -51,22 +51,7 @@
             <!-- Choose Path -->
             <div class="instructions-text" v-if="learnerPath=='Location'">
 
-              <span class="description">
-                <!-- <div v-if="infoPage==1">
-                  <div v-if="eclipsePrediction !== null" style="font-size: 10px; line-height: 1;">
-                  In totality: {{ locationInTotality ? "Yes" : "No" }} <br>
-                  Current fraction: {{ currentFractionEclipsed }} <br>
-                  Magnitude: {{ eclipsePrediction.magnitude[0] }} <br>
-                  Coverage:  {{ eclipsePrediction.coverage[0] }} <br>
-                  Partial start: {{ toTimeString(eclipsePrediction.partialStart[0], true) }} <br>
-                  <strong>Central start: {{ toTimeString(eclipsePrediction.centralStart[0], true ) }} <br>
-                  Max time: {{ toTimeString(eclipsePrediction.maxTime[0], true) }} <br>
-                  Central end: {{ toTimeString(eclipsePrediction.centralEnd[0], true ) }} </strong><br>
-                  Partial end: {{ toTimeString(eclipsePrediction.partialEnd[0], true) }} <br>
-                  Duration: {{ eclipsePrediction.duration }} <br>
-                  </div>
-                </div> -->
-                
+              <span class="description">                
                 <div v-if="infoPage==1">
                   <p v-if="queryData.latitudeDeg == undefined || queryData.longitudeDeg == undefined">
                     "Watch" the eclipse from the location marked by the red dot on the map, or <strong>drag</strong> the yellow dot along the bottom slider to change time.
@@ -78,30 +63,41 @@
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> the map to select any <span v-if="queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined">other</span> location and view the eclipse from there, or
                   </p>
                   <p v-if="narrow">
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong>  <font-awesome-icon icon="magnifying-glass" class="bullet-icon"
-                    size="lg"/> button on map to search for a location.
+                    <font-awesome-icon icon="magnifying-glass" class="bullet-icon"
+                    size="lg"/> Search for a location
+                  </p>
+                  <p v-if="narrow">
+                    <font-awesome-icon icon="location-crosshairs" class="bullet-icon"
+                    size="lg"/> Use my location (if enabled)
+                  </p>
+                  <p v-if="narrow">
+                    <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
+                    See detailed eclipse times
                   </p>
                   <p v-else>
                     <strong>Enter a location</strong> in the search box below.
                   </p>
                 </div>
 
-                <div v-if="infoPage==2">
+                <div v-if="infoPage==2 && !narrow">
                   <p>
                     <strong><span class="highlighted bg-red">Red line</span></strong> + <span class="highlighted bg-grey text-black">Grey  band</span>: path of total eclipse on map
                   </p>
-                  <p>
-                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="share-nodes" class="bullet-icon"/>: copy url for a location
+                  <p class="mt-2">
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong><v-icon icon="mdi-sun-clock" size="large" class="bullet-icon"></v-icon> to see detailed eclipse times
                   </p>
                   <p v-if="getMyLocation">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong>
-                    <font-awesome-icon icon="location-crosshairs" class="bullet-icon"/>:
-                    view eclipse from <strong>My Location</strong> (Location services must be enabled on device)
+                    <font-awesome-icon icon="location-crosshairs" class="bullet-icon"/>
+                    to view eclipse from <strong>My Location</strong> (Location services must be enabled on device)
+                  </p>
+                  <p>
+                    <strong>{{ touchscreen ? "Tap" : "Click" }}</strong> <font-awesome-icon icon="share-nodes" class="bullet-icon"/> to copy url to share a location
                   </p>
                 </div>
               </span>
             </div>
-            <div class="d-flex justify-end" id="info-text-button" v-if="learnerPath=='Location'">
+            <div class="d-flex justify-end" id="info-text-button" v-if="learnerPath=='Location' && !narrow">
               <v-btn
                 class="mr-2 mb-2"
                 v-if="infoPage==1"
