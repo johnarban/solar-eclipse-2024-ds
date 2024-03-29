@@ -791,6 +791,7 @@
             :accentColor="accentColor"
             @set-location="setLocationFromSearchFeature"
             @error="searchErrorMessage = $event"
+            small
           />
         </div>
         <div style="position:relative;">
@@ -833,7 +834,7 @@
                 locationDeg = myLocation;
                 showMyLocationDialog = false;
                 updateSelectedLocationText();
-                }"
+              }"
               @error="(error: GeolocationPositionError) => { 
                 $notify({
                   group: 'geolocation-error',
@@ -845,19 +846,19 @@
                   geolocationPermission = 'denied';
                 }
                 console.log(error);
-                }"
-                @permission="(p: PermissionState) => {
-                  geolocationPermission = p;
-                  // we're always gonna show the button,
-                  // just leaving this if we wanna change
-                  if (p == 'granted') {
-                    getMyLocation = true;
-                  } else if (p == 'prompt') {
-                    getMyLocation = true;
-                  } else {
-                    getMyLocation = true;
-                  }
-                }"
+              }"
+              @permission="(p: PermissionState) => {
+                geolocationPermission = p;
+                // we're always gonna show the button,
+                // just leaving this if we wanna change
+                if (p == 'granted') {
+                  getMyLocation = true;
+                } else if (p == 'prompt') {
+                  getMyLocation = true;
+                } else {
+                  getMyLocation = true;
+                }
+              }"
             ></geolocation-button>
           </div>
         </div>
