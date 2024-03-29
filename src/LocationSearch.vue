@@ -1,11 +1,11 @@
 
 <template>
   <div
-    id="forward-geocoding-container"
-    :style="{...forwardGeocodingCss,...cssStyles}"
+    class="forward-geocoding-container"
+    :style="cssStyles"
   >
     <div
-      id="forward-geocoding-input-row"
+      class="forward-geocoding-input-row"
     >
       <v-text-field
         v-show="searchOpen"
@@ -24,7 +24,7 @@
         :error-messages="searchErrorMessage"
       ></v-text-field>
       <font-awesome-icon
-        id="geocoding-search-icon"
+        class="geocoding-search-icon"
         icon="magnifying-glass"
         :size="searchOpen ? 'xl' : buttonSize"
         :color="!searchOpen || (searchText && searchText.length > 2) ? accentColor : 'gray'"
@@ -40,7 +40,7 @@
       <slot name="append-icon" class="geocode-icon"></slot>
       
       <font-awesome-icon
-        id="geocoding-close-icon"
+        class="geocoding-close-icon"
         v-show="searchOpen && !stayOpen"
         icon="circle-xmark"
         :size="searchOpen ? 'xl' : '1x'"
@@ -54,7 +54,7 @@
     </div>
     
     <div
-      id="forward-geocoding-results"
+      class="forward-geocoding-results"
       :class="[small ? 'results-small' : '']"
       v-if="searchResults !== null"
     >
@@ -168,12 +168,8 @@ export default defineComponent({
       return {
         '--accent-color': this.accentColor,
         '--bg-color': 'black',
-      };
-    },
-    
-    forwardGeocodingCss() {
-      return {
-        '--fg-container-padding': this.searchOpen ? this.small ? '0px 5px 0px 0px' : '5px 10px 12px 10px' : '0px',
+        '--fg-container-padding': this.searchOpen ? (this.small ? '0px 5px 0px 0px' : '5px 10px 12px 10px') : '0px',
+        '--border-radius': this.small ? '20px' : '20px',
       };
     },
   },
@@ -244,7 +240,7 @@ export default defineComponent({
 <style lang="less" scoped>
 
 // https://vue-loader.vuejs.org/guide/scoped-css.html#deep-selectors
-#forward-geocoding-container::v-deep {
+.forward-geocoding-container::v-deep {
   --border-radius: 20px;
   position: relative;
   width: fit-content;
@@ -273,7 +269,7 @@ export default defineComponent({
     font-size: 0.8rem;
   }
 
-  #forward-geocoding-input-row {
+  .forward-geocoding-input-row {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
@@ -281,36 +277,34 @@ export default defineComponent({
     align-items: center;
   }
   
-  #geocoding-search-icon {
+  .geocoding-search-icon {
     padding-inline: calc(0.3 * var(--default-line-height));
     padding-block: calc(0.4 * var(--default-line-height));
   }
 
-  #geocoding-search-icon:hover, #geocoding-close-icon:hover {
+  .geocoding-search-icon:hover, #geocoding-close-icon:hover {
     cursor: pointer;
   }
 
   // For some reason setting width: 100% makes the search results 2px too small
   // It's probably some Vuetify styling thing
   // Maybe there's a better workaround, but this gets the job done for now
-  #forward-geocoding-results {
+  .forward-geocoding-results {
     position: absolute;
     top: 42px;
     left: -1px;
     width: calc(100% + 2px);
     background: var(--bg-color);
-    border: 1px solid var(--accent-color);
+    border: 2px solid var(--accent-color);
     border-top: 0px;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
     padding: 0px 10px;
     
     &.results-small {
-      top: 38px;
-      left:50%;
-      transform: translateX(-50%);
-      width: 95%;
-      
+      top: 34px;
+      width: calc(100% + 4px);
+      left: -2px;
     }
 
     .forward-geocoding-result {
