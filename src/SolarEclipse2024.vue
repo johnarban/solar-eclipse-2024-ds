@@ -4262,7 +4262,7 @@ body {
 
 .user-banner {
   position: relative;
-  font-size: var(--default-font-size);
+  font-size: calc(0.8 * var(--default-font-size));
   text-align: center;
   background-color: rgb(93, 93, 93);
   
@@ -5171,9 +5171,9 @@ video, #info-video {
     top: calc(var(--default-font-size) + 1px);
     
     &.open > .icon-wrapper {
-      --color: black !important;
-      --background-color: var(--accent-color)  !important;
-      --focus-color: white  !important;
+      --color: var(--accent-color)  !important;
+      --background-color: transp
+      --focus-color: var(--accent-color)  !important;
       border: none;
       border-radius: 2px;
       padding: 4px;
@@ -5416,11 +5416,15 @@ video, #info-video {
       height: max-content;
       align-items: center;
       justify-content: center;
-      font-size: calc(1.15 * var(--default-font-size));
+      font-size: calc(0.9 * var(--default-font-size));
       padding: 0 10px;
       position: absolute;
       top: 0;
       left: 0;
+      
+      @media (max-width: 600px) {
+        font-size: calc(1.1 * var(--default-font-size));
+      }
       
       color: black;
       background-color: #cccccc77;
