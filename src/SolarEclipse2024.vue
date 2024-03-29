@@ -272,8 +272,7 @@
             </location-search>
             <icon-button
             v-if="getMyLocation && narrow"
-            :class="['geolocation-button-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
-            id="my-location-overmap"
+            :id="'my-location-overmap' + (learnerPath === 'Clouds' ? '-budge' : '')"
             fa-icon="location-crosshairs"
             fa-size="2xl"
             :color="myLocationColor"
@@ -5483,7 +5482,7 @@ video, #info-video {
       height: fit-content;
       position: absolute;
       z-index: 600;
-      right: 1em;
+      right: 1.25em;
       top: 1em;
       
       &.overmap-low {
@@ -5492,7 +5491,7 @@ video, #info-video {
       
       
       &.overmap-budge {
-        right: 4em;
+        right: 4.5em;
       }
     }
 
@@ -5500,20 +5499,21 @@ video, #info-video {
       height: fit-content;
       position: absolute;
       z-index: 550;
-      right: 1em;
+      right: 1.25em;
       bottom: 1rem;
       
-      
-      
-      &.overmap-low {
-        top: 4em;
-      }
-      
-      
-      &.overmap-budge {
-        right: 4em;
-      }
     }
+    
+    #my-location-overmap-budge-button {
+      height: fit-content;
+      position: absolute;
+      z-index: 550;
+      right: 4.5em;
+      bottom: 1rem;
+      
+    }
+    
+
     
     #eclipse-details-overmap-button {
       height: fit-content;
