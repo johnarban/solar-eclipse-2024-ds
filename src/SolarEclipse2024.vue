@@ -1172,7 +1172,7 @@
           :text="percentEclipsedText"
         > </v-chip>
       </div>
-      <div id="top-switches">
+      <div id="top-switches" v-if="!mobile">
         <div id="track-sun-switch"> 
           <hover-tooltip
               location="left"
@@ -1949,6 +1949,8 @@ export default defineComponent({
       positionSet: false,
       imagesetFolder: null as Folder | null,
 
+      wwtMove: null as ((x: number, y: number) => void) | null,
+
       searchOpen: true,
       searchText: null as string | null,
       searchResults: null as MapBoxFeatureCollection | null,
@@ -2186,6 +2188,13 @@ export default defineComponent({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.wwtControl._updateViewParameters = updateViewParameters.bind(this.wwtControl);
+
+      this.wwtMove = this.wwtControl.move;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      this.wwtControl.roll = function(_angle) {};
+      this.wwtControl._tilt = function(_angle) {};
+      this.updatePanForMobile();
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -2671,6 +2680,16 @@ export default defineComponent({
 
   methods: {
 
+    updatePanForMobile() {
+      if (this.mobile) {
+        this.wwtControl.move = function(_x, _y) {};
+      } else {
+        if (this.wwtMove) {
+          this.wwtControl.move = this.wwtMove;
+        }
+      }
+    },
+
     onScroll() {
       const el = document.getElementById('guided-content-container');
 
@@ -3005,6 +3024,15 @@ export default defineComponent({
 
 
     onWWTRenderFrame(wwtControl: WWTControl) {
+      if (this.mobile) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        if (wwtControl._trackingObject !== this.sunPlace) {
+          this.trackSun();
+          return;
+        }
+      }
+
       if (this.activePointer) {
         // Check if user is moving WWT canvas. We don't want to disable tracking if they are just creating an offset.
         return;
@@ -3862,6 +3890,11 @@ export default defineComponent({
   },
 
   watch: {
+
+    mobile(_val: boolean) {
+      this.updatePanForMobile(); 
+    },
+
     showGuidedContent(_val: boolean) {
       this.onResize();
       this.$nextTick(() => {
@@ -3908,18 +3941,6 @@ export default defineComponent({
     showSky(_show: boolean) {
       this.updateFrontAnnotations();
       this.updateMoonTexture();
-    },
-
-    wwtRollRad(angle: number) {
-      if (angle !== 0) {
-        this.gotoRADecZoom({
-          raRad: this.wwtRARad,
-          decRad: this.wwtDecRad,
-          zoomDeg: this.wwtZoomDeg,
-          rollRad: 0,
-          instant: true
-        });
-      }
     },
 
     wwtZoomDeg(_zoom: number, _oldZoom: number) {
