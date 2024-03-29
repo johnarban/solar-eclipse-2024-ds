@@ -5,11 +5,11 @@
 >
 
   <!-- Top content box with map, location, time, and option icons -->
-  <div id="closed-top-container" :class="[!showGuidedContent ?'budge' : '']">
+  <div id="closed-top-container" :class="[!showGuidedContent ?'budge' : 'open']">
     <icon-button
       v-model="showGuidedContent"
-      :fa-icon="showGuidedContent ? 'chevron-up' : 'chevron-down'"
-      :fa-size="showGuidedContent ? 'lg' : 'xl'"
+      :fa-icon="showGuidedContent ? 'times' : 'chevron-down'"
+      :fa-size="showGuidedContent ? 'lg' : 'lg'"
       :color="accentColor"
       :focus-color="accentColor"
       :tooltip-text="showGuidedContent ? 'Hide' : 'Click to learn more'"
@@ -93,7 +93,7 @@
                   </p>
                   <p v-if="getMyLocation">
                     <strong>{{ touchscreen ? "Tap" : "Click" }}</strong>
-                    <font-awesome-icon icon="street-view" class="bullet-icon"/>:
+                    <font-awesome-icon icon="location-crosshairs" class="bullet-icon"/>:
                     view eclipse from <strong>My Location</strong> (Location services must be enabled on device)
                   </p>
                 </div>
@@ -268,6 +268,29 @@
               @error="searchErrorMessage = $event"
             >
             </location-search>
+            <icon-button
+            v-if="getMyLocation && narrow && showNewMobileUI"
+            :class="['geolocation-button-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
+            id="my-location-overmap"
+            fa-icon="location-crosshairs"
+            fa-size="lg"
+            :color="myLocationColor"
+            :focus-color="myLocationColor"
+            :box-shadow="false"
+            :tooltip-text="myLocationToolTip"
+            :show-tooltip="!mobile"
+            @update:modelValue="(value: boolean) => {
+              if(value) {
+                ($refs.geolocation as any).getLocation();
+                showMyLocationDialog = true;
+                learnerPath = 'Location';
+              }
+              else {
+                console.log('geolocation button pressed = false');
+              }
+
+            }"
+          ></icon-button>
             <icon-button
               v-if="narrow"
               id="eclipse-details-overmap"
@@ -697,7 +720,7 @@
                         {{ touchscreen ? "Tap" : "Click" }}
                         <font-awesome-icon
                           class="bullet-icon"
-                          icon="street-view"
+                          icon="location-crosshairs"
                           size="lg" 
                         ></font-awesome-icon> to view from <strong>My Location</strong>. (If icon is grayed out, consult your device's user guide to enable location services. This feature works most reliably on Chrome and might not be available on every browser+operating system combination.)                    
                       </li>
@@ -799,6 +822,7 @@
             @set-location="setLocationFromSearchFeature"
             @error="searchErrorMessage = $event"
             small
+            buttonSize="lg"
           />
         </div>
         <div style="position:relative;">
@@ -806,7 +830,7 @@
             v-if="getMyLocation"
             class="geolocation-button"
             id="my-location"
-            fa-icon="street-view"
+            fa-icon="location-crosshairs"
             :color="myLocationColor"
             :focus-color="myLocationColor"
             :box-shadow="false"
@@ -823,7 +847,7 @@
               }
 
             }"
-            faSize="1x"
+            faSize="lg"
           ></icon-button>
         
           <div id="location-progress" :class="[!showGuidedContent ?'budge' : '']">
@@ -879,7 +903,7 @@
           tooltip-text="Share view of this location"
           :show-tooltip="!mobile"
           @activate="copyShareURL"
-          faSize="1x"
+          faSize="lg"
         ></icon-button>
       </div>
       
@@ -1229,7 +1253,9 @@
               style="position:absolute;right:12px;cursor:pointer;"
               id="close-eclipse-prediction-sheet"
               @click="showEclipsePredictionSheet = false"
-              ><v-icon
+              ><v-icon 
+                  class="elevation-2"
+                  :color="accentColor"
               >mdi-close</v-icon></button>
             <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor" :location="selectedLocationText"/>
           </v-card-text>
@@ -5137,7 +5163,16 @@ video, #info-video {
     position: absolute;
     left: 1.5rem;
     z-index: 500;
-    top: calc(var(--default-font-size) + 0.5rem);
+    top: calc(var(--default-font-size) + 1px);
+    
+    &.open > .icon-wrapper {
+      --color: black !important;
+      --background-color: var(--accent-color)  !important;
+      --focus-color: white  !important;
+      border: none;
+      border-radius: 2px;
+      padding: 4px;
+    }
 
     &.budge {
       left: 0.5rem;
@@ -5429,6 +5464,25 @@ video, #info-video {
       
       &.overmap-low {
         top: 2em;
+      }
+      
+      
+      &.overmap-budge {
+        right: 4em;
+      }
+    }
+    
+    #my-location-overmap-button {
+      height: fit-content;
+      position: absolute;
+      z-index: 550;
+      right: 1em;
+      top: 5.5em;
+      
+      
+      
+      &.overmap-low {
+        top: 4em;
       }
       
       
