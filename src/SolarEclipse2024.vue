@@ -11,7 +11,7 @@
       :fa-icon="showGuidedContent ? 'times' : 'chevron-down'"
       :fa-size="showGuidedContent ? 'lg' : 'lg'"
       :color="accentColor"
-      :focus-color="accentColor"
+      :focus-color="showGuidedContent ? skyColor : accentColor"
       :tooltip-text="showGuidedContent ? 'Hide' : 'Click to learn more'"
       :tooltip-location="'bottom'"
       :show-tooltip="!mobile"
@@ -269,7 +269,7 @@
             >
             </location-search>
             <icon-button
-            v-if="getMyLocation && narrow && showNewMobileUI"
+            v-if="getMyLocation && narrow"
             :class="['geolocation-button-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
             id="my-location-overmap"
             fa-icon="location-crosshairs"
@@ -5172,12 +5172,12 @@ video, #info-video {
     
     &.open > .icon-wrapper {
       --color: var(--accent-color)  !important;
-      --background-color: transp
-      --focus-color: var(--accent-color)  !important;
+      --background-color: transparent !important;
       border: none;
       border-radius: 2px;
       padding: 4px;
     }
+
 
     &.budge {
       left: 0.5rem;
