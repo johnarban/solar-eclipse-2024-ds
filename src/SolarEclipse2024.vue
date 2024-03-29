@@ -690,9 +690,6 @@
                       <li>
                         <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
                       </li>
-                      <li>
-                        <span class="user-guide-emphasis-white">Amount Eclipsed:</span> Display percentage of Sun being covered by the Moon.                   
-                      </li>
                       <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
                       </li>
@@ -1194,7 +1191,7 @@
           :text="selectedLocaledTimeDateString"
         > </v-chip>
         <v-chip 
-          v-if="showEclipsePercentage && showNewMobileUI"
+          v-if="showNewMobileUI"
           :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
           variant="outlined"
           elevation="1"
@@ -1312,14 +1309,7 @@
                 @keyup.enter="useRegularMoon = !useRegularMoon"
                 label="Visible Moon"
                 hide-details
-            />
-            <v-checkbox
-                :color="accentColor"
-                v-model="showEclipsePercentage"
-                @keyup.enter="showEclipsePercentage = !showEclipsePercentage"
-                label="Amount Eclipsed"
-                hide-details
-            />        
+            />    
             <v-checkbox
               v-show="!showNewMobileUI"
               :color="accentColor"
@@ -1346,7 +1336,7 @@
       
       <div id="eclipse-percent-chip">
         <v-chip 
-          v-if="showEclipsePercentage && !showNewMobileUI"
+          v-if="!showNewMobileUI"
           :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
           variant="outlined"
           elevation="1"
@@ -2075,7 +2065,6 @@ export default defineComponent({
       showAltAzGrid: false,
       showHorizon: true,
       showTextSheet: false, 
-      showEclipsePercentage: true, 
       showLinkToPath: false, 
       
       toggleTrackSun: true,
