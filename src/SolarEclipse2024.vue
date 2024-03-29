@@ -1984,6 +1984,8 @@ export default defineComponent({
       positionSet: false,
       imagesetFolder: null as Folder | null,
 
+      wwtMove: null as ((x: number, y: number) => void) | null,
+
       searchOpen: true,
       searchText: null as string | null,
       searchResults: null as MapBoxFeatureCollection | null,
@@ -2221,6 +2223,13 @@ export default defineComponent({
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       this.wwtControl._updateViewParameters = updateViewParameters.bind(this.wwtControl);
+
+      this.wwtMove = this.wwtControl.move;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      this.wwtControl.roll = function(_angle) {};
+      this.wwtControl._tilt = function(_angle) {};
+      this.updatePanForUI();
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -3060,11 +3069,7 @@ export default defineComponent({
         if (wwtControl._trackingObject !== this.sunPlace) {
           this.trackSun();
           return;
-        }
-      }
-
-      if (this.activePointer) {
-        // Check if user is moving WWT canvas. We don't want to disable tracking if they are just creating an offset.
+        } 
         return;
       } else {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
