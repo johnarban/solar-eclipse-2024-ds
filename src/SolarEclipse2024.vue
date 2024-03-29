@@ -2130,8 +2130,8 @@ export default defineComponent({
     queryData.awv = awv === "true";
   },
 
-  mounted() {
-    
+  mounted() {  
+     
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
@@ -4163,6 +4163,7 @@ html {
   background-color: #000;
   
   overflow: hidden;
+  overflow-y: hidden !important; 
   -ms-overflow-style: none;
 
   // We don't want a scrollbar for the overall canvas
