@@ -232,7 +232,7 @@
             id="map-container" :data-before-text="eclipsePredictionText">
             
             <div 
-              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner" 
+              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner && !mobile" 
               id="map-banner" 
               class="show-after"
               >
