@@ -1025,7 +1025,7 @@
           <p class="splash-small-text">
             <a 
               href="#" 
-              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "in class" : "new" }} interface
+              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "'in class'" : "new" }} interface
           </p>
         </div>
         
