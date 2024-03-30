@@ -690,7 +690,7 @@
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
                       </li>
                       <li v-if="narrow">
-                        <span class="user-guide-emphasis-white">New Interface:</span> Use new streamlined interface for small screens. (Uncheck to revert to old mobile interface.)                   
+                        <span class="user-guide-emphasis-white">New Interface:</span> Use new streamlined interface for small screens. (Uncheck to revert to original mobile interface.)                   
                       </li>
                       <li v-if="!showNewMobileUI"  class="mt-2">
                         <span 
@@ -974,7 +974,7 @@
             <v-col cols="12">
               <font-awesome-icon
                 icon="magnifying-glass"
-              /> Search for a location 
+              />Search for a location 
             </v-col>
             <v-col cols="12">
               <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
@@ -1025,7 +1025,7 @@
           <p class="splash-small-text">
             <a 
               href="#" 
-              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "'in class'" : "new" }} interface
+              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "detailed" : "new streamlined" }} interface
           </p>
         </div>
         
