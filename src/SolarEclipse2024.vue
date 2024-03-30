@@ -968,20 +968,9 @@
           </div>
         </div>
 
-        <div v-if="narrow">
-          <p class="splash-small-text">
-            <a 
-              href="#" 
-              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "old" : "new" }} interface
-          </p>
-        </div>
         
         <div v-if="showNewMobileUI" id="splash-screen-guide" class="mb-7">
           <v-row>
-            <v-col cols="12">
-              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
-              Updated mobile interface
-            </v-col>
             <v-col cols="12">
               <font-awesome-icon
                 icon="magnifying-glass"
@@ -991,8 +980,12 @@
               <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
               Detailed eclipse times
             </v-col>
-            <v-col cols="12" flex="horizontal" class="pt-1">
+            <v-col v-if="false" cols="12" flex="horizontal" class="pt-1">
               <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em; color:#eac402;">Map & Weather</span> for more info
+            </v-col>
+            <v-col cols="12">
+              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
+              Updated mobile interface
             </v-col>
           </v-row>
         </div>
@@ -1026,6 +1019,14 @@
               Learn more 
             </v-col>
           </v-row>
+        </div>
+        
+        <div v-if="narrow">
+          <p class="splash-small-text">
+            <a 
+              href="#" 
+              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "'in class'" : "new" }} interface
+          </p>
         </div>
         
         <div id="splash-screen-acknowledgements">
@@ -1934,7 +1935,7 @@ export default defineComponent({
     if (!existingUser) {
       window.localStorage.setItem(UUID_KEY, uuid);
     }
-
+    
     const storedOptOut = window.localStorage.getItem(OPT_OUT_KEY);
     const responseOptOut = typeof storedOptOut === "string" ? storedOptOut === "true" : null;
     const location: LocationRad = (latitudeDeg !== undefined && longitudeDeg !== undefined) ?
@@ -2007,7 +2008,7 @@ export default defineComponent({
       location,
       selectedLocationText: "Nazas, DUR",
       locationErrorMessage: "",
-      
+            
       syncDateTimeWithWWTCurrentTime: true,
       syncDateTimewithSelectedTime: true,
 
@@ -4734,7 +4735,8 @@ body {
 
   .splash-small-text {
     margin-block: 0.5rem;
-    font-size: calc(1.4*var(--default-font-size));    
+    font-size: calc(1.2*var(--default-font-size));    
+    font-weight: 300;
   }
 
   #splash-screen-acknowledgements {
@@ -5612,7 +5614,15 @@ video, #info-video {
     margin-right: 0.75em;
   }
   
+  .v-list-item {
+    color: #eee;
+  }
+  
   .intro-text {
+    color: white;
+  }
+  
+  strong {
     color: white;
   }
   
