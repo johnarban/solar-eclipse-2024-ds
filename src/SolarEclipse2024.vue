@@ -690,7 +690,7 @@
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
                       </li>
                       <li v-if="narrow">
-                        <span class="user-guide-emphasis-white">New Interface:</span> Use new streamlined interface for small screens. (Uncheck to revert to old mobile interface.)                   
+                        <span class="user-guide-emphasis-white">New Interface:</span> Use new streamlined interface for small screens. (Uncheck to revert to original mobile interface.)                   
                       </li>
                       <li v-if="!showNewMobileUI"  class="mt-2">
                         <span 
@@ -969,23 +969,25 @@
         </div>
 
         
-        <div v-if="showNewMobileUI" id="splash-screen-guide" class="mb-7">
+        <div v-if="showNewMobileUI" id="splash-screen-guide">
           <v-row>
             <v-col cols="12">
               <font-awesome-icon
                 icon="magnifying-glass"
-              /> Search for a location 
+                size="small"
+                class="bullet-icon ml-0 mr-1"
+              />Search for a location 
             </v-col>
             <v-col cols="12">
-              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
+              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon mx-0"></v-icon>
               Detailed eclipse times
             </v-col>
             <v-col v-if="false" cols="12" flex="horizontal" class="pt-1">
               <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em; color:#eac402;">Map & Weather</span> for more info
             </v-col>
             <v-col cols="12">
-              <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon>
-              Updated mobile interface
+              <v-icon icon="mdi-creation" size="small" class="bullet-icon mx-0"></v-icon>
+              Streamlined mobile interface
             </v-col>
           </v-row>
         </div>
@@ -1025,7 +1027,7 @@
           <p class="splash-small-text">
             <a 
               href="#" 
-              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "'in class'" : "new" }} interface
+              @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "detailed" : "new streamlined" }} interface
           </p>
         </div>
         
@@ -4718,7 +4720,8 @@ body {
   }
 
   #splash-screen-guide {
-    margin-block: 1em;
+    margin-block: calc(1.5 * var(--default-line-height));
+    //margin-bottom: calc(0.7 * var(--default-line-height));
     font-size: min(4.5vw, 3.6vh);
     line-height: 160%;
     width: 85%;
@@ -4734,12 +4737,13 @@ body {
   }
 
   .splash-small-text {
-    margin-block: 0.5rem;
+    margin-bottom: calc(1 * var(--default-line-height));
     font-size: calc(1.2*var(--default-font-size));    
     font-weight: 300;
   }
 
   #splash-screen-acknowledgements {
+    margin-bottom: calc(1 * var(--default-line-height));
     font-size: calc(1.3 * var(--default-font-size));
     line-height: calc(1.2 * var(--default-line-height));
     width: 80%; 
