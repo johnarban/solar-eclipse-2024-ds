@@ -1080,7 +1080,7 @@
         <div class="inst-quad top-right">
           <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
           <div class="inst-text">
-            When and where am I looking from
+            When and where
           </div>
         </div>
         <div class="inst-quad bottom-left">
@@ -1092,7 +1092,7 @@
         <div class="inst-quad bottom-right">
           <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
           <div class="inst-text">
-            View eclipse timing details and more options
+            Eclipse timing and more options
           </div>
         </div>
         <div id="instructions-close-button">
