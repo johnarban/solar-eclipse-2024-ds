@@ -40,7 +40,7 @@
               <span v-if="learnerPath=='Clouds'"
                 >View Historical Cloud Data
               </span>
-              <span v-if="learnerPath=='CloudDetail'"
+              <span v-if="!showNewMobileUI && learnerPath=='CloudDetail'"
                 >Explore Detailed Cloud Data
               </span>
             </div>
@@ -189,6 +189,7 @@
                 @activate="() => { learnerPath = 'Clouds'}"
               ></icon-button>
               <icon-button
+                v-if="!showNewMobileUI"
                 :model-value="learnerPath == 'CloudDetail'"
                 fa-icon="chart-column"
                 fa-size="xl"
