@@ -255,7 +255,7 @@
             
             <!-- modelValue = false, starts with it closed, use stay-open to keep it open -->
             <location-search
-              :modelValue="false"
+              v-model="searchOpen"
               :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
               v-if="narrow"
               small
@@ -3862,6 +3862,7 @@ export default defineComponent({
     setLocationFromSearchFeature(feature: MapBoxFeature) {
       this.setLocationFromFeature(feature);
       this.textSearchSelectedLocations.push(feature.center);
+      this.searchOpen = false;
     },
     
     reversePlaybackRate() {
