@@ -1118,7 +1118,7 @@
                   </template>
                     <strong>View historical cloud data</strong> for the week of April 8th from 2003&#8211;2023. 
                 </v-list-item>
-                <v-list-item density="compact">
+                <v-list-item v-if="!showNewMobileUI" density="compact">
                   <template v-slot:prepend>
                     <font-awesome-icon icon="chart-column" size="xl" class="bullet-icon"></font-awesome-icon>
                   </template>
