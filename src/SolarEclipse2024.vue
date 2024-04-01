@@ -5520,7 +5520,6 @@ video, #info-video {
       aspect-ratio: 5/3;
     }
   
-  
     span {
       padding: 0;
       margin: 0;
