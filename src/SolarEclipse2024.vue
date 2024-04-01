@@ -1973,7 +1973,7 @@ export default defineComponent({
       selectedTime:  _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5,
       selectedTimezone: "America/Mexico_City",
       location,
-      selectedLocationText: "Nazas, DUR",
+      selectedLocationText: "Nazas, DUR, Mexico",
       locationErrorMessage: "",
             
       syncDateTimeWithWWTCurrentTime: true,
