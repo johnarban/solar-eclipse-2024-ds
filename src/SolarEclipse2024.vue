@@ -969,13 +969,14 @@
           </div>
           <div v-if="showNewMobileUI" id="splash-screen-text">
             <p>See how the </p>
-            <p class="highlight">April 8th TOTAL Solar Eclipse</p>
-            <p>will look for a particular <span class="highlight">location</span> and <span class="highlight">time</span></p>
-            <p class="mt-4">Then let's</p>
+            <p class="highlight">April 8th</p> 
+            <p class="highlight">TOTAL Solar Eclipse</p>
+            <p>will look from any 
+            <span class="highlight">location</span>
+            </p>
           </div>
         </div>
 
-        
         <div v-if="showNewMobileUI" id="splash-screen-guide">
           <v-row>
             <v-col cols="12">
@@ -983,6 +984,7 @@
                 class="splash-get-started"
                 @click="closeSplashScreen"
                 :color="accentColor"
+                density="compact"
                 size="x-large"
                 variant="elevated"
                 rounded="lg"
@@ -4673,7 +4675,7 @@ body {
   }
 
 
-  background-color: black;
+  background-color: #111111;
   backdrop-filter: blur(5px);
   justify-content: space-around;
   align-content: center;
@@ -4694,16 +4696,26 @@ body {
     font-family: 'Highway Gothic Narrow', 'Roboto', sans-serif;
     font-weight: bold;
     vertical-align: middle;
+
+    @media (max-width: 750px) {
+      font-weight: normal;
+    }
+
   }
     
   p.highlight {
     color: var(--accent-color);
     text-transform: uppercase;
     font-weight: bolder;
+
+    @media (max-width: 750px) {
+      font-weight: bold;
+    }
   }
-  
+
   span.highlight {
     color: var(--accent-color);
+    font-weight: bold;
   }
   
   p.small {
@@ -4729,8 +4741,10 @@ body {
   }
   
   .splash-get-started {
-    border: 0.25em solid white;
-    font-size: max(1em,calc(0.5 * min(8vw, 5vh)));
+    border: 2px solid white;
+    font-size: calc(2 * var(--default-font-size));
+    margin-block: calc(0.5 * var(--default-line-height));
+    font-weight: bold !important;
   }
 
   #splash-screen-text {
@@ -4738,6 +4752,7 @@ body {
     display: flex;
     flex-direction: column;
     line-height: 130%;
+    margin-inline: 5%;
     
   }
 
@@ -4759,8 +4774,8 @@ body {
   }
 
   .splash-small-text {
-    margin-bottom: calc(1 * var(--default-line-height));
-    font-size: calc(1.2*var(--default-font-size));    
+    margin-bottom: calc(0 * var(--default-line-height));
+    font-size: calc(1.3*var(--default-font-size));    
     font-weight: 300;
   }
 
@@ -4782,7 +4797,7 @@ body {
     
     img.eclipse-ds-logo {
     height: 20vmin;
-    margin: 2px;
+    margin-bottom: 2px;
     }
 
     @media only screen and (max-width: 600px) {
