@@ -594,6 +594,11 @@ export default defineComponent({
   margin: auto;
   padding: 5px 0px;
   border-radius: 5px;
+
+  .leaflet-control-container {
+    height: 100%;
+    position: relative;
+  }
   
   .leaflet-bottom.leaflet-right::before {
     content: " Credit: © Leaflet.js";
