@@ -956,18 +956,14 @@
         v-click-outside="closeSplashScreen"
         :style="cssVars"
       >
-      <div
-          id="first-splash-row"
+        <div
+            id="first-splash-row"
         >
           <div
             id="close-splash-button"
             @click="closeSplashScreen"
             >&times;</div>
-          <div v-if="!showNewMobileUI" id="splash-screen-text">
-            <p>WATCH the April 8</p>
-            <p class="highlight">TOTAL<br/>Solar Eclipse</p>
-          </div>
-          <div v-if="showNewMobileUI" id="splash-screen-text">
+          <div id="splash-screen-text">
             <p>See how the </p>
             <p class="highlight">April 8th</p> 
             <p class="highlight">TOTAL Solar Eclipse</p>
@@ -977,53 +973,18 @@
           </div>
         </div>
 
-        <div v-if="showNewMobileUI" id="splash-screen-guide">
-          <v-row>
-            <v-col cols="12">
-              <v-btn
-                class="splash-get-started"
-                @click="closeSplashScreen"
-                :color="accentColor"
-                density="compact"
-                size="x-large"
-                variant="elevated"
-                rounded="lg"
-                >Get Started</v-btn>
-            </v-col>
-          </v-row>
+        <div>
+          <v-btn
+          class="splash-get-started"
+          @click="closeSplashScreen"
+          :color="accentColor"
+          :density="xSmallSize ? 'compact' : 'default'"
+          size="x-large"
+          variant="elevated"
+          rounded="lg"
+          >Get Started</v-btn>
         </div>
 
-        <div v-if="!showNewMobileUI " id="splash-screen-guide">
-        <!-- <div v-if="false" id="splash-screen-guide"> -->
-          <v-row>
-            <v-col cols="12">
-              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
-              New! Detailed Eclipse Times
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="location-dot"
-              /> Choose any location 
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="cloud-sun"
-              /> View historical cloud data
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="chart-column"
-              />New! Detailed cloud explorer
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="book-open"
-              />
-              Learn more 
-            </v-col>
-          </v-row>
-        </div>
-        
         <div v-if="narrow">
           <p class="splash-small-text">
             <a 
@@ -1033,20 +994,14 @@
         </div>
         
         <div id="splash-screen-acknowledgements">
-          <div v-if="showNewMobileUI" id="splash-screen-logos">
+          <div>
             <img
-              v-if="showNewMobileUI"
               src="./assets/eclipseds.png"
               alt="Cosmic Data Stories Eclipse logo"
               class="eclipse-ds-logo" 
               />
           </div>
-          
           Brought to you by <a href="https://www.cosmicds.cfa.harvard.edu/" target="_blank" rel="noopener noreferrer">Cosmic Data Stories</a> and <a href="https://www.worldwidetelescope.org/home/" target="_blank" rel="noopener noreferrer">WorldWide Telescope</a>.
-          
-          <div v-if="!showNewMobileUI" id="splash-screen-logos">
-            <credit-logos />
-          </div>
         </div>
       </div>
     </v-overlay>
@@ -4665,7 +4620,7 @@ body {
   color: var(--moon-color);
 
   @media (max-width: 699px) {
-    max-height: 80vh;
+    max-height: 90vh;
     max-width: 90vw;
   }
 
@@ -4674,8 +4629,7 @@ body {
     max-width: min(70vw, 800px);
   }
 
-
-  background-color: #111111;
+  background-color: black;
   backdrop-filter: blur(5px);
   justify-content: space-around;
   align-content: center;
@@ -4694,13 +4648,8 @@ body {
   // make a paragraph inside the div centered horizontally and vertically
   p {
     font-family: 'Highway Gothic Narrow', 'Roboto', sans-serif;
-    font-weight: bold;
+    font-weight: normal;
     vertical-align: middle;
-
-    @media (max-width: 750px) {
-      font-weight: normal;
-    }
-
   }
     
   p.highlight {
@@ -4739,77 +4688,43 @@ body {
       cursor: pointer;
     }
   }
-  
-  .splash-get-started {
-    border: 2px solid white;
-    font-size: calc(2 * var(--default-font-size));
-    margin-block: calc(0.5 * var(--default-line-height));
-    font-weight: bold !important;
-  }
 
   #splash-screen-text {
     // in the grid, the text is in the 2nd column
     display: flex;
     flex-direction: column;
-    line-height: 130%;
+    line-height: 110%;
     margin-inline: 5%;
-    
+
+    @media (max-width: 600px) {
+      line-height: 125%;
+    }
   }
 
-  #splash-screen-guide {
-    margin-block: calc(1.5 * var(--default-line-height));
-    //margin-bottom: calc(0.7 * var(--default-line-height));
-    font-size: min(4.5vw, 3.6vh);
-    line-height: 160%;
-    width: 85%;
-
-    .v-col{
-      padding: 0;
-    }
-    
-    .svg-inline--fa {
-      color:var(--accent-color);
-      margin: 0 10px;
-    }
+  .splash-get-started {
+    border: 2px solid white;
+    font-size: calc(1.8 * var(--default-font-size));
+    margin-top: 5%;
+    margin-bottom: 2%;
+    font-weight: bold !important;
   }
 
   .splash-small-text {
-    margin-bottom: calc(0 * var(--default-line-height));
-    font-size: calc(1.3*var(--default-font-size));    
+    margin-top: 5%;
+    font-size: calc(1.4*var(--default-font-size));    
     font-weight: 300;
   }
 
   #splash-screen-acknowledgements {
-    margin-bottom: calc(1 * var(--default-line-height));
-    font-size: calc(1.3 * var(--default-font-size));
+    margin-bottom: 5%;
+    font-size: calc(1.4 * var(--default-font-size));
     line-height: calc(1.2 * var(--default-line-height));
     width: 80%; 
   }
-  
-  #splash-screen-logos {
-    margin-block: 0.75em;
 
-    img {
-    height: 5vmin;
-    vertical-align: middle;
-    margin: 2px;
-    }
-    
-    img.eclipse-ds-logo {
+  img.eclipse-ds-logo {
     height: 20vmin;
     margin-bottom: 2px;
-    }
-
-    @media only screen and (max-width: 600px) {
-      img {
-        height: 24px;
-      }
-    }
-
-    svg {
-      vertical-align: middle;
-      height: 24px;
-    }
   }
 }
 
@@ -4826,7 +4741,6 @@ body {
   @media (min-width: 700px) {   
     bottom: 6rem;
   }
-
 
   .icon-wrapper {
     padding-inline: calc(0.3 * var(--default-line-height));
@@ -5951,7 +5865,7 @@ video, #info-video {
 a {
     text-decoration: none;
     font-weight: bold;
-    color: #6facf1; // lighter variant of sky color
+    color: #5a7ed2; // lighter variant of CosmicDS logo blue
     pointer-events: auto;
   }
 
