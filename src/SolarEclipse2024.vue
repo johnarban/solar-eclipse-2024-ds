@@ -3834,7 +3834,7 @@ export default defineComponent({
 
     async geocodingInfoForSearch(searchText: string): Promise<MapBoxFeatureCollection | null> {
       const accessToken = process.env.VUE_APP_MAPBOX_ACCESS_TOKEN;
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}&types=place`;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchText}.json?access_token=${accessToken}&types=place,postcode`;
       return fetch(url)
         .then(response => response.json())
         .then((result: MapBoxFeatureCollection) => {
