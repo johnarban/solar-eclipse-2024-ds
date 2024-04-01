@@ -949,6 +949,7 @@
       opacity="0.6"
       :style="cssVars"
       id="splash-overlay"
+      :class="[showNewMobileUI ? 'new-mobile-ui' : '']"
     >
       <div
         id="splash-screen"
@@ -962,9 +963,15 @@
             id="close-splash-button"
             @click="closeSplashScreen"
             >&times;</div>
-          <div id="splash-screen-text">
+          <div v-if="!showNewMobileUI" id="splash-screen-text">
             <p>WATCH the April 8</p>
             <p class="highlight">TOTAL<br/>Solar Eclipse</p>
+          </div>
+          <div v-if="showNewMobileUI" id="splash-screen-text">
+            <p>See how the </p>
+            <p class="highlight">April 8th TOTAL Solar Eclipse</p>
+            <p>will look for a particular <span class="highlight">location</span> and <span class="highlight">time</span></p>
+            <p class="mt-4">Then let's</p>
           </div>
         </div>
 
@@ -972,22 +979,14 @@
         <div v-if="showNewMobileUI" id="splash-screen-guide">
           <v-row>
             <v-col cols="12">
-              <font-awesome-icon
-                icon="magnifying-glass"
-                size="small"
-                class="bullet-icon ml-0 mr-1"
-              />Search for a location 
-            </v-col>
-            <v-col cols="12">
-              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon mx-0"></v-icon>
-              Detailed eclipse times
-            </v-col>
-            <v-col v-if="false" cols="12" flex="horizontal" class="pt-1">
-              <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em; color:#eac402;">Map & Weather</span> for more info
-            </v-col>
-            <v-col cols="12">
-              <v-icon icon="mdi-creation" size="small" class="bullet-icon mx-0"></v-icon>
-              Streamlined mobile interface
+              <v-btn
+                class="splash-get-started"
+                @click="closeSplashScreen"
+                :color="accentColor"
+                size="x-large"
+                variant="elevated"
+                rounded="lg"
+                >Get Started</v-btn>
             </v-col>
           </v-row>
         </div>
@@ -1032,10 +1031,19 @@
         </div>
         
         <div id="splash-screen-acknowledgements">
+          <div v-if="showNewMobileUI" id="splash-screen-logos">
+            <img
+              v-if="showNewMobileUI"
+              src="./assets/eclipseds.png"
+              alt="Cosmic Data Stories Eclipse logo"
+              class="eclipse-ds-logo" 
+              />
+          </div>
+          
           Brought to you by <a href="https://www.cosmicds.cfa.harvard.edu/" target="_blank" rel="noopener noreferrer">Cosmic Data Stories</a> and <a href="https://www.worldwidetelescope.org/home/" target="_blank" rel="noopener noreferrer">WorldWide Telescope</a>.
           
-          <div id="splash-screen-logos">
-            <credit-logos/>
+          <div v-if="!showNewMobileUI" id="splash-screen-logos">
+            <credit-logos />
           </div>
         </div>
       </div>
@@ -4644,6 +4652,10 @@ body {
   align-items: center;
   justify-content: center;
   font-size: min(8vw, 7vh);
+  
+  &.new-mobile-ui {
+    font-size: clamp(10px,min(8vw, 7vh), 45px);
+  }
 }
 
 #splash-screen {
@@ -4689,6 +4701,10 @@ body {
     font-weight: bolder;
   }
   
+  span.highlight {
+    color: var(--accent-color);
+  }
+  
   p.small {
     font-size: var(--default-font-size);
     font-weight: bold;
@@ -4709,6 +4725,11 @@ body {
     &:hover {
       cursor: pointer;
     }
+  }
+  
+  .splash-get-started {
+    border: 0.25em solid white;
+    font-size: max(1em,calc(0.5 * min(8vw, 5vh)));
   }
 
   #splash-screen-text {
@@ -4748,13 +4769,18 @@ body {
     line-height: calc(1.2 * var(--default-line-height));
     width: 80%; 
   }
-
+  
   #splash-screen-logos {
     margin-block: 0.75em;
 
     img {
     height: 5vmin;
     vertical-align: middle;
+    margin: 2px;
+    }
+    
+    img.eclipse-ds-logo {
+    height: 20vmin;
     margin: 2px;
     }
 
