@@ -1097,12 +1097,12 @@
         </div>
         <div id="instructions-close-button">
           <v-icon 
-            size="64" 
+            :size="Math.max(0.1 * $vuetify.display.width, 20)" 
             @click="inIntro = !inIntro"
             icon="mdi-gesture-tap-button"
             >
-          </v-icon><br />
-          Click/Tap anywhere to close
+          </v-icon>
+          Tap to close
         </div>
       </div>
     </v-overlay>
@@ -5664,11 +5664,13 @@ video, #info-video {
   width: var(--width);
   height: var(--height);
   padding: 1rem;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.35fr;
   grid-template-rows: 1fr 1fr;
+  gap: 2em;
   
   border: 2px solid white;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
   border-radius: 24px;
   
   #instructions-close-button {
@@ -5676,7 +5678,7 @@ video, #info-video {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: calc(1.5 * var(--default-font-size));
+    font-size: calc(1.4 * var(--default-font-size));
     text-align: center;
   }
   
@@ -5686,16 +5688,25 @@ video, #info-video {
     flex-direction: column;
   }
   
-  .inst-text {
-    font-size: calc(1.6 * var(--default-font-size));
-    color: #eac402;
-  }
   
   div.inst-quad > div {
     flex-grow: 1;
     flex-shrink: 0;
     flex-basis: 50%;
     display: flex;
+  }
+  
+  .inst-text {
+    font-size: calc(1.5 * var(--default-font-size));
+    color: #eac402;
+    flex-shrink:0.5;
+  }
+  
+  .inst-arrow {
+    svg {
+      max-width: calc(0.1 * var(--width)) !important;
+      max-height: calc(0.1 * var(--height)) !important;
+    }
   }
   
   div.inst-quad.top-left {
