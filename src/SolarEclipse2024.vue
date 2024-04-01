@@ -1063,8 +1063,52 @@
     </transition>
 
   <!-- Opening Dialog Sequence -->
+    <v-overlay
+      v-if="showNewMobileUI"
+      v-model="inIntro"
+      opacity="1"
+      :scrim="false"
+      :close-on-content-click="true"
+      >
+      <div id="instruction-overlay">
+        <div class="inst-quad top-left">
+          <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
+          <div class="inst-text">
+            Location
+          </div>
+        </div>
+        <div class="inst-quad top-right">
+          <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
+          <div class="inst-text">
+            When and where am I looking from
+          </div>
+        </div>
+        <div class="inst-quad bottom-left">
+          <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
+          <div class="inst-text">
+            Control simulation time
+          </div>
+        </div>
+        <div class="inst-quad bottom-right">
+          <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
+          <div class="inst-text">
+            View eclipse timing details and more options
+          </div>
+        </div>
+        <div id="instructions-close-button">
+          <v-icon 
+            size="64" 
+            @click="inIntro = !inIntro"
+            icon="mdi-gesture-tap-button"
+            >
+          </v-icon><br />
+          Click/Tap anywhere to close
+        </div>
+      </div>
+    </v-overlay>
 
     <v-dialog
+      v-if="!showNewMobileUI"
       v-model="inIntro"
       :style="cssVars"
       :scrim="false"
@@ -5606,6 +5650,99 @@ video, #info-video {
     &:hover {
       cursor: pointer;
     }
+}
+
+#instruction-overlay {
+  
+  --width: 80dvw;
+  --height: 60dvh;
+  position: relative;
+  top: 7rem;
+  left: calc((100dvw - var(--width)) / 2);
+  
+  display: grid;
+  width: var(--width);
+  height: var(--height);
+  padding: 1rem;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  
+  border: 2px solid white;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 24px;
+  
+  #instructions-close-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: calc(1.5 * var(--default-font-size));
+    text-align: center;
+  }
+  
+  
+  div.inst-quad {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .inst-text {
+    font-size: calc(1.6 * var(--default-font-size));
+    color: #eac402;
+  }
+  
+  div.inst-quad > div {
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 50%;
+    display: flex;
+  }
+  
+  div.inst-quad.top-left {
+    // grid-area shorthand: row-start / column-start / row-end / column-end;
+    grid-area: 1 / 1 / 2 / 2;
+    margin-bottom: auto;
+    svg {
+      // flip right to left
+      transform: rotateY(180deg);
+    }
+  }
+  
+  
+  
+  div.inst-quad.top-right {
+    grid-area: 1 / 2 / 2 / 3;
+    margin-bottom: auto;
+    .inst-arrow {
+      align-self: center;
+    }
+    svg {
+      transform: rotateY(0deg);
+    }
+  }
+  
+  div.inst-quad.bottom-left {
+    grid-area: 2 / 1 / 3 / 2;
+    flex-direction: column-reverse;
+    margin-top: auto;
+    svg {
+      transform: translateX(2rem) rotateY(180deg) rotateX(180deg) rotateZ(-45deg);
+    }
+  }
+  
+  div.inst-quad.bottom-right {
+    grid-area: 2 / 2 / 3 / 3;
+    flex-direction: column-reverse;
+    margin-top: auto;
+    .inst-arrow {
+      align-self: center;
+    }
+    svg {
+      transform: rotateY(0deg) rotateX(180deg);
+    } 
+  }
+  
+  
 }
 
 #introduction-overlay {
