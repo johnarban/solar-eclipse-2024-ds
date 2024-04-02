@@ -1083,25 +1083,25 @@
         <div class="inst-quad top-left">
           <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
           <div class="inst-text">
-            Location
+            Location options
           </div>
         </div>
         <div class="inst-quad top-right">
           <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
           <div class="inst-text">
-            When and where
+            What's on screen
           </div>
         </div>
         <div class="inst-quad bottom-left">
           <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
           <div class="inst-text">
-            Control simulation time
+            Time controls
           </div>
         </div>
         <div class="inst-quad bottom-right">
           <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
           <div class="inst-text">
-            Eclipse timing and more options
+            Eclipse timing + more options
           </div>
         </div>
         <!-- <div id="instructions-close-button">
@@ -5751,6 +5751,7 @@ video, #info-video {
   div.inst-quad.top-right {
     grid-area: 1 / 2 / 2 / 3;
     margin-bottom: auto;
+    text-align: right;
     .inst-arrow {
       align-self: center;
     }
@@ -5772,6 +5773,7 @@ video, #info-video {
     grid-area: 2 / 2 / 3 / 3;
     flex-direction: column-reverse;
     margin-top: auto;
+    text-align: right;
     .inst-arrow {
       align-self: center;
     }
