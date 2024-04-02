@@ -1029,7 +1029,7 @@
       :close-on-content-click="true"
       >
       <div id="instruction-overlay">
-        <v-icon
+        <!-- <v-icon
           id="overlay-close-icon"
           class="outside-close-icon"
           icon="mdi-close-box"
@@ -1037,7 +1037,7 @@
           @click="inIntro = !inIntro"
           @keyup.enter="inIntro = !inIntro"
           tabindex="0"
-        ></v-icon>
+        ></v-icon> -->
         <div class="inst-quad top-left">
           <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
           <div class="inst-text">
@@ -1062,7 +1062,7 @@
             Eclipse timing + more options
           </div>
         </div>
-        <!-- <div id="instructions-close-button">
+        <div id="instructions-close-button">
           <v-icon 
             :size="Math.max(0.1 * $vuetify.display.width, 20)" 
             @click="inIntro = !inIntro"
@@ -1070,7 +1070,7 @@
             >
           </v-icon>
           Tap to close
-        </div> -->
+        </div>
       </div>
     </v-overlay>
 
@@ -4863,23 +4863,23 @@ video, #info-video {
   }
 }
 
-.outside-close-icon {
-  position: absolute;
-  top: -3px;
-  right: -28px;
-  z-index: 15;
-  font-size: calc(2.5*var(--default-font-size));
+// .outside-close-icon {
+//   position: absolute;
+//   top: -3px;
+//   right: -28px;
+//   z-index: 15;
+//   font-size: calc(2.5*var(--default-font-size));
 
 
-  &:hover {
-    cursor: pointer;
-  }
+//   &:hover {
+//     cursor: pointer;
+//   }
 
-  &:focus {
-    color: white;
-    border: 2px solid white;
-  }
-}
+//   &:focus {
+//     color: white;
+//     border: 2px solid white;
+//   }
+// }
 
 .bottom-sheet {
 
@@ -5648,14 +5648,14 @@ video, #info-video {
   border: 2px solid white;
   background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
-  border-radius: 7px;
+  border-radius: 24px;
   
   #instructions-close-button {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: calc(1.4 * var(--default-font-size));
+    font-size: min(4vw, 3.5vh);
     text-align: center;
   }
   
