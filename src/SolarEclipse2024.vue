@@ -1042,13 +1042,13 @@
         <div class="inst-quad top-left">
           <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
-            Location search & sharing
+            Set location + more
           </div>
         </div>
         <div class="inst-quad top-right">
           <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
-            Where, when, how much
+            Where, when + how much
           </div>
         </div>
         <div class="inst-quad bottom-left">
@@ -1060,7 +1060,7 @@
         <div class="inst-quad bottom-right">
           <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
-            SHOW me what will happen when!
+            Tell me what will happen and when
           </div>
         </div>
         <!-- <div id="instructions-close-button">
