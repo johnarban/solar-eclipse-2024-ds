@@ -1285,6 +1285,7 @@
     </div>
     
     <div class="bottom-content">
+     
 
       <icon-button
         id="eclipse-details-button"
@@ -1323,6 +1324,18 @@
           </v-card-text>
         </v-card>
       </v-dialog>
+      
+      <icon-button
+        v-model="showInfoSheet"
+        fa-icon="book-open"
+        fa-size="xl"
+        :color="accentColor"
+        :focus-color="accentColor"
+        :tooltip-text="showInfoSheet ? null : 'More on Eclipses'"
+        :tooltip-location="'left'"
+        :show-tooltip="!mobile"
+        :box-shadow="false"
+      ></icon-button>
       
       <div
         id="controls"
