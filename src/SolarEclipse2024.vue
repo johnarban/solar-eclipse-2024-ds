@@ -256,7 +256,7 @@
             
             <!-- modelValue = false, starts with it closed, use stay-open to keep it open -->
             <location-search
-              :modelValue="false"
+              v-model="searchOpen"
               :class="['location-search-overmap', learnerPath === 'Clouds' ? 'overmap-budge' : '', showNewMobileUI ? '' : 'overmap-low']"
               v-if="narrow"
               small
@@ -459,7 +459,7 @@
                 </div>
               <figure>
                 <!-- <v-img src="https://www.nasa.gov/sites/default/files/thumbnails/image/tsis_eclipse-1.gif"></v-img> -->
-                <gif-play-pause startPaused :gif='require("./assets/eclipse.gif")' :still='require("./assets/eclipse_static.gif")' alt="Animated schematic of a solar eclipse showing how the Moon moves between the Sun and Earth."/>
+                <gif-play-pause still-only startPaused :gif='require("./assets/eclipse.gif")' :still='require("./assets/eclipse_static.gif")' alt="Animated schematic of a solar eclipse showing how the Moon moves between the Sun and Earth."/>
                 <figcaption>Image credit: NASA Goddard / Katy Mersmann</figcaption>
                 <div class="disclaimer">Not to scale</div>
               </figure>
@@ -950,80 +950,42 @@
       opacity="0.6"
       :style="cssVars"
       id="splash-overlay"
+      :class="[showNewMobileUI ? 'new-mobile-ui' : '']"
     >
       <div
         id="splash-screen"
         v-click-outside="closeSplashScreen"
         :style="cssVars"
       >
-      <div
-          id="first-splash-row"
+        <div
+            id="first-splash-row"
         >
           <div
             id="close-splash-button"
             @click="closeSplashScreen"
             >&times;</div>
           <div id="splash-screen-text">
-            <p>WATCH the April 8</p>
-            <p class="highlight">TOTAL<br/>Solar Eclipse</p>
+            <p>See how the </p>
+            <p class="highlight">April 8th</p> 
+            <p class="highlight">TOTAL Solar Eclipse</p>
+            <p>will look from any 
+            <span class="highlight">location</span>
+            </p>
           </div>
         </div>
 
-        
-        <div v-if="showNewMobileUI" id="splash-screen-guide">
-          <v-row>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="magnifying-glass"
-                size="small"
-                class="bullet-icon ml-0 mr-1"
-              />Search for a location 
-            </v-col>
-            <v-col cols="12">
-              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon mx-0"></v-icon>
-              Detailed eclipse times
-            </v-col>
-            <v-col v-if="false" cols="12" flex="horizontal" class="pt-1">
-              <span class="px-2 py-1 my-2 mr-1" style="border: 1px solid #eac402; border-radius: 1em; color:#eac402;">Map & Weather</span> for more info
-            </v-col>
-            <v-col cols="12">
-              <v-icon icon="mdi-creation" size="small" class="bullet-icon mx-0"></v-icon>
-              Streamlined mobile interface
-            </v-col>
-          </v-row>
+        <div>
+          <v-btn
+          class="splash-get-started"
+          @click="closeSplashScreen"
+          :color="accentColor"
+          :density="xSmallSize ? 'compact' : 'default'"
+          size="x-large"
+          variant="elevated"
+          rounded="lg"
+          >Get Started</v-btn>
         </div>
 
-        <div v-if="!showNewMobileUI " id="splash-screen-guide">
-        <!-- <div v-if="false" id="splash-screen-guide"> -->
-          <v-row>
-            <v-col cols="12">
-              <v-icon icon="mdi-sun-clock" size="small" class="bullet-icon"></v-icon>
-              New! Detailed Eclipse Times
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="location-dot"
-              /> Choose any location 
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="cloud-sun"
-              /> View historical cloud data
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="chart-column"
-              />New! Detailed cloud explorer
-            </v-col>
-            <v-col cols="12">
-              <font-awesome-icon
-                icon="book-open"
-              />
-              Learn more 
-            </v-col>
-          </v-row>
-        </div>
-        
         <div v-if="narrow">
           <p class="splash-small-text">
             <a 
@@ -1033,11 +995,14 @@
         </div>
         
         <div id="splash-screen-acknowledgements">
-          Brought to you by <a href="https://www.cosmicds.cfa.harvard.edu/" target="_blank" rel="noopener noreferrer">Cosmic Data Stories</a> and <a href="https://www.worldwidetelescope.org/home/" target="_blank" rel="noopener noreferrer">WorldWide Telescope</a>.
-          
-          <div id="splash-screen-logos">
-            <credit-logos/>
+          <div>
+            <img
+              src="./assets/eclipseds.png"
+              alt="Cosmic Data Stories Eclipse logo"
+              class="eclipse-ds-logo" 
+              />
           </div>
+          Brought to you by <a href="https://www.cosmicds.cfa.harvard.edu/" target="_blank" rel="noopener noreferrer">Cosmic Data Stories</a> and <a href="https://www.worldwidetelescope.org/home/" target="_blank" rel="noopener noreferrer">WorldWide Telescope</a>.
         </div>
       </div>
     </v-overlay>
@@ -2009,7 +1974,7 @@ export default defineComponent({
       selectedTime:  _totalEclipseTimeUTC.getTime() - 60*60*1000*1.5,
       selectedTimezone: "America/Mexico_City",
       location,
-      selectedLocationText: "Nazas, DUR",
+      selectedLocationText: "Nazas, Mexico",
       locationErrorMessage: "",
             
       syncDateTimeWithWWTCurrentTime: true,
@@ -3855,6 +3820,7 @@ export default defineComponent({
     setLocationFromSearchFeature(feature: MapBoxFeature) {
       this.setLocationFromFeature(feature);
       this.textSearchSelectedLocations.push(feature.center);
+      this.searchOpen = false;
     },
     
     reversePlaybackRate() {
@@ -4645,21 +4611,24 @@ body {
   align-items: center;
   justify-content: center;
   font-size: min(8vw, 7vh);
+  
+  &.new-mobile-ui {
+    font-size: clamp(10px,min(8vw, 7vh), 45px);
+  }
 }
 
 #splash-screen {
   color: var(--moon-color);
 
   @media (max-width: 699px) {
-    max-height: 80vh;
+    max-height: 90vh;
     max-width: 90vw;
   }
 
   @media (min-width: 700px) {
-    max-height: 85vh;
-    max-width: min(70vw, 800px);
+    max-height: 90vh;
+    max-width: min(90vw, 800px);
   }
-
 
   background-color: black;
   backdrop-filter: blur(5px);
@@ -4680,7 +4649,7 @@ body {
   // make a paragraph inside the div centered horizontally and vertically
   p {
     font-family: 'Highway Gothic Narrow', 'Roboto', sans-serif;
-    font-weight: bold;
+    font-weight: normal;
     vertical-align: middle;
   }
     
@@ -4688,6 +4657,15 @@ body {
     color: var(--accent-color);
     text-transform: uppercase;
     font-weight: bolder;
+
+    @media (max-width: 750px) {
+      font-weight: bold;
+    }
+  }
+
+  span.highlight {
+    color: var(--accent-color);
+    font-weight: bold;
   }
   
   p.small {
@@ -4716,59 +4694,38 @@ body {
     // in the grid, the text is in the 2nd column
     display: flex;
     flex-direction: column;
-    line-height: 130%;
-    
+    line-height: 110%;
+    margin-inline: 5%;
+
+    @media (max-width: 600px) {
+      line-height: 125%;
+    }
   }
 
-  #splash-screen-guide {
-    margin-block: calc(1.5 * var(--default-line-height));
-    //margin-bottom: calc(0.7 * var(--default-line-height));
-    font-size: min(4.5vw, 3.6vh);
-    line-height: 160%;
-    width: 85%;
-
-    .v-col{
-      padding: 0;
-    }
-    
-    .svg-inline--fa {
-      color:var(--accent-color);
-      margin: 0 10px;
-    }
+  .splash-get-started {
+    border: 2px solid white;
+    font-size: calc(1.8 * var(--default-font-size));
+    margin-top: 5%;
+    margin-bottom: 2%;
+    font-weight: bold !important;
   }
 
   .splash-small-text {
-    margin-bottom: calc(1 * var(--default-line-height));
-    font-size: calc(1.2*var(--default-font-size));    
+    margin-top: 5%;
+    font-size: calc(1.4*var(--default-font-size));    
     font-weight: 300;
   }
 
   #splash-screen-acknowledgements {
-    margin-bottom: calc(1 * var(--default-line-height));
-    font-size: calc(1.3 * var(--default-font-size));
+    margin-bottom: 5%;
+    font-size: calc(1.4 * var(--default-font-size));
     line-height: calc(1.2 * var(--default-line-height));
     width: 80%; 
   }
 
-  #splash-screen-logos {
-    margin-block: 0.75em;
-
-    img {
-    height: 5vmin;
-    vertical-align: middle;
-    margin: 2px;
-    }
-
-    @media only screen and (max-width: 600px) {
-      img {
-        height: 24px;
-      }
-    }
-
-    svg {
-      vertical-align: middle;
-      height: 24px;
-    }
+  img.eclipse-ds-logo {
+    height: 20vmin;
+    margin-bottom: 2px;
   }
 }
 
@@ -4785,7 +4742,6 @@ body {
   @media (min-width: 700px) {   
     bottom: 6rem;
   }
-
 
   .icon-wrapper {
     padding-inline: calc(0.3 * var(--default-line-height));
@@ -5910,7 +5866,7 @@ video, #info-video {
 a {
     text-decoration: none;
     font-weight: bold;
-    color: #6facf1; // lighter variant of sky color
+    color: #5a7ed2; // lighter variant of CosmicDS logo blue
     pointer-events: auto;
   }
 
