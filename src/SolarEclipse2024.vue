@@ -4656,6 +4656,12 @@ body {
   
 }
 
+#left-buttons-wrapper {
+  #controls {
+    align-self: flex-start;
+  }
+}
+
 #controls {
   background: black;
   padding-block: 0.5em;
