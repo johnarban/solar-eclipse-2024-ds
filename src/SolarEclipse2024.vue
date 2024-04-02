@@ -1346,6 +1346,23 @@
         :box-shadow="false"
       ></icon-button>
       
+      <icon-button
+        id="eclipse-details-button"
+        md-icon="sun-clock"
+        :md-size="showNewMobileUI ? '16' : '24'"
+        :color="accentColor"
+        :focus-color="accentColor"
+        tooltip-text="View eclipse timing details"
+        tooltip-location="start"
+        @activate="() => {
+          showEclipsePredictionSheet = true;
+          if (!showEclipsePredictionText) {
+            showEclipsePredictionTextBanner = !showNewMobileUI;
+          }
+          showEclipsePredictionText = true;
+        }"
+        >
+      </icon-button>
             
       <div
         id="controls"
@@ -1413,24 +1430,6 @@
           </div>
 
       </div>
-      <icon-button
-        id="eclipse-details-button"
-        md-icon="sun-clock"
-        :md-size="showNewMobileUI ? '16' : '24'"
-        :color="accentColor"
-        :focus-color="accentColor"
-        tooltip-text="View eclipse timing details"
-        tooltip-location="start"
-        @activate="() => {
-          showEclipsePredictionSheet = true;
-          if (!showEclipsePredictionText) {
-            showEclipsePredictionTextBanner = !showNewMobileUI;
-          }
-          showEclipsePredictionText = true;
-        }"
-        >
-      </icon-button>
-      
       
       <div id="eclipse-percent-chip">
         <v-chip 
