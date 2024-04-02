@@ -1316,24 +1316,6 @@
     
     <div class="bottom-content">
      
-
-      <icon-button
-        id="eclipse-details-button"
-        md-icon="sun-clock"
-        :md-size="showNewMobileUI ? '16' : '24'"
-        :color="accentColor"
-        :focus-color="accentColor"
-        tooltip-text="View eclipse timing details"
-        tooltip-location="start"
-        @activate="() => {
-          showEclipsePredictionSheet = true;
-          if (!showEclipsePredictionText) {
-            showEclipsePredictionTextBanner = !showNewMobileUI;
-          }
-          showEclipsePredictionText = true;
-        }"
-        >
-      </icon-button>
       <v-dialog
         v-model="showEclipsePredictionSheet"
         max-width="fit-content"
@@ -1439,6 +1421,23 @@
           </div>
 
       </div>
+      <icon-button
+        id="eclipse-details-button"
+        md-icon="sun-clock"
+        :md-size="showNewMobileUI ? '16' : '24'"
+        :color="accentColor"
+        :focus-color="accentColor"
+        tooltip-text="View eclipse timing details"
+        tooltip-location="start"
+        @activate="() => {
+          showEclipsePredictionSheet = true;
+          if (!showEclipsePredictionText) {
+            showEclipsePredictionTextBanner = !showNewMobileUI;
+          }
+          showEclipsePredictionText = true;
+        }"
+        >
+      </icon-button>
       
       
       <div id="eclipse-percent-chip">
@@ -5778,7 +5777,7 @@ video, #info-video {
     margin-bottom: auto;
     .the-arrow {
       // flip right to left
-      transform: translateY(-5px) rotateZ(-40deg);
+      transform: translateY(-5px) rotateZ(-90deg);
     }
   }
   
