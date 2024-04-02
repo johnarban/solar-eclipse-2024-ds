@@ -691,7 +691,7 @@
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
                       </li>
                       <li v-if="narrow">
-                        <span class="user-guide-emphasis-white">New Interface:</span> Use new streamlined interface for small screens. (Uncheck to revert to original mobile interface.)                   
+                        <span class="user-guide-emphasis-white">Detailed Interface:</span> Switch to original mobile interface. (Uncheck box to use new streamlined interface)                               
                       </li>
                       <li v-if="!showNewMobileUI"  class="mt-2">
                         <span 
@@ -946,11 +946,11 @@
               hide-details
             />
             <v-checkbox
-                :color="accentColor"
-                v-model="useRegularMoon"
-                @keyup.enter="useRegularMoon = !useRegularMoon"
-                label="Visible Moon"
-                hide-details
+              :color="accentColor"
+              v-model="useRegularMoon"
+              @keyup.enter="useRegularMoon = !useRegularMoon"
+              label="Visible Moon"
+              hide-details
             />    
             <v-checkbox
               v-show="!showNewMobileUI"
@@ -962,14 +962,10 @@
             />  
             <v-checkbox
               v-show="narrow"
-              v-model="showNewMobileUI"
-              label="New Interface"
               :color="accentColor"
-              @keyup.enter="showNewMobileUI = !showNewMobileUI"
-              @update:modelValue="(value) => {
-                console.log('showNewMobileUI', value);
-                showEclipsePredictionTextBanner = !value;
-              }"
+              v-model="showOldMobileUI"
+              @keyup.enter="showOldMobileUI = !showOldMobileUI;"
+              label="Detailed Interface"
               hide-details
             ></v-checkbox>            
           </div>
@@ -1408,14 +1404,10 @@
             />  
             <v-checkbox
               v-show="narrow"
-              v-model="showNewMobileUI"
-              label="New Interface"
               :color="accentColor"
-              @keyup.enter="showNewMobileUI = !showNewMobileUI"
-              @update:modelValue="(value) => {
-                console.log('showNewMobileUI', value);
-                showEclipsePredictionTextBanner = !value;
-              }"
+              v-model="showOldMobileUI"
+              @keyup.enter="showOldMobileUI = !showOldMobileUI"
+              label="Detailed Interface"
               hide-details
             ></v-checkbox>            
           </div>
@@ -2805,6 +2797,15 @@ export default defineComponent({
         //   // video.pause();
         // }
       }
+    },
+
+    showOldMobileUI: {
+      get(): boolean {
+        return !this.showNewMobileUI;
+      },
+      set(value: boolean) {
+        this.showNewMobileUI = !value;
+      },
     },
   },
 
