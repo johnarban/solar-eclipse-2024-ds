@@ -1248,7 +1248,7 @@
       <icon-button
         id="eclipse-details-button"
         md-icon="sun-clock"
-        md-size="24"
+        :md-size="showNewMobileUI ? '16' : '24'"
         :color="accentColor"
         :focus-color="accentColor"
         tooltip-text="View eclipse timing details"
@@ -1284,9 +1284,10 @@
       </v-dialog>
       
       <icon-button
+        v-if="showNewMobileUI"
         v-model="showInfoSheet"
         fa-icon="book-open"
-        fa-size="xl"
+        fa-size="lg"
         :color="accentColor"
         :focus-color="accentColor"
         :tooltip-text="showInfoSheet ? null : 'More on Eclipses'"
@@ -4536,7 +4537,7 @@ body {
   width: calc(100% - 1rem);
   pointer-events: none;
   align-items: flex-end;
-  gap: 5px;
+  gap: 10px;
   // outline: 1px solid lime;
 }
 
