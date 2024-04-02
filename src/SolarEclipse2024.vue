@@ -4625,8 +4625,8 @@ body {
   }
 
   @media (min-width: 700px) {
-    max-height: 85vh;
-    max-width: min(70vw, 800px);
+    max-height: 90vh;
+    max-width: min(90vw, 800px);
   }
 
   background-color: black;
