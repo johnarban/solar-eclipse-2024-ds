@@ -1270,14 +1270,14 @@
         >
         <v-card>
           <v-card-text>
-            <button 
-              style="position:absolute;right:12px;cursor:pointer;"
-              id="close-eclipse-prediction-sheet"
-              @click="showEclipsePredictionSheet = false"
-              ><v-icon 
-                  class="elevation-2"
-                  :color="accentColor"
-              >mdi-close</v-icon></button>
+            <font-awesome-icon
+                style="position:absolute;right:12px;cursor:pointer;padding:1em;margin:-1em"
+                icon="square-xmark"
+                size="xl"
+                @click="showEclipsePredictionSheet = false"
+                @keyup.enter="showEclipsePredictionSheet = false"
+                tabindex="0"
+              ></font-awesome-icon>
             <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor" :location="selectedLocationText"/>
           </v-card-text>
         </v-card>
