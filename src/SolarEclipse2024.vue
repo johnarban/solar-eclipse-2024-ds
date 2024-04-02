@@ -908,6 +908,7 @@
         <div
         id="controls"
         class="control-icon-wrapper"
+        v-if="showNewMobileUI"
       >
         <div id="controls-top-row">
           <font-awesome-icon
@@ -1367,6 +1368,77 @@
         :box-shadow="false"
       ></icon-button>
       
+            
+      <div
+        id="controls"
+        class="control-icon-wrapper"
+        v-if="!showNewMobileUI"
+      >
+        <div id="controls-top-row">
+          <font-awesome-icon
+            size="lg"
+            :color="accentColor"
+            :icon="showControls ? `chevron-down` : `gear`"
+            @click="showControls = !showControls"
+            @keyup.enter="showControls = !showControls"
+            tabindex="0"
+          /> 
+        </div>
+
+          <div v-if="showControls" id="control-checkboxes">
+            <v-checkbox
+              v-if="!showNewMobileUI"
+              :color="accentColor"
+              v-model="sunCenteredTracking"
+              @change="centerSun()"
+              label="Center Sun"
+              :disabled="sunCenteredTracking"
+              hide-details 
+            />
+            <v-checkbox
+              :color="accentColor"
+              v-model="showAltAzGrid"
+              @keyup.enter="showAltAzGrid = !showAltAzGrid"
+              label="Sky Grid"
+              hide-details 
+            />
+            <v-checkbox
+              :color="accentColor"
+              v-model="showHorizon"
+              @keyup.enter="showHorizon = !showHorizon"
+              label="Horizon/Daytime Sky"
+              hide-details
+            />
+            <v-checkbox
+                :color="accentColor"
+                v-model="useRegularMoon"
+                @keyup.enter="useRegularMoon = !useRegularMoon"
+                label="Visible Moon"
+                hide-details
+            />    
+            <v-checkbox
+              v-show="!showNewMobileUI"
+              :color="accentColor"
+              v-model="showEclipsePredictionTextBanner"
+              @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
+              label="Eclipse Timing"
+              hide-details 
+            />  
+            <v-checkbox
+              v-show="narrow"
+              v-model="showNewMobileUI"
+              label="New Interface"
+              :color="accentColor"
+              @keyup.enter="showNewMobileUI = !showNewMobileUI"
+              @update:modelValue="(value) => {
+                console.log('showNewMobileUI', value);
+                showEclipsePredictionTextBanner = !value;
+              }"
+              hide-details
+            ></v-checkbox>            
+          </div>
+
+      </div>
       
       
       <div id="eclipse-percent-chip">
@@ -2206,7 +2278,7 @@ export default defineComponent({
     }
     
     this.showNewMobileUI = this.narrow;
-        
+    
     if (!this.showSplashScreen) {
       this.showEclipsePredictionTextBanner = !this.showNewMobileUI;
     }
