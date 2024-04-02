@@ -1029,15 +1029,16 @@
       :close-on-content-click="true"
       >
       <div id="instruction-overlay">
-        <!-- <v-icon
-          id="overlay-close-icon"
-          class="outside-close-icon"
-          icon="mdi-close-box"
-          color="white"
-          @click="inIntro = !inIntro"
-          @keyup.enter="inIntro = !inIntro"
-          tabindex="0"
-        ></v-icon> -->
+        <div id="overlay-close">
+          <v-icon
+            class="overlay-close-icon"
+            icon="mdi-close-box"
+            color="gray"
+            @click="inIntro = !inIntro"
+            @keyup.enter="inIntro = !inIntro"
+            tabindex="0"
+          ></v-icon>
+        </div>
         <div class="inst-quad top-left">
           <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
@@ -1047,7 +1048,7 @@
         <div class="inst-quad top-right">
           <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
-            What's on screen
+            Where, when, how much
           </div>
         </div>
         <div class="inst-quad bottom-left">
@@ -1062,7 +1063,7 @@
             SHOW me what will happen when!
           </div>
         </div>
-        <div id="instructions-close-button">
+        <!-- <div id="instructions-close-button">
           <v-icon 
             :size="Math.max(0.1 * $vuetify.display.width, 20)" 
             @click="inIntro = !inIntro"
@@ -1070,7 +1071,7 @@
             >
           </v-icon>
           Tap to close
-        </div>
+        </div> -->
       </div>
     </v-overlay>
 
@@ -4864,23 +4865,28 @@ video, #info-video {
   }
 }
 
-// .outside-close-icon {
-//   position: absolute;
-//   top: -3px;
-//   right: -28px;
-//   z-index: 15;
-//   font-size: calc(2.5*var(--default-font-size));
+#overlay-close {
+  position: absolute;
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  font-size: calc(1.5 * var(--default-font-size));
+  display: flex;
+  flex-direction: column;
+  color: #888888;
 
 
-//   &:hover {
-//     cursor: pointer;
-//   }
+}
 
-//   &:focus {
-//     color: white;
-//     border: 2px solid white;
-//   }
-// }
+
+.overlay-close-icon {
+  z-index: 15;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: calc(2.5*var(--default-font-size));
+  color: #888888;
+}
 
 .bottom-sheet {
 
@@ -5730,10 +5736,10 @@ video, #info-video {
     margin-top: auto;
     text-align: right;
     .inst-arrow {
-      align-self: center;
+      align-self: end;
     }
     .the-arrow {
-      transform: translateY(5px) rotateX(180deg) rotateZ(30deg);
+      transform: translateY(5px) rotateX(180deg) rotateZ(90deg);
     } 
   }
   
