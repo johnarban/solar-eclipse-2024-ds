@@ -904,6 +904,76 @@
           @activate="copyShareURL"
           faSize="lg"
         ></icon-button>
+        
+        <div
+        id="controls"
+        class="control-icon-wrapper"
+      >
+        <div id="controls-top-row">
+          <font-awesome-icon
+            size="lg"
+            :color="accentColor"
+            :icon="showControls ? `chevron-down` : `gear`"
+            @click="showControls = !showControls"
+            @keyup.enter="showControls = !showControls"
+            tabindex="0"
+          /> 
+        </div>
+
+          <div v-if="showControls" id="control-checkboxes">
+            <v-checkbox
+              v-if="!showNewMobileUI"
+              :color="accentColor"
+              v-model="sunCenteredTracking"
+              @change="centerSun()"
+              label="Center Sun"
+              :disabled="sunCenteredTracking"
+              hide-details 
+            />
+            <v-checkbox
+              :color="accentColor"
+              v-model="showAltAzGrid"
+              @keyup.enter="showAltAzGrid = !showAltAzGrid"
+              label="Sky Grid"
+              hide-details 
+            />
+            <v-checkbox
+              :color="accentColor"
+              v-model="showHorizon"
+              @keyup.enter="showHorizon = !showHorizon"
+              label="Horizon/Daytime Sky"
+              hide-details
+            />
+            <v-checkbox
+                :color="accentColor"
+                v-model="useRegularMoon"
+                @keyup.enter="useRegularMoon = !useRegularMoon"
+                label="Visible Moon"
+                hide-details
+            />    
+            <v-checkbox
+              v-show="!showNewMobileUI"
+              :color="accentColor"
+              v-model="showEclipsePredictionTextBanner"
+              @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
+              label="Eclipse Timing"
+              hide-details 
+            />  
+            <v-checkbox
+              v-show="narrow"
+              v-model="showNewMobileUI"
+              label="New Interface"
+              :color="accentColor"
+              @keyup.enter="showNewMobileUI = !showNewMobileUI"
+              @update:modelValue="(value) => {
+                console.log('showNewMobileUI', value);
+                showEclipsePredictionTextBanner = !value;
+              }"
+              hide-details
+            ></v-checkbox>            
+          </div>
+
+      </div>
       </div>
       
       <!-- <div id="mobile-zoom-control"> -->
@@ -1040,25 +1110,25 @@
           ></v-icon>
         </div>
         <div class="inst-quad top-left">
-          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
             Set location + more
           </div>
         </div>
         <div class="inst-quad top-right">
-          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
             Where, when + how much
           </div>
         </div>
         <div class="inst-quad bottom-left">
-          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
             Control or "slide" time yourself!
           </div>
         </div>
         <div class="inst-quad bottom-right">
-          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
             Tell me what will happen and when
           </div>
@@ -1297,75 +1367,7 @@
         :box-shadow="false"
       ></icon-button>
       
-      <div
-        id="controls"
-        class="control-icon-wrapper"
-      >
-        <div id="controls-top-row">
-          <font-awesome-icon
-            size="lg"
-            :color="accentColor"
-            :icon="showControls ? `chevron-down` : `gear`"
-            @click="showControls = !showControls"
-            @keyup.enter="showControls = !showControls"
-            tabindex="0"
-          /> 
-        </div>
-
-          <div v-if="showControls" id="control-checkboxes">
-            <v-checkbox
-              v-if="!showNewMobileUI"
-              :color="accentColor"
-              v-model="sunCenteredTracking"
-              @change="centerSun()"
-              label="Center Sun"
-              :disabled="sunCenteredTracking"
-              hide-details 
-            />
-            <v-checkbox
-              :color="accentColor"
-              v-model="showAltAzGrid"
-              @keyup.enter="showAltAzGrid = !showAltAzGrid"
-              label="Sky Grid"
-              hide-details 
-            />
-            <v-checkbox
-              :color="accentColor"
-              v-model="showHorizon"
-              @keyup.enter="showHorizon = !showHorizon"
-              label="Horizon/Daytime Sky"
-              hide-details
-            />
-            <v-checkbox
-                :color="accentColor"
-                v-model="useRegularMoon"
-                @keyup.enter="useRegularMoon = !useRegularMoon"
-                label="Visible Moon"
-                hide-details
-            />    
-            <v-checkbox
-              v-show="!showNewMobileUI"
-              :color="accentColor"
-              v-model="showEclipsePredictionTextBanner"
-              @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
-              label="Eclipse Timing"
-              hide-details 
-            />  
-            <v-checkbox
-              v-show="narrow"
-              v-model="showNewMobileUI"
-              label="New Interface"
-              :color="accentColor"
-              @keyup.enter="showNewMobileUI = !showNewMobileUI"
-              @update:modelValue="(value) => {
-                console.log('showNewMobileUI', value);
-                showEclipsePredictionTextBanner = !value;
-              }"
-              hide-details
-            ></v-checkbox>            
-          </div>
-
-      </div>
+      
       
       <div id="eclipse-percent-chip">
         <v-chip 
@@ -5669,6 +5671,7 @@ video, #info-video {
   div.inst-quad {
     display: flex;
     flex-direction: column;
+    gap: 5px;
   }
   
   
@@ -5681,7 +5684,7 @@ video, #info-video {
   }
   
   .inst-text {
-    font-size: min(4vw, 3.5vh);
+    font-size: min(3.5vw, 3vh);
     color: white;
     font-weight: bold;
     flex-shrink:0.5;
@@ -5741,6 +5744,12 @@ video, #info-video {
     .the-arrow {
       transform: translateY(5px) rotateX(180deg) rotateZ(90deg);
     } 
+    
+    @media (min-height: 500px) {
+      .the-arrow {
+        transform: translateY(5px) rotateX(180deg) rotateZ(45deg);
+      } 
+    }
   }
   
   
