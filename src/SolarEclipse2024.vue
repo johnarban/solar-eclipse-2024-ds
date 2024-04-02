@@ -5685,15 +5685,22 @@ video, #info-video {
   --height: 60dvh;
   position: relative;
   top: 7rem;
+  
+  @media (max-height: 600px) {
+    --height: 50dvh;
+    top: calc(5rem + 1vh);
+  }
+  
   left: calc((100dvw - var(--width)) / 2);
   
   display: grid;
   width: var(--width);
   height: var(--height);
+  min-height: max-content;
   padding: 1rem;
   grid-template-columns: 1fr 1.35fr;
   grid-template-rows: 1fr 1fr;
-  gap: 2em;
+  gap: 1em;
   
   border: 2px solid white;
   background-color: rgba(0, 0, 0, 0.8);
@@ -5724,10 +5731,13 @@ video, #info-video {
   }
   
   .inst-text {
-    font-size: calc(1.5 * var(--default-font-size));
+    font-size: min(4vw, 3.5vh);
     color: #eac402;
     flex-shrink:0.5;
+    
+      
   }
+  
   
   .inst-arrow {
     svg {
