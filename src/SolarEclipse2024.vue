@@ -1039,27 +1039,27 @@
           tabindex="0"
         ></v-icon> -->
         <div class="inst-quad top-left">
-          <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
-            Location options
+            Location search & sharing
           </div>
         </div>
         <div class="inst-quad top-right">
-          <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
             What's on screen
           </div>
         </div>
         <div class="inst-quad bottom-left">
-          <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
-            Time controls
+            Control or "slide" time yourself!
           </div>
         </div>
         <div class="inst-quad bottom-right">
-          <div class="inst-arrow"><arrow-svg width="50px" :color="accentColor"/></div>
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="$vuetify.display.width*0.16">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
-            Eclipse timing + more options
+            SHOW me what will happen when!
           </div>
         </div>
         <div id="instructions-close-button">
@@ -5562,7 +5562,6 @@ video, #info-video {
       aspect-ratio: 5/3;
     }
   
-  
     span {
       padding: 0;
       margin: 0;
@@ -5626,14 +5625,14 @@ video, #info-video {
 #instruction-overlay {
   
   --width: 80dvw;
-  --height: 60dvh;
+  // --height: 60dvh;
   position: relative;
-  top: 7rem;
+  // top: 7rem;
   
-  @media (max-height: 600px) {
-    --height: 50dvh;
-    top: calc(5rem + 1vh);
-  }
+
+  --height: 50dvh;
+  top: calc(5rem + 1vh);
+
   
   left: calc((100dvw - var(--width)) / 2);
   
@@ -5672,11 +5671,13 @@ video, #info-video {
     flex-shrink: 0;
     flex-basis: 50%;
     display: flex;
+    gap: 1em;
   }
   
   .inst-text {
     font-size: min(4vw, 3.5vh);
-    color: #eac402;
+    color: white;
+    font-weight: bold;
     flex-shrink:0.5;
     
       
@@ -5684,7 +5685,7 @@ video, #info-video {
   
   
   .inst-arrow {
-    svg {
+    .the-arrow {
       max-width: calc(0.1 * var(--width)) !important;
       max-height: calc(0.1 * var(--height)) !important;
     }
@@ -5694,9 +5695,9 @@ video, #info-video {
     // grid-area shorthand: row-start / column-start / row-end / column-end;
     grid-area: 1 / 1 / 2 / 2;
     margin-bottom: auto;
-    svg {
+    .the-arrow {
       // flip right to left
-      transform: rotateY(180deg);
+      transform: translateY(-5px) rotateZ(-40deg);
     }
   }
   
@@ -5707,10 +5708,10 @@ video, #info-video {
     margin-bottom: auto;
     text-align: right;
     .inst-arrow {
-      align-self: center;
+      align-self: end;
     }
-    svg {
-      transform: rotateY(0deg);
+    .the-arrow {
+      transform: translateY(-5px) rotateZ(30deg);
     }
   }
   
@@ -5718,8 +5719,8 @@ video, #info-video {
     grid-area: 2 / 1 / 3 / 2;
     flex-direction: column-reverse;
     margin-top: auto;
-    svg {
-      transform: translateX(2rem) rotateY(180deg) rotateX(180deg) rotateZ(-45deg);
+    .the-arrow {
+      transform: translateY(5px) rotateX(180deg);
     }
   }
   
@@ -5731,8 +5732,8 @@ video, #info-video {
     .inst-arrow {
       align-self: center;
     }
-    svg {
-      transform: rotateY(0deg) rotateX(180deg);
+    .the-arrow {
+      transform: translateY(5px) rotateX(180deg) rotateZ(30deg);
     } 
   }
   
