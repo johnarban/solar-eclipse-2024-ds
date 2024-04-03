@@ -5964,6 +5964,10 @@ video, #info-video {
   gap: 5px;
   margin-left: 10px;
   
+  @media (orientation: landscape) {
+    margin-left: 3rem;
+  }
+  
   @media (max-width: 370px) {
     justify-content: center;
   }
