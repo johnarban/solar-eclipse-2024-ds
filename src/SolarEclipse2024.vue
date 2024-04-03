@@ -4440,6 +4440,8 @@ body {
     top: 50%;
     transform: translateY(-50%);
     z-index: 100;
+    pointer-events: none;
+    
     margin-left: 1rem;
     
     padding-block: 0.7rem;
