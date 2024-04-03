@@ -615,14 +615,14 @@
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">selected location</span> The currently selected location.  
+                        font-weight: bold ">Selected Location</span> The currently selected location.  
                       </li>
                       <li class="mb-2">
                         <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">date/time</span> The date and time being displayed by WorldWide Telescopse
+                        font-weight: bold ">Date/Time</span> The date and time being displayed by WorldWide Telescopse
                       </li>
                       <li v-if="showNewMobileUI">
                         <span 
@@ -667,30 +667,38 @@
                     <h4 class="user-guide-header">Display Options:</h4>
                     <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
+                      <li class="mb-2" v-if="showNewMobileUI">
+                        {{ touchscreen ? "Tap" : "Click" }}
+                        <font-awesome-icon
+                          class="bullet-icon"
+                          icon="book-open"
+                          size="lg" 
+                        ></font-awesome-icon> to open <span class="user-guide-emphasis-white">Information Guide</span> on why eclipses happen and more.
+                      </li>
                       <li class="mb-2">
                         {{ touchscreen ? "Tap" : "Click" }}
                         <v-icon
                           class="bullet-icon"
                           icon="mdi-sun-clock"
-                          size="medium">
+                          size="large">
                         </v-icon> to display detailed <span class="user-guide-emphasis-white">eclipse timing</span> predictions for your selected location.
                       </li>
                       <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Center Sun:</span> Recenter view on Sun.
                       </li>
-                      <li>
+                      <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Sky Grid:</span> Display altitude/azimuth grid with cardinal directions.
                       </li>
-                      <li>
+                      <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Horizon/Daytime Sky:</span> Display a virtual "ground" that delineates where the Sun rises and sets. Show a blue sky when the Sun is above the horizon.                     
                       </li>
-                      <li>
+                      <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
                       </li>
                       <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
                       </li>
-                      <li v-if="narrow">
+                      <li v-if="narrow && !showNewMobileUI">
                         <span class="user-guide-emphasis-white">Detailed Interface:</span> Switch to original mobile interface. (Uncheck box to use new streamlined interface)                               
                       </li>
                       <li v-if="!showNewMobileUI"  class="mt-2">
@@ -704,7 +712,7 @@
                           
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
 
-                    <h4 class="user-guide-header">Location Options:</h4>
+                    <h4 class="user-guide-header">Location <span v-if="showNewMobileUI">and other</span> Options:</h4>
                     <p  class="mb-3">(Top-left of the screen)</p>
                     <ul class="text-list">
                       <li>
@@ -729,6 +737,27 @@
                               size="lg" 
                             ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
                       </li>
+                    </ul>
+                    <p v-if="showNewMobileUI" class="mt-3 mb-1">
+                      Tap <font-awesome-icon
+                          class="bullet-icon"
+                          icon="gear"
+                          size="lg" 
+                        ></font-awesome-icon> to access more options:
+                    </p>     
+                    <ul>
+                      <li v-if="showNewMobileUI">
+                        <span class="user-guide-emphasis-white">Sky Grid:</span> Display altitude/azimuth grid with cardinal directions.
+                      </li>
+                      <li v-if="showNewMobileUI">
+                        <span class="user-guide-emphasis-white">Horizon/Daytime Sky:</span> Display a virtual "ground" that delineates where the Sun rises and sets. Show a blue sky when the Sun is above the horizon.                     
+                      </li>
+                      <li v-if="showNewMobileUI">
+                        <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
+                      </li>
+                      <li v-if="showNewMobileUI">
+                        <span class="user-guide-emphasis-white">Detailed Interface:</span> Switch to original mobile interface. (Uncheck box to use new streamlined interface)                               
+                      </li>                  
                     </ul>
 
                   </div>
