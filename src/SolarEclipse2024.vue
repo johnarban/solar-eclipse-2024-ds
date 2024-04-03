@@ -3990,9 +3990,11 @@ export default defineComponent({
     setLocationFromSearchFeature(feature: MapBoxFeature) {
       this.setLocationFromFeature(feature);
       this.textSearchSelectedLocations.push(feature.center);
-      setTimeout(() => {
-        this.searchOpen = false;
-      }, 3_000);
+      if (this.showNewMobileUI) {
+        setTimeout(() => {
+          this.searchOpen = false;
+        }, 3_000);
+      }
     },
     
     reversePlaybackRate() {
