@@ -5290,9 +5290,6 @@ video, #info-video {
   
 
   .v-slider-thumb__label {
-    @media (max-width: 600px) {
-      display: none;
-    }
     min-width: fit-content;
     white-space: nowrap;
     color: black;
@@ -5301,6 +5298,13 @@ video, #info-video {
 
     font-size: var(--default-font-size);
     padding-block: calc(0.5 * var(--default-line-height));
+
+    @media (max-width: 600px) {
+      font-size: calc(1 * var(--default-font-size));
+      padding-block: 0;
+      padding-inline: 0.3rem;
+      height: 15px;
+    }
   }
   
   .v-slider-thumb__label::before {
