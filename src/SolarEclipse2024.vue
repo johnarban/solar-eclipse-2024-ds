@@ -5495,7 +5495,7 @@ video, #info-video {
   display: flex;
   flex-direction: row;
   
-  @media (max-width: 600px) and (max-aspect-ratio: 1) {
+  @media (max-width: 600px) {
     flex-direction: column;
     gap: 1rem;
   }
@@ -5516,7 +5516,7 @@ video, #info-video {
 
   #non-map-container {
     flex-basis: 100%;
-    @media (max-width: 600px) and (max-aspect-ratio: 1) {
+    @media (max-width: 600px) {
       flex-basis: fit-content;
     }
   }
