@@ -169,7 +169,7 @@ export default defineComponent({
         '--accent-color': this.accentColor,
         '--bg-color': 'black',
         '--fg-container-padding': this.searchOpen ? (this.small ? '0px 5px 0px 0px' : '5px 10px 12px 10px') : '0px',
-        '--border-radius': this.small ? '20px' : '20px',
+        '--border-radius': this.searchOpen ? '7px' : '20px',
       };
     },
   },
@@ -302,7 +302,7 @@ export default defineComponent({
     padding: 0px 10px;
     
     &.results-small {
-      top: 34px;
+      top: 37px;
       width: calc(100% + 4px);
       left: -2px;
     }
