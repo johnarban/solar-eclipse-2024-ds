@@ -5835,6 +5835,9 @@ video, #info-video {
     grid-area: 1 / 2 / 2 / 3;
     margin-bottom: auto;
     text-align: right;
+    .inst-text {
+      justify-content: flex-end;
+    }
     .inst-arrow {
       align-self: end;
     }
@@ -5857,6 +5860,9 @@ video, #info-video {
     flex-direction: column-reverse;
     margin-top: auto;
     text-align: right;
+    .inst-text {
+      justify-content: flex-end;
+    }
     .inst-arrow {
       align-self: end;
     }
