@@ -459,7 +459,7 @@
                 </div>
               <figure>
                 <!-- <v-img src="https://www.nasa.gov/sites/default/files/thumbnails/image/tsis_eclipse-1.gif"></v-img> -->
-                <gif-play-pause still-only startPaused :gif='require("./assets/eclipse.gif")' :still='require("./assets/eclipse_static.gif")' alt="Animated schematic of a solar eclipse showing how the Moon moves between the Sun and Earth."/>
+                <gif-play-pause startPaused :gif='require("./assets/eclipse.gif")' :still='require("./assets/eclipse_static.gif")' alt="Animated schematic of a solar eclipse showing how the Moon moves between the Sun and Earth."/>
                 <figcaption>Image credit: NASA Goddard / Katy Mersmann</figcaption>
                 <div class="disclaimer">Not to scale</div>
               </figure>
@@ -528,7 +528,7 @@
                     <h4 class="user-guide-header">Time Controls:</h4>
                     <p  class="mb-3">(Bottom-left of the screen)</p>
                     <p>
-                      By default, time is moving forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
+                      By default, time is moving forward at 500x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
                     </p>
                     <ul class="text-list">
                       <li>
@@ -615,14 +615,14 @@
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">selected location</span> The currently selected location.  
+                        font-weight: bold ">Selected Location</span> The currently selected location.  
                       </li>
                       <li class="mb-2">
                         <span 
                         style="color: blue; background-color: white;
                         padding-inline: 0.7em;
                         border-radius: 20px;
-                        font-weight: bold ">date/time</span> The date and time being displayed by WorldWide Telescopse
+                        font-weight: bold ">Date/Time</span> The date and time being displayed by WorldWide Telescopse
                       </li>
                       <li v-if="showNewMobileUI">
                         <span 
@@ -667,31 +667,39 @@
                     <h4 class="user-guide-header">Display Options:</h4>
                     <p  class="mb-3">(Bottom-right of the screen)</p>
                     <ul class="text-list">
+                      <li class="mb-2" v-if="showNewMobileUI">
+                        {{ touchscreen ? "Tap" : "Click" }}
+                        <font-awesome-icon
+                          class="bullet-icon"
+                          icon="book-open"
+                          size="lg" 
+                        ></font-awesome-icon> to open <span class="user-guide-emphasis-white">Information Guide</span> on why eclipses happen and more.
+                      </li>
                       <li class="mb-2">
                         {{ touchscreen ? "Tap" : "Click" }}
                         <v-icon
                           class="bullet-icon"
                           icon="mdi-sun-clock"
-                          size="medium">
+                          size="large">
                         </v-icon> to display detailed <span class="user-guide-emphasis-white">eclipse timing</span> predictions for your selected location.
                       </li>
                       <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Center Sun:</span> Recenter view on Sun.
                       </li>
-                      <li>
+                      <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Sky Grid:</span> Display altitude/azimuth grid with cardinal directions.
                       </li>
-                      <li>
+                      <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Horizon/Daytime Sky:</span> Display a virtual "ground" that delineates where the Sun rises and sets. Show a blue sky when the Sun is above the horizon.                     
                       </li>
-                      <li>
+                      <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
                       </li>
                       <li v-if="!showNewMobileUI">
                         <span class="user-guide-emphasis-white">Eclipse Timing:</span> Display eclipse start time for your selected location. If applicable, display duration of totality. (This appears at the top of the map if it is open, and at the top of the screen if the map is closed.)                   
                       </li>
-                      <li v-if="narrow">
-                        <span class="user-guide-emphasis-white">New Interface:</span> Use new streamlined interface for small screens. (Uncheck to revert to original mobile interface.)                   
+                      <li v-if="narrow && !showNewMobileUI">
+                        <span class="user-guide-emphasis-white">Detailed Interface:</span> Switch to original mobile interface. (Uncheck box to use new streamlined interface)                               
                       </li>
                       <li v-if="!showNewMobileUI"  class="mt-2">
                         <span 
@@ -704,7 +712,7 @@
                           
                     <v-divider thickness="2px" class="solid-divider"></v-divider>
 
-                    <h4 class="user-guide-header">Location Options:</h4>
+                    <h4 class="user-guide-header">Location <span v-if="showNewMobileUI">and other</span> Options:</h4>
                     <p  class="mb-3">(Top-left of the screen)</p>
                     <ul class="text-list">
                       <li>
@@ -729,6 +737,27 @@
                               size="lg" 
                             ></font-awesome-icon> to copy <strong>share-url</strong> for a specific location.
                       </li>
+                    </ul>
+                    <p v-if="showNewMobileUI" class="mt-3 mb-1">
+                      Tap <font-awesome-icon
+                          class="bullet-icon"
+                          icon="gear"
+                          size="lg" 
+                        ></font-awesome-icon> to access more options:
+                    </p>     
+                    <ul>
+                      <li v-if="showNewMobileUI">
+                        <span class="user-guide-emphasis-white">Sky Grid:</span> Display altitude/azimuth grid with cardinal directions.
+                      </li>
+                      <li v-if="showNewMobileUI">
+                        <span class="user-guide-emphasis-white">Horizon/Daytime Sky:</span> Display a virtual "ground" that delineates where the Sun rises and sets. Show a blue sky when the Sun is above the horizon.                     
+                      </li>
+                      <li v-if="showNewMobileUI">
+                        <span class="user-guide-emphasis-white">Visible Moon:</span> Solar Eclipses occur during a New Moon, when the Moon is not normally visible in the sky. This option makes it easier to see the Moon against the sky.                     
+                      </li>
+                      <li v-if="showNewMobileUI">
+                        <span class="user-guide-emphasis-white">Detailed Interface:</span> Switch to original mobile interface. (Uncheck box to use new streamlined interface)                               
+                      </li>                  
                     </ul>
 
                   </div>
@@ -904,6 +933,73 @@
           @activate="copyShareURL"
           faSize="lg"
         ></icon-button>
+        
+        <div
+        id="controls"
+        class="control-icon-wrapper"
+        v-if="showNewMobileUI"
+      >
+        <div id="controls-top-row">
+          <font-awesome-icon
+            size="lg"
+            :color="accentColor"
+            :icon="showControls ? `chevron-down` : `gear`"
+            @click="showControls = !showControls"
+            @keyup.enter="showControls = !showControls"
+            tabindex="0"
+          /> 
+        </div>
+
+          <div v-if="showControls" id="control-checkboxes">
+            <v-checkbox
+              v-if="!showNewMobileUI"
+              :color="accentColor"
+              v-model="sunCenteredTracking"
+              @change="centerSun()"
+              label="Center Sun"
+              :disabled="sunCenteredTracking"
+              hide-details 
+            />
+            <v-checkbox
+              :color="accentColor"
+              v-model="showAltAzGrid"
+              @keyup.enter="showAltAzGrid = !showAltAzGrid"
+              label="Sky Grid"
+              hide-details 
+            />
+            <v-checkbox
+              :color="accentColor"
+              v-model="showHorizon"
+              @keyup.enter="showHorizon = !showHorizon"
+              label="Horizon/Daytime Sky"
+              hide-details
+            />
+            <v-checkbox
+              :color="accentColor"
+              v-model="useRegularMoon"
+              @keyup.enter="useRegularMoon = !useRegularMoon"
+              label="Visible Moon"
+              hide-details
+            />    
+            <v-checkbox
+              v-show="!showNewMobileUI"
+              :color="accentColor"
+              v-model="showEclipsePredictionTextBanner"
+              @keyup.enter="showEclipsePredictionTextBanner = !showEclipsePredictionTextBanner"
+              label="Eclipse Timing"
+              hide-details 
+            />  
+            <v-checkbox
+              v-show="narrow"
+              :color="accentColor"
+              v-model="showOldMobileUI"
+              @keyup.enter="showOldMobileUI = !showOldMobileUI;"
+              label="Detailed Interface"
+              hide-details
+            ></v-checkbox>            
+          </div>
+
+      </div>
       </div>
       
       <!-- <div id="mobile-zoom-control"> -->
@@ -1021,8 +1117,62 @@
     </transition>
 
   <!-- Opening Dialog Sequence -->
+    <v-overlay
+      v-if="showNewMobileUI"
+      v-model="inIntro"
+      opacity="1"
+      :scrim="false"
+      :close-on-content-click="true"
+      >
+      <div id="instruction-overlay">
+        <div id="overlay-close">
+          <v-icon
+            class="overlay-close-icon"
+            icon="mdi-close-box"
+            color="gray"
+            @click="inIntro = !inIntro"
+            @keyup.enter="inIntro = !inIntro"
+            tabindex="0"
+          ></v-icon>
+        </div>
+        <div class="inst-quad top-left">
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
+          <div class="inst-text">
+            Set location + more
+          </div>
+        </div>
+        <div class="inst-quad top-right">
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
+          <div class="inst-text">
+            Where, when + how much
+          </div>
+        </div>
+        <div class="inst-quad bottom-left">
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
+          <div class="inst-text">
+            Control or "slide" time yourself!
+          </div>
+        </div>
+        <div class="inst-quad bottom-right">
+          <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
+          <div class="inst-text">
+            Tell me what will happen and when
+          </div>
+        </div>
+        <!-- <div id="instructions-close-button">
+          <v-icon 
+            :size="Math.max(0.1 * $vuetify.display.width, 20)" 
+            @click="inIntro = !inIntro"
+            icon="mdi-gesture-tap-button"
+            >
+          </v-icon>
+          Tap to close
+        </div> -->
+      </div>
+    </v-overlay>
 
     <v-dialog
+      v-if="!showNewMobileUI"
       v-model="inIntro"
       :style="cssVars"
       :scrim="false"
@@ -1190,11 +1340,45 @@
     </div>
     
     <div class="bottom-content">
-
+     
+      <v-dialog
+        v-model="showEclipsePredictionSheet"
+        max-width="fit-content"
+        transition="slide-y-transition"
+        id="eclipse-prediction-sheet"
+        >
+        <v-card>
+          <v-card-text>
+            <font-awesome-icon
+                style="position:absolute;right:12px;cursor:pointer;padding:1em;margin:-1em"
+                icon="square-xmark"
+                size="xl"
+                @click="showEclipsePredictionSheet = false"
+                @keyup.enter="showEclipsePredictionSheet = false"
+                tabindex="0"
+              ></font-awesome-icon>
+            <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor" :location="selectedLocationText"/>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+      
+      <icon-button
+        v-if="showNewMobileUI"
+        v-model="showInfoSheet"
+        fa-icon="book-open"
+        fa-size="lg"
+        :color="accentColor"
+        :focus-color="accentColor"
+        :tooltip-text="showInfoSheet ? null : 'More on Eclipses'"
+        :tooltip-location="'left'"
+        :show-tooltip="!mobile"
+        :box-shadow="false"
+      ></icon-button>
+      
       <icon-button
         id="eclipse-details-button"
         md-icon="sun-clock"
-        md-size="24"
+        :md-size="showNewMobileUI ? '16' : '24'"
         :color="accentColor"
         :focus-color="accentColor"
         tooltip-text="View eclipse timing details"
@@ -1208,30 +1392,11 @@
         }"
         >
       </icon-button>
-      <v-dialog
-        v-model="showEclipsePredictionSheet"
-        max-width="fit-content"
-        transition="slide-y-transition"
-        id="eclipse-prediction-sheet"
-        >
-        <v-card>
-          <v-card-text>
-            <button 
-              style="position:absolute;right:12px;cursor:pointer;"
-              id="close-eclipse-prediction-sheet"
-              @click="showEclipsePredictionSheet = false"
-              ><v-icon 
-                  class="elevation-2"
-                  :color="accentColor"
-              >mdi-close</v-icon></button>
-            <eclipse-timer show-timer :prediction="eclipsePrediction" :timezone="selectedTimezone" :color="accentColor" :location="selectedLocationText"/>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
-      
+            
       <div
         id="controls"
         class="control-icon-wrapper"
+        v-if="!showNewMobileUI"
       >
         <div id="controls-top-row">
           <font-awesome-icon
@@ -1285,14 +1450,10 @@
             />  
             <v-checkbox
               v-show="narrow"
-              v-model="showNewMobileUI"
-              label="New Interface"
               :color="accentColor"
-              @keyup.enter="showNewMobileUI = !showNewMobileUI"
-              @update:modelValue="(value) => {
-                console.log('showNewMobileUI', value);
-                showEclipsePredictionTextBanner = !value;
-              }"
+              v-model="showOldMobileUI"
+              @keyup.enter="showOldMobileUI = !showOldMobileUI"
+              label="Detailed Interface"
               hide-details
             ></v-checkbox>            
           </div>
@@ -2136,7 +2297,7 @@ export default defineComponent({
     }
     
     this.showNewMobileUI = this.narrow;
-        
+    
     if (!this.showSplashScreen) {
       this.showEclipsePredictionTextBanner = !this.showNewMobileUI;
     }
@@ -2664,6 +2825,15 @@ export default defineComponent({
         //   // video.pause();
         // }
       }
+    },
+
+    showOldMobileUI: {
+      get(): boolean {
+        return !this.showNewMobileUI;
+      },
+      set(value: boolean) {
+        this.showNewMobileUI = !value;
+      },
     },
   },
 
@@ -4470,7 +4640,7 @@ body {
   width: calc(100% - 1rem);
   pointer-events: none;
   align-items: flex-end;
-  gap: 5px;
+  gap: 10px;
   // outline: 1px solid lime;
 }
 
@@ -4513,6 +4683,12 @@ body {
     min-width: 30px;
   }
   
+}
+
+#left-buttons-wrapper {
+  #controls {
+    align-self: flex-start;
+  }
 }
 
 #controls {
@@ -4795,6 +4971,29 @@ video, #info-video {
     color: white;
     border: 2px solid white;
   }
+}
+
+#overlay-close {
+  position: absolute;
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  font-size: calc(1.5 * var(--default-font-size));
+  display: flex;
+  flex-direction: column;
+  color: #888888;
+
+
+}
+
+
+.overlay-close-icon {
+  z-index: 15;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: calc(2.5*var(--default-font-size));
+  color: #888888;
 }
 
 .bottom-sheet {
@@ -5477,7 +5676,6 @@ video, #info-video {
       aspect-ratio: 5/3;
     }
   
-  
     span {
       padding: 0;
       margin: 0;
@@ -5536,6 +5734,131 @@ video, #info-video {
     &:hover {
       cursor: pointer;
     }
+}
+
+#instruction-overlay {
+  
+  --width: 80dvw;
+  // --height: 60dvh;
+  position: relative;
+  // top: 7rem;
+  
+
+  --height: 50dvh;
+  top: calc(5rem + 1vh);
+
+  
+  left: calc((100dvw - var(--width)) / 2);
+  
+  display: grid;
+  width: var(--width);
+  height: var(--height);
+  min-height: max-content;
+  padding: 1rem;
+  grid-template-columns: 1fr 1.35fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1em;
+  
+  border: 2px solid white;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  border-radius: 24px;
+  
+  #instructions-close-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: min(4vw, 3.5vh);
+    text-align: center;
+  }
+  
+  
+  div.inst-quad {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  
+  div.inst-quad > div {
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 50%;
+    display: flex;
+    gap: 1em;
+  }
+  
+  .inst-text {
+    font-size: min(3.5vw, 3vh);
+    color: white;
+    font-weight: bold;
+    flex-shrink:0.5;
+    
+      
+  }
+  
+  
+  .inst-arrow {
+    .the-arrow {
+      max-width: calc(0.1 * var(--width)) !important;
+      max-height: calc(0.1 * var(--height)) !important;
+    }
+  }
+  
+  div.inst-quad.top-left {
+    // grid-area shorthand: row-start / column-start / row-end / column-end;
+    grid-area: 1 / 1 / 2 / 2;
+    margin-bottom: auto;
+    .the-arrow {
+      // flip right to left
+      transform: translateY(-5px) rotateZ(-90deg);
+    }
+  }
+  
+  
+  
+  div.inst-quad.top-right {
+    grid-area: 1 / 2 / 2 / 3;
+    margin-bottom: auto;
+    text-align: right;
+    .inst-arrow {
+      align-self: end;
+    }
+    .the-arrow {
+      transform: translateY(-5px) rotateZ(30deg);
+    }
+  }
+  
+  div.inst-quad.bottom-left {
+    grid-area: 2 / 1 / 3 / 2;
+    flex-direction: column-reverse;
+    margin-top: auto;
+    .the-arrow {
+      transform: translateY(5px) rotateX(180deg);
+    }
+  }
+  
+  div.inst-quad.bottom-right {
+    grid-area: 2 / 2 / 3 / 3;
+    flex-direction: column-reverse;
+    margin-top: auto;
+    text-align: right;
+    .inst-arrow {
+      align-self: end;
+    }
+    .the-arrow {
+      transform: translateY(5px) rotateX(180deg) rotateZ(90deg);
+    } 
+    
+    @media (min-height: 500px) {
+      .the-arrow {
+        transform: translateY(5px) rotateX(180deg) rotateZ(45deg);
+      } 
+    }
+  }
+  
+  
 }
 
 #introduction-overlay {
@@ -5866,7 +6189,7 @@ video, #info-video {
 a {
     text-decoration: none;
     font-weight: bold;
-    color: #5a7ed2; // lighter variant of CosmicDS logo blue
+    color: #7996DA; // lighter variant of CosmicDS logo blue
     pointer-events: auto;
   }
 
