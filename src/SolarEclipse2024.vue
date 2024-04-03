@@ -528,7 +528,7 @@
                     <h4 class="user-guide-header">Time Controls:</h4>
                     <p  class="mb-3">(Bottom-left of the screen)</p>
                     <p>
-                      By default, time is moving forward at 100x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
+                      By default, time is moving forward at 500x the real speed. Time slows down to 10x the real speed as the eclipse approaches totality.
                     </p>
                     <ul class="text-list">
                       <li>
@@ -6189,7 +6189,7 @@ video, #info-video {
 a {
     text-decoration: none;
     font-weight: bold;
-    color: #5a7ed2; // lighter variant of CosmicDS logo blue
+    color: #7996DA; // lighter variant of CosmicDS logo blue
     pointer-events: auto;
   }
 
