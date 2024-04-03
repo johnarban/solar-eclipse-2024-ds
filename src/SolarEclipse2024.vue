@@ -1310,6 +1310,7 @@
           :prepend-icon="smallSize ? `` : `mdi-sun-angle`"
           variant="outlined"
           elevation="1"
+          size="small"
           :text="percentEclipsedText"
         > </v-chip>
       </div>
