@@ -834,12 +834,9 @@
   <div
     id="main-content"
   > 
-    <div id="center-page-banner" v-if="showNewMobileUI && (sunPosition.altRad < .25 * Math.PI/180)">
-      <p v-if="sunPosition.altRad <= -.24 * Math.PI/180">
-        The Sun is below the horizon. 
-      </p>
-      <p v-else>
-        The Sun is {{ sunPosition.azRad < Math.PI ? 'rising' : 'setting' }}.
+    <div id="center-page-banner" v-if="(sunPosition.altRad < -.25 * Math.PI/180)">
+      <p>
+        The Sun has {{ sunPosition.azRad < Math.PI ? 'not risen yet' : 'set' }}
       </p>
     </div>
     <WorldWideTelescope
@@ -4450,7 +4447,7 @@ body {
     padding-bottom: 1rem;
     
     background-color: rgba(0, 0, 0, 0.7);
-    font-size: calc(2 * var(--default-font-size));
+    font-size: calc(1.5 * var(--default-font-size));
     font-weight: bold;
     color: #ccc;
     text-align: center;
