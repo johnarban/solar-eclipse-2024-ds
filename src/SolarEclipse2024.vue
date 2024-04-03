@@ -4266,13 +4266,13 @@ export default defineComponent({
     showWWTGuideSheet(show: boolean) {
       if (show) {
         this.userGuideStartTimestamp = Date.now();
-        
+        this.pauseForOverlay();
       } else if (this.userGuideStartTimestamp !== null) {
         this.userGuideTimeMs += (Date.now() - this.userGuideStartTimestamp);
         this.userGuideStartTimestamp = null;
       }
       
-      if (!show && this.narrow) {
+      if (!show) {
         this.playForOverlay();
       }
     },
