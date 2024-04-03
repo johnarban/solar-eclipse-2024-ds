@@ -834,6 +834,14 @@
   <div
     id="main-content"
   > 
+    <div id="center-page-banner" v-if="sunPosition.altRad < .25 * Math.PI/180">
+      <p v-if="sunPosition.altRad <= -.24 * Math.PI/180">
+        The Sun is below the horizon. 
+      </p>
+      <p v-else>
+        The Sun is {{ sunPosition.azRad < Math.PI ? 'rising' : 'setting' }}.
+      </p>
+    </div>
     <WorldWideTelescope
       :wwt-namespace="wwtNamespace"
       @pointerdown="onPointerDown"
@@ -4430,6 +4438,27 @@ body {
   .location-search-overwwt {
     z-index: 600;
   }
+  
+  #center-page-banner {
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    
+    background-color: rgba(0, 0, 0, 0.7);
+    font-size: calc(2 * var(--default-font-size));
+    font-weight: bold;
+    color: #ccc;
+    text-align: center;
+
+    
+    
+  }
+  
 }
 
 #app {
