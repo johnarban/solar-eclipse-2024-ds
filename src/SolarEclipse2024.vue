@@ -5746,6 +5746,10 @@ video, #info-video {
 
   --height: 50dvh;
   top: calc(5rem + 1vh);
+  
+  @media (min-height: 500px) {
+    top: calc(5rem + 11vh);
+  }
 
   
   left: calc((100dvw - var(--width)) / 2);
