@@ -834,6 +834,11 @@
   <div
     id="main-content"
   > 
+    <div id="center-page-banner" v-if="(sunPosition.altRad < -.25 * Math.PI/180)">
+      <p>
+        The Sun has {{ sunPosition.azRad < Math.PI ? 'not risen yet' : 'set' }}
+      </p>
+    </div>
     <WorldWideTelescope
       :wwt-namespace="wwtNamespace"
       @pointerdown="onPointerDown"
@@ -935,20 +940,20 @@
         ></icon-button>
         
         <div
-        id="controls"
-        class="control-icon-wrapper"
-        v-if="showNewMobileUI"
-      >
-        <div id="controls-top-row">
-          <font-awesome-icon
-            size="lg"
-            :color="accentColor"
-            :icon="showControls ? `chevron-down` : `gear`"
-            @click="showControls = !showControls"
-            @keyup.enter="showControls = !showControls"
-            tabindex="0"
-          /> 
-        </div>
+          id="controls"
+          class="control-icon-wrapper"
+          v-if="showNewMobileUI"
+        >
+          <div id="controls-top-row">
+            <font-awesome-icon
+              size="lg"
+              :color="accentColor"
+              :icon="showControls ? `chevron-down` : `gear`"
+              @click="showControls = !showControls"
+              @keyup.enter="showControls = !showControls"
+              tabindex="0"
+            /> 
+          </div>
 
           <div v-if="showControls" id="control-checkboxes">
             <v-checkbox
@@ -998,10 +1003,8 @@
               hide-details
             ></v-checkbox>            
           </div>
-
       </div>
-      </div>
-      
+    </div>      
       <!-- <div id="mobile-zoom-control"> -->
         <!-- {{ Math.round(Math.pow(10, userZoom)*100)/100 }} -->
         <!-- <div class="slider-padding">
@@ -4431,6 +4434,43 @@ body {
   .location-search-overwwt {
     z-index: 600;
   }
+  
+  #center-page-banner {
+    position: absolute;
+    width: 25%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    pointer-events: none;
+    
+    margin-left: 1rem;
+    
+    padding-block: 0.7rem;
+    padding-inline: 1rem;
+    background-color: rgba(0, 0, 0, 0.7);
+    font-size: calc(1.5 * var(--default-font-size));
+    font-weight: bold;
+    color: #888888;
+    text-align: center;
+    border-radius: 10px;
+
+    @media (max-width: 600px) {
+      width: 35%;
+      top: 65%;
+      margin-left: 3%;
+      padding-block: 2%;
+      padding-inline: 3%;
+      font-size: calc(1.2 * var(--default-font-size));
+    }
+
+    @media (orientation: landscape) {
+      top: 50%;
+      margin-left: 8%;
+      font-size: calc(1.1 * var(--default-font-size));
+    }
+    
+  }
+  
 }
 
 #app {
