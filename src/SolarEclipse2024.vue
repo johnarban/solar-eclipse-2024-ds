@@ -834,7 +834,7 @@
   <div
     id="main-content"
   > 
-    <div id="center-page-banner" v-if="sunPosition.altRad < .25 * Math.PI/180">
+    <div id="center-page-banner" v-if="showNewMobileUI && (sunPosition.altRad < .25 * Math.PI/180)">
       <p v-if="sunPosition.altRad <= -.24 * Math.PI/180">
         The Sun is below the horizon. 
       </p>
