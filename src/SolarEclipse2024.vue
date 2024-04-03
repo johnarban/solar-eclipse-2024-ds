@@ -2842,6 +2842,22 @@ export default defineComponent({
   },
 
   methods: {
+    
+    pauseForOverlay() {
+      const increment = this.playing  || this.playingWaitCount > 0;
+      this.playingWaitCount = increment ? this.playingWaitCount + 1 : 0;
+      this.playing = false;
+      
+    },
+    
+    playForOverlay() {
+      if (this.playingWaitCount === 1) {
+        this.playing = true;
+      } 
+      
+      this.playingWaitCount = this.playingWaitCount === 0 ? 0 : this.playingWaitCount - 1;
+
+    },
 
     updatePanForMobile() {
       if (this.showNewMobileUI) {
@@ -4063,12 +4079,17 @@ export default defineComponent({
         this.onScroll();
       });
       if (show) {
+        if (this.narrow) {
+          this.pauseForOverlay();
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (this.$refs.showGuidedContent as any).tooltip = false;
         const element = document.activeElement;
         if (element && element.id === "show-guided-content-button") {
           (element as HTMLElement).blur();
         }
+      } else if (this.narrow) {
+        this.playForOverlay();
       }
     },
     
@@ -4216,47 +4237,79 @@ export default defineComponent({
       // Keep track of how long the user has the book open/closed
       if (show) {
         this.infoStartTimestamp = Date.now();
+        this.pauseForOverlay();
       } else if (this.infoStartTimestamp !== null) {
         this.infoTimeMs += (Date.now() - this.infoStartTimestamp);
         this.infoStartTimestamp = null;
       }
+      
+      if (!show) {
+        this.playForOverlay();
+      }
+      
     },
 
     showAdvancedWeather(show: boolean) {
       if (show) {
         this.weatherStartTimestamp = Date.now();
-        this.playing = false;
+        this.pauseForOverlay();
       } else if (this.weatherStartTimestamp !== null) {
         this.weatherTimeMs += (Date.now() - this.weatherStartTimestamp);
         this.weatherStartTimestamp = null;
+      }
+      
+      if (!show) {
+        this.playForOverlay();
       }
     },
 
     showWWTGuideSheet(show: boolean) {
       if (show) {
         this.userGuideStartTimestamp = Date.now();
+        
       } else if (this.userGuideStartTimestamp !== null) {
         this.userGuideTimeMs += (Date.now() - this.userGuideStartTimestamp);
         this.userGuideStartTimestamp = null;
+      }
+      
+      if (!show && this.narrow) {
+        this.playForOverlay();
       }
     },
 
     showEclipsePredictionSheet(show: boolean) {
       if (show) {
-        this.playing = false;
+        this.pauseForOverlay();
         this.eclipseTimerStartTimestamp = Date.now();
       } else if (this.eclipseTimerStartTimestamp !== null) {
         this.eclipseTimerTimeMs += (Date.now() - this.eclipseTimerStartTimestamp);
         this.eclipseTimerStartTimestamp = null;
+      }
+      
+      if (!show) {
+        this.playForOverlay();
       }
     },
 
     weatherInfoOpen(open: boolean) {
       if (open) {
         this.weatherInfoStartTimestamp = Date.now();
+        this.pauseForOverlay();
       } else if (this.weatherInfoStartTimestamp !== null) {
         this.weatherInfoTimeMs += (Date.now() - this.weatherInfoStartTimestamp);
         this.weatherInfoStartTimestamp = null;
+      }
+      
+      if (!open) {
+        this.playForOverlay();
+      }
+    },
+    
+    showPrivacyDialog(show: boolean) {
+      if (show) {
+        this.pauseForOverlay();
+      } else {
+        this.playForOverlay();
       }
     },
     
