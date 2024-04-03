@@ -940,20 +940,20 @@
         ></icon-button>
         
         <div
-        id="controls"
-        class="control-icon-wrapper"
-        v-if="showNewMobileUI"
-      >
-        <div id="controls-top-row">
-          <font-awesome-icon
-            size="lg"
-            :color="accentColor"
-            :icon="showControls ? `chevron-down` : `gear`"
-            @click="showControls = !showControls"
-            @keyup.enter="showControls = !showControls"
-            tabindex="0"
-          /> 
-        </div>
+          id="controls"
+          class="control-icon-wrapper"
+          v-if="showNewMobileUI"
+        >
+          <div id="controls-top-row">
+            <font-awesome-icon
+              size="lg"
+              :color="accentColor"
+              :icon="showControls ? `chevron-down` : `gear`"
+              @click="showControls = !showControls"
+              @keyup.enter="showControls = !showControls"
+              tabindex="0"
+            /> 
+          </div>
 
           <div v-if="showControls" id="control-checkboxes">
             <v-checkbox
@@ -1003,8 +1003,7 @@
               hide-details
             ></v-checkbox>            
           </div>
-
-      </div>
+        </div>
       </div>
       
       <!-- <div id="mobile-zoom-control"> -->
