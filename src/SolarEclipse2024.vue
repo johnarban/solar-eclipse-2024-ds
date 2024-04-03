@@ -4463,7 +4463,7 @@ body {
     }
 
     @media (orientation: landscape) {
-      top: 65%;
+      top: 50%;
       margin-left: 8%;
       font-size: calc(1.1 * var(--default-font-size));
     }
