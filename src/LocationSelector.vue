@@ -551,7 +551,7 @@ export default defineComponent({
       this.updateCircle();
       const needZoom = !this.fromInside && !this.sameLoc(loc, oldLoc);
       if (this.map && (!this.map.getBounds().contains(this.latLng) || needZoom)) {
-        this.map.setView(this.latLng, needZoom ? 8 : this.map.getZoom());
+        this.map.setView(this.latLng, needZoom ? 6 : this.map.getZoom());
       }
       this.fromInside = false;
     },
