@@ -19,6 +19,7 @@ import ColorBar from "./ColorBar.vue";
 import CloudDataExplainer from "./CloudDataExplainer.vue";
 import EclipseTimer from "./EclipseTimer.vue";
 import LocationSearch from "./LocationSearch.vue";
+import ArrowSVG from "./ArrowSVG.vue";
 
 import "./polyfills";
 
@@ -162,5 +163,6 @@ createApp(SolarEclipse2023, {
   .component('cloud-data-explainer', CloudDataExplainer)
   .component('eclipse-timer', EclipseTimer)
   .component('location-search', LocationSearch)
+  .component('arrow-svg', ArrowSVG)
   // Mount
   .mount("#app");
