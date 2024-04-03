@@ -2845,13 +2845,14 @@ export default defineComponent({
     
     pauseForOverlay() {
       const increment = this.playing  || this.playingWaitCount > 0;
-      this.playingWaitCount = increment ? this.playingWaitCount + 1 : 0;
+      this.playingWaitCount = increment ? this.playingWaitCount + 1 : this.playingWaitCount;
       this.playing = false;
       
     },
     
     playForOverlay() {
       if (this.playingWaitCount === 1) {
+        console.log('playForOverlay');
         this.playing = true;
       } 
       
@@ -4069,6 +4070,10 @@ export default defineComponent({
 
   watch: {
 
+    playingWaitCount(val: number, old: number) {
+      console.log(`Playing wait count: ${old} ---> ${val}`);
+    },
+    
     showNewMobileUI(_val: boolean) {
       this.updatePanForMobile(); 
     },
