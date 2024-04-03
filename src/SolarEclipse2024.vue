@@ -1003,9 +1003,8 @@
               hide-details
             ></v-checkbox>            
           </div>
-        </div>
       </div>
-      
+    </div>      
       <!-- <div id="mobile-zoom-control"> -->
         <!-- {{ Math.round(Math.pow(10, userZoom)*100)/100 }} -->
         <!-- <div class="slider-padding">
@@ -4437,21 +4436,35 @@ body {
   
   #center-page-banner {
     position: absolute;
-    width: 100%;
+    width: 25%;
     top: 50%;
     transform: translateY(-50%);
     z-index: 100;
+    margin-left: 1rem;
     
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-    
+    padding-block: 0.7rem;
+    padding-inline: 1rem;
     background-color: rgba(0, 0, 0, 0.7);
     font-size: calc(1.5 * var(--default-font-size));
     font-weight: bold;
-    color: #ccc;
+    color: #888888;
     text-align: center;
+    border-radius: 10px;
 
-    
+    @media (max-width: 600px) {
+      width: 35%;
+      top: 65%;
+      margin-left: 3%;
+      padding-block: 2%;
+      padding-inline: 3%;
+      font-size: calc(1.2 * var(--default-font-size));
+    }
+
+    @media (orientation: landscape) {
+      top: 65%;
+      margin-left: 8%;
+      font-size: calc(1.1 * var(--default-font-size));
+    }
     
   }
   
