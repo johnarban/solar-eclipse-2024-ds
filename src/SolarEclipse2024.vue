@@ -2294,7 +2294,7 @@ export default defineComponent({
   },
 
   mounted() {  
-
+    console.log(this.$vuetify);
     if (queryData.latitudeDeg !== undefined && queryData.longitudeDeg !== undefined) {
       this.selectedTimezone = tzlookup(...[queryData.latitudeDeg, queryData.longitudeDeg]);
       this.updateSelectedLocationText();
@@ -2844,9 +2844,6 @@ export default defineComponent({
   methods: {
     
     pauseForOverlay() {
-      if (!this.showNewMobileUI) {
-        return;
-      }
       const increment = this.playing  || this.playingWaitCount > 0;
       this.playingWaitCount = increment ? this.playingWaitCount + 1 : 0;
       this.playing = false;
@@ -2854,9 +2851,6 @@ export default defineComponent({
     },
     
     playForOverlay() {
-      if (!this.showNewMobileUI) {
-        return;
-      }
       if (this.playingWaitCount === 1) {
         this.playing = true;
       } 
