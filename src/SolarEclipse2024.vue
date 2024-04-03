@@ -238,7 +238,7 @@
             id="map-container" :data-before-text="eclipsePredictionText">
             
             <div 
-              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner && !mobile" 
+              v-if="learnerPath === 'Location' && showEclipsePredictionTextBanner && !mobile && !showNewMobileUI" 
               id="map-banner" 
               class="show-after"
               >
@@ -819,7 +819,7 @@
     }"
     />
   
-  <div v-show="!showGuidedContent && showEclipsePredictionTextBanner" class="user-banner">
+  <div v-show="!showGuidedContent && showEclipsePredictionTextBanner && !showNewMobileUI" class="user-banner">
     <span class="banner-text" v-if="showEclipsePredictionText">
       {{ eclipsePredictionText }}
     </span>
