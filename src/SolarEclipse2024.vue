@@ -5751,6 +5751,10 @@ video, #info-video {
     top: calc(5rem + 11vh);
   }
 
+  @media (orientation: landscape) {
+    --height: 60dvh;
+    top: calc(3rem + 5vh);
+  }
   
   left: calc((100dvw - var(--width)) / 2);
   
@@ -5760,13 +5764,15 @@ video, #info-video {
   min-height: max-content;
   padding: 1rem;
   grid-template-columns: 1fr 1.35fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: 0.5fr 0.5fr;
   gap: 1em;
   
   border: 2px solid white;
   background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
   border-radius: 24px;
+  
+  
   
   #instructions-close-button {
     position: absolute;
@@ -5782,6 +5788,7 @@ video, #info-video {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    box-sizing: content-box;
   }
   
   
@@ -5797,9 +5804,11 @@ video, #info-video {
     font-size: min(3.5vw, 3vh);
     color: white;
     font-weight: bold;
-    flex-shrink:0.5;
     
-      
+    @media (orientation: landscape) {
+      font-size: min(3vw, 4vh);
+    }
+    
   }
   
   
