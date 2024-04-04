@@ -36,7 +36,15 @@
           <td>{{ forecastForHour.precipitation_probability }}%</td>
         </tr>
       </table>
-    </div>  
+    </div>
+    
+    <div class="acknowledgement">
+          <span>
+            Forecast powered by <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> using NOAA GFS
+              (<a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast" target="_blank">Global</a>
+               & <a href="https://rapidrefresh.noaa.gov/hrrr/" target="_blank">HRRR</a>) forecast models.
+          </span>
+    </div>
   </div>
 </template>
 
@@ -44,6 +52,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { defineComponent, PropType} from 'vue';
 import { formatInTimeZone } from "date-fns-tz";
+
 
 const RATE_LIMIT = 1; // calls per second
   
@@ -271,6 +280,12 @@ span.omf-hl {
   font-weight: bold;
 }
 
-// I want the 1st column to be lef
+.acknowledgement {
+  font-size: 0.9em;
+  text-align: left;
+  width: 50%;
+  margin-inline: auto;
+  margin-top: 48px;
+}
 
 </style>
