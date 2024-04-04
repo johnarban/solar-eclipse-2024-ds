@@ -1,44 +1,46 @@
 <template>
   <div class="info-overlay-container" id="weather-forecast-container">   
     <h1>Forecast</h1>
-    <p class="time-location"> for April 8 at <span class="omf-hl"> {{ localTimeString }}</span>, the hour of max eclipse at <span class="omf-hl">{{ locationStr }}</span></p>
+    <p v-if="time !== null" class="time-location"> for April 8 at <span class="omf-hl"> {{ localTimeString }}</span>, the hour of max eclipse at <span class="omf-hl">{{ locationStr }}</span></p>
+    <p v-else class="time-location"> Weather not provided for locations where the eclipse is not visible</p>
     
-    <div v-if="forecastForHour === null">
-      <v-icon size="35">mdi-cloud-cancel</v-icon>
-      <div>No data for this hour</div>
+    <div v-if="time !== null">
+      <div v-if="forecastForHour === null">
+        <v-icon size="35">mdi-cloud-cancel</v-icon>
+        <div>No data for this hour</div>
+      </div>
+      
+      <div v-else>
+        <!-- <v-icon size="35">{{ cloudIcon(forecastForHour.cloud_cover) }}</v-icon> -->
+        <table class="forecast-table">
+          <tr>
+            <td>Cloud cover:</td>
+            <td>{{ forecastForHour.cloud_cover }}%</td>
+          </tr>
+          <tr>
+            <td>Temperature:</td>
+            <td>{{ cfPref === 'C' ? forecastForHour.temperature_2m : celsiusToFahrenheit(forecastForHour.temperature_2m) }}°{{ cfPref }}</td>
+          </tr>
+          <tr>
+            <td>Precipitation Probability:</td>
+            <td>{{ forecastForHour.precipitation_probability }}%</td>
+          </tr>
+        </table>
+      </div>
+      <v-btn-toggle 
+        class="mt-3 align-center"
+        v-model="cfPref"  
+        color="#eac402" 
+        density="compact"
+        divided 
+        mandatory 
+        hide-details
+        variant="outlined"
+        >
+        <v-btn value="C" size="small" height="2em" >°C</v-btn>
+        <v-btn value="F" size="small" height="2em" >°F</v-btn>
+      </v-btn-toggle> 
     </div>
-    
-    <div v-else>
-      <!-- <v-icon size="35">{{ cloudIcon(forecastForHour.cloud_cover) }}</v-icon> -->
-      <table class="forecast-table">
-        <tr>
-          <td>Cloud cover:</td>
-          <td>{{ forecastForHour.cloud_cover }}%</td>
-        </tr>
-        <tr>
-          <td>Temperature:</td>
-          <td>{{ cfPref === 'C' ? forecastForHour.temperature_2m : celsiusToFahrenheit(forecastForHour.temperature_2m) }}°{{ cfPref }}</td>
-        </tr>
-        <tr>
-          <td>Precipitation Probability:</td>
-          <td>{{ forecastForHour.precipitation_probability }}%</td>
-        </tr>
-      </table>
-    </div>
-    <v-btn-toggle 
-      class="mt-3 align-center"
-      v-model="cfPref"  
-      color="#eac402" 
-      density="compact"
-      divided 
-      mandatory 
-      hide-details
-      variant="outlined"
-      >
-      <v-btn value="C" size="small" height="2em" >°C</v-btn>
-      <v-btn value="F" size="small" height="2em" >°F</v-btn>
-    </v-btn-toggle> 
-    
     <div class="acknowledgement">
         <span>
           Forecast powered by <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> using NOAA GFS
@@ -122,11 +124,16 @@ export default defineComponent({
       default: 'america/new_york',
       required: false,
     },
+    
+    openMeteoApi: {
+      type: String,
+      default: 'gfs'
+    }
   },
   
   data() {
     return {
-      openMeteoAPI: 'https://api.open-meteo.com/v1/forecast',
+      openMeteoAPI: `https://api.open-meteo.com/v1/${this.openMeteoApi}`,
       forecast: null as Forecast | null,
       madeCall: false,
       cfPref: 'F' as 'C' | 'F',
@@ -148,6 +155,9 @@ export default defineComponent({
 
     
     localTimeString() {
+      if (this.time === null || this.time === undefined) {
+        return '';
+      }
       // convert to 12 hour and add am/pm
       return formatInTimeZone(this.time, this.timezone, 'h a (z)');
     },

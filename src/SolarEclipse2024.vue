@@ -1370,7 +1370,7 @@
             :location="locationDeg"
             :location-str="selectedLocationText" 
             :timezone="selectedTimezone"
-            :time="eclipsePrediction !== null ? eclipsePrediction.maxTime[0] : null"
+            :time="(eclipsePrediction !== null && eclipseType != 'None') ? eclipsePrediction.maxTime[0] : null"
             />
           </v-card-text>
         </v-card>
