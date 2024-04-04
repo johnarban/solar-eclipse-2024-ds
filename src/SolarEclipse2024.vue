@@ -1352,7 +1352,7 @@
       
       <v-dialog
         v-model="showForecastSheet"
-        max-width="fit-content"
+        :max-width="xSmallSize ? '85%' : '45%'"
         transition="slide-y-transition"
         id="weather-forecast-sheet"
         >
@@ -1367,7 +1367,8 @@
                 tabindex="0"
               ></font-awesome-icon>
             <open-meteo-forecast 
-            :location="locationDeg" 
+            :location="locationDeg"
+            :location-str="selectedLocationText" 
             :timezone="selectedTimezone"
             :time="eclipsePrediction !== null ? eclipsePrediction.maxTime[0] : null"
             />
@@ -1517,17 +1518,17 @@
       </div>
       
       <div id="video-icon">
-            <icon-button
-            v-model="showVideoSheet"
-            id="video-icon"
-            fa-icon="video"
-            fa-size="lg"
-            :color="accentColor"
-            tooltip-text="Video guide"
-            tooltip-location="start"
-            :tooltip-offset="smallSize ? 0 : '10px'"
-          ></icon-button>
-        </div>
+        <icon-button
+          v-model="showVideoSheet"
+          id="video-icon"
+          fa-icon="video"
+          fa-size="lg"
+          :color="accentColor"
+          tooltip-text="Video guide"
+          tooltip-location="start"
+          :tooltip-offset="smallSize ? 0 : '10px'"
+        ></icon-button>
+      </div>
       <div id="tools">
         <span class="tool-container">
           <div style="position: relative">

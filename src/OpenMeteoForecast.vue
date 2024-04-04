@@ -1,7 +1,7 @@
 <template>
-  <div>   
-    <h1>Forecast for April 8, 2024</h1>
-    <h2> for <span class="omf-hl">{{ localTimeString }}</span> - the hour of max eclipse </h2>
+  <div class="info-overlay-container" id="weather-forecast-container">   
+    <h1>Forecast</h1>
+    <p class="time-location"> for April 8 at <span class="omf-hl"> {{ localTimeString }}</span>, the hour of max eclipse at <span class="omf-hl">{{ locationStr }}</span></p>
     
     <div v-if="forecastForHour === null">
       <v-icon size="35">mdi-cloud-cancel</v-icon>
@@ -17,8 +17,16 @@
         </tr>
         <tr>
           <td>Temperature:</td>
-          <td>{{ cfPref === 'C' ? forecastForHour.temperature_2m : celsiusToFahrenheit(forecastForHour.temperature_2m) }}°{{ cfPref }}<v-btn-toggle 
-      class="ml-2 align-center"
+          <td>{{ cfPref === 'C' ? forecastForHour.temperature_2m : celsiusToFahrenheit(forecastForHour.temperature_2m) }}°{{ cfPref }}</td>
+        </tr>
+        <tr>
+          <td>Precipitation Probability:</td>
+          <td>{{ forecastForHour.precipitation_probability }}%</td>
+        </tr>
+      </table>
+    </div>
+    <v-btn-toggle 
+      class="mt-3 align-center"
       v-model="cfPref"  
       color="#eac402" 
       density="compact"
@@ -29,22 +37,16 @@
       >
       <v-btn value="C" size="small" height="2em" >°C</v-btn>
       <v-btn value="F" size="small" height="2em" >°F</v-btn>
-    </v-btn-toggle></td>
-        </tr>
-        <tr>
-          <td>Precipitation Probability:</td>
-          <td>{{ forecastForHour.precipitation_probability }}%</td>
-        </tr>
-      </table>
-    </div>
+    </v-btn-toggle> 
     
     <div class="acknowledgement">
-          <span>
-            Forecast powered by <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> using NOAA GFS
-              (<a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast" target="_blank">Global</a>
-               & <a href="https://rapidrefresh.noaa.gov/hrrr/" target="_blank">HRRR</a>) forecast models.
-          </span>
+        <span>
+          Forecast powered by <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> using NOAA GFS
+            (<a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast" target="_blank">Global</a>
+              & <a href="https://rapidrefresh.noaa.gov/hrrr/" target="_blank">HRRR</a>) forecast models.
+        </span>
     </div>
+
   </div>
 </template>
 
@@ -102,6 +104,12 @@ export default defineComponent({
       default: () => {return {latitudeDeg: 42, longitudeDeg: -73};},
       required: true
     },
+
+    locationStr: {
+      type: String,
+      default: '',
+      required: false,
+    },
     
     time: {
       type: Date || null || undefined,
@@ -121,7 +129,7 @@ export default defineComponent({
       openMeteoAPI: 'https://api.open-meteo.com/v1/forecast',
       forecast: null as Forecast | null,
       madeCall: false,
-      cfPref: 'C' as 'C' | 'F',
+      cfPref: 'F' as 'C' | 'F',
     };
   },
   
@@ -256,9 +264,20 @@ export default defineComponent({
 
 <style scoped lang="less">
 
+#weather-forecast-container {
+  max-width: 95%;
+}
+
+.time-location {
+  text-align: center;
+  max-width: 90%;
+  margin-top: 3%;
+  font-size: calc(1.2 * var(--default-font-size));
+}
+
 span.omf-hl {
   font-weight: bold;
-  color: #eac402cc;
+  color: #eac402;
 }
 
 .forecast-table {
@@ -266,7 +285,7 @@ span.omf-hl {
   border-collapse: collapse;
   // remove border between cells
   border-spacing: 0;
-  margin-top: 20px;
+  margin-top: 3%;
   
   font-size: 1.2em;
 }
@@ -282,10 +301,11 @@ span.omf-hl {
 
 .acknowledgement {
   font-size: 0.9em;
-  text-align: left;
-  width: 50%;
+  text-align: center;
+  width: 90%;
   margin-inline: auto;
-  margin-top: 48px;
+  margin-top: 5%;
+  color: #ccc;
 }
 
 </style>
