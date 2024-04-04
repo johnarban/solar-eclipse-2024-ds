@@ -1,5 +1,5 @@
 <template>
-  <div id="eclipse-timer-container">
+  <div id="eclipse-timer-container" class="info-overlay-container">
     <h1> Eclipse Timer</h1>
     <div v-if="showTimer" class="eclipse-countdown">
       <div class="ec-timer">{{ timeToEclipse }}</div>
@@ -279,12 +279,17 @@ export default defineComponent({
 </script>
 
 
-<style scoped lang="less">
+<style lang="less">
+
 #eclipse-timer-container {
-  position: relative;
   width: max-content;
-  margin: 0 auto;
   padding: 0.5em;
+}
+
+.info-overlay-container {
+  position: relative;
+  margin: 0 auto;
+  padding: 2%;
   
   display: flex;
   flex-direction: column;
@@ -292,7 +297,6 @@ export default defineComponent({
   justify-content: center;
 
   font-size: var(--default-font-size);
-  ;
 }
 
 hr.eclipse-timer-dividier {

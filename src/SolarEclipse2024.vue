@@ -1092,7 +1092,12 @@
               @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "detailed" : "new streamlined" }} interface
           </p>
         </div>
-        
+        <div v-else>
+          <p class="splash-small-text">
+            <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon> New! April 8 weather forecast
+          </p>
+        </div>
+
         <div id="splash-screen-acknowledgements">
           <div>
             <img
@@ -1159,7 +1164,7 @@
         <div class="inst-quad bottom-right">
           <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
-            Tell me what will happen and when
+            Tell me what will happen and when, + new! April 8 weather
           </div>
         </div>
         <!-- <div id="instructions-close-button">
@@ -1344,6 +1349,32 @@
     </div>
     
     <div class="bottom-content">
+      
+      <v-dialog
+        v-model="showForecastSheet"
+        :max-width="xSmallSize ? '85%' : '45%'"
+        transition="slide-y-transition"
+        id="weather-forecast-sheet"
+        >
+      <v-card>
+          <v-card-text class="pb-8">
+            <font-awesome-icon
+                style="position:absolute;right:12px;cursor:pointer;padding:1em;margin:-1em"
+                icon="square-xmark"
+                size="xl"
+                @click="showForecastSheet = false"
+                @keyup.enter="showForecastSheet = false"
+                tabindex="0"
+              ></font-awesome-icon>
+            <open-meteo-forecast 
+            :location="locationDeg"
+            :location-str="selectedLocationText" 
+            :timezone="selectedTimezone"
+            :time="(eclipsePrediction !== null && eclipseType != 'None') ? eclipsePrediction.maxTime[0] : null"
+            />
+          </v-card-text>
+        </v-card>
+      </v-dialog>
      
       <v-dialog
         v-model="showEclipsePredictionSheet"
@@ -1365,7 +1396,7 @@
           </v-card-text>
         </v-card>
       </v-dialog>
-      
+            
       <icon-button
         v-if="showNewMobileUI"
         v-model="showInfoSheet"
@@ -1396,6 +1427,18 @@
         }"
         >
       </icon-button>
+
+      <icon-button
+        v-model="showForecastSheet"
+        md-icon="mdi-cloud-clock"
+        :md-size="showNewMobileUI ? '16' : '24'"
+        :color="accentColor"
+        :focus-color="accentColor"
+        :tooltip-text="showForecastSheet ? null : 'April 8 Weather Forecast'"
+        :tooltip-location="'left'"
+        :show-tooltip="!mobile"
+        :box-shadow="false"
+      ></icon-button>
             
       <div
         id="controls"
@@ -1475,17 +1518,17 @@
       </div>
       
       <div id="video-icon">
-            <icon-button
-            v-model="showVideoSheet"
-            id="video-icon"
-            fa-icon="video"
-            fa-size="lg"
-            :color="accentColor"
-            tooltip-text="Video guide"
-            tooltip-location="start"
-            :tooltip-offset="smallSize ? 0 : '10px'"
-          ></icon-button>
-        </div>
+        <icon-button
+          v-model="showVideoSheet"
+          id="video-icon"
+          fa-icon="video"
+          fa-size="lg"
+          :color="accentColor"
+          tooltip-text="Video guide"
+          tooltip-location="start"
+          :tooltip-offset="smallSize ? 0 : '10px'"
+        ></icon-button>
+      </div>
       <div id="tools">
         <span class="tool-container">
           <div style="position: relative">
@@ -2077,6 +2120,7 @@ export default defineComponent({
     return {
       
       showNewMobileUI: false,
+      showForecastSheet: false,
       
       selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
       cloudCoverData: cloudDataArray as CloudData[],
@@ -4290,6 +4334,16 @@ export default defineComponent({
         this.eclipseTimerTimeMs += (Date.now() - this.eclipseTimerStartTimestamp);
         this.eclipseTimerStartTimestamp = null;
       }
+      
+      if (!show) {
+        this.playForOverlay();
+      }
+    },
+
+    showForecastSheet(show: boolean) {
+      if (show) {
+        this.pauseForOverlay();
+      } 
       
       if (!show) {
         this.playForOverlay();
