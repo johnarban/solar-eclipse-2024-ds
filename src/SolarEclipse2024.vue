@@ -1430,7 +1430,7 @@
 
       <icon-button
         v-model="showForecastSheet"
-        md-icon="mdi-calendar-star-outline"
+        md-icon="mdi-cloud-clock"
         :md-size="showNewMobileUI ? '16' : '24'"
         :color="accentColor"
         :focus-color="accentColor"
