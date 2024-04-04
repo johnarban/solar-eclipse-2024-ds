@@ -1392,13 +1392,12 @@
       </v-dialog>
       
       <icon-button
-        v-if="showNewMobileUI"
         v-model="showForecastSheet"
         md-icon="mdi-calendar-star-outline"
-        md-size="24px"
+        :md-size="showNewMobileUI ? '16' : '24'"
         :color="accentColor"
         :focus-color="accentColor"
-        :tooltip-text="showInfoSheet ? null : 'More on Eclipses'"
+        :tooltip-text="showForecastSheet ? null : 'April 8 Weather Forecast'"
         :tooltip-location="'left'"
         :show-tooltip="!mobile"
         :box-shadow="false"
