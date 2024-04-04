@@ -4,7 +4,7 @@
     <p v-if="time !== null" class="time-location"> for April 8 at <span class="omf-hl"> {{ localTimeString }}</span>, the hour of max eclipse at <span class="omf-hl">{{ locationStr }}</span></p>
     <p v-else class="time-location"> Weather not provided for locations where the eclipse is not visible</p>
     
-    <div v-if="time !== null">
+    <div v-if="time !== null" class="forecast-table-div">
       <div v-if="forecastForHour === null">
         <v-icon size="35">mdi-cloud-cancel</v-icon>
         <div>No data for this hour</div>
@@ -288,6 +288,10 @@ export default defineComponent({
 span.omf-hl {
   font-weight: bold;
   color: #eac402;
+}
+
+.forecast-table-div {
+  text-align: center;
 }
 
 .forecast-table {
