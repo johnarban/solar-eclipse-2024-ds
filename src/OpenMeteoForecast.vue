@@ -46,14 +46,16 @@
       </v-btn-toggle> 
     </div>
     <div class="acknowledgement">
-        <span>
+        <p>
           Forecast powered by <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> using <span v-if="openMeteoApi==='gfs'">NOAA GFS
             (<a href="https://www.ncei.noaa.gov/products/weather-climate-models/global-forecast" target="_blank">Global</a>
               & <a href="https://rapidrefresh.noaa.gov/hrrr/" target="_blank">HRRR</a>) forecast models. </span> 
               <span v-else>the <a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank">ECMWF</a> <a href="https://open-meteo.com/en/docs/ecmwf-api" target="_blank">3hr</a> forecast model. </span>
               <!-- create <a> tag to switch between gfs and ecmwf -->
-              Use the <a href="" @click.prevent="openMeteoApi = openMeteoApi === 'gfs' ? 'ecmwf' : 'gfs'">{{ openMeteoApi === 'gfs' ? 'ECMWF' : 'NOAA GFS' }}</a> forecast model.
-        </span>
+        </p>
+        <p class="mt-2">
+              Use the <a href="" @click.prevent="openMeteoApi = openMeteoApi === 'gfs' ? 'ecmwf' : 'gfs'">{{ openMeteoApi === 'gfs' ? 'ECMWF' : 'NOAA GFS' }}</a> forecast model instead.
+        </p>
     </div>
 
   </div>
