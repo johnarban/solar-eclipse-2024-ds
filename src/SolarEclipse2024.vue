@@ -2429,7 +2429,7 @@ export default defineComponent({
       this.onResize();
     });
 
-    this.showControls = !this.mobile;
+    this.showControls = !this.narrow;
     this.showGuidedContent = !this.xSmallSize;
 
     this.updateSkyOpacityForSunAlt(10 * D2R); // 10 degrees above horizon
