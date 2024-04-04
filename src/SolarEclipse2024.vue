@@ -1344,6 +1344,31 @@
     </div>
     
     <div class="bottom-content">
+      
+      <v-dialog
+        v-model="showForecastSheet"
+        max-width="fit-content"
+        transition="slide-y-transition"
+        id="weather-forecast-sheet"
+        >
+      <v-card>
+          <v-card-text class="pb-8">
+            <font-awesome-icon
+                style="position:absolute;right:12px;cursor:pointer;padding:1em;margin:-1em"
+                icon="square-xmark"
+                size="xl"
+                @click="showForecastSheet = false"
+                @keyup.enter="showForecastSheet = false"
+                tabindex="0"
+              ></font-awesome-icon>
+            <open-meteo-forecast 
+            :location="locationDeg" 
+            :timezone="selectedTimezone"
+            :time="eclipsePrediction !== null ? eclipsePrediction.maxTime[0] : null"
+            />
+          </v-card-text>
+        </v-card>
+      </v-dialog>
      
       <v-dialog
         v-model="showEclipsePredictionSheet"
@@ -1365,6 +1390,20 @@
           </v-card-text>
         </v-card>
       </v-dialog>
+      
+      <icon-button
+        v-if="showNewMobileUI"
+        v-model="showForecastSheet"
+        md-icon="mdi-calendar-star-outline"
+        md-size="24px"
+        :color="accentColor"
+        :focus-color="accentColor"
+        :tooltip-text="showInfoSheet ? null : 'More on Eclipses'"
+        :tooltip-location="'left'"
+        :show-tooltip="!mobile"
+        :box-shadow="false"
+      ></icon-button>
+      
       
       <icon-button
         v-if="showNewMobileUI"
@@ -2077,6 +2116,7 @@ export default defineComponent({
     return {
       
       showNewMobileUI: false,
+      showForecastSheet: false,
       
       selectedCloudCoverVariable: 'median', // Define selectedCloudCoverVariable
       cloudCoverData: cloudDataArray as CloudData[],

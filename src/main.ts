@@ -20,6 +20,7 @@ import CloudDataExplainer from "./CloudDataExplainer.vue";
 import EclipseTimer from "./EclipseTimer.vue";
 import LocationSearch from "./LocationSearch.vue";
 import ArrowSVG from "./ArrowSVG.vue";
+import OpenMeteoForecast from "./OpenMeteoForecast.vue";
 
 import "./polyfills";
 
@@ -164,5 +165,6 @@ createApp(SolarEclipse2023, {
   .component('eclipse-timer', EclipseTimer)
   .component('location-search', LocationSearch)
   .component('arrow-svg', ArrowSVG)
+  .component('open-meteo-forecast', OpenMeteoForecast)
   // Mount
   .mount("#app");

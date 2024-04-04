@@ -1,0 +1,276 @@
+<template>
+  <div>   
+    <h1>Forecast for April 8, 2024</h1>
+    <h2> for <span class="omf-hl">{{ localTimeString }}</span> - the hour of max eclipse </h2>
+    
+    <div v-if="forecastForHour === null">
+      <v-icon size="35">mdi-cloud-cancel</v-icon>
+      <div>No data for this hour</div>
+    </div>
+    
+    <div v-else>
+      <!-- <v-icon size="35">{{ cloudIcon(forecastForHour.cloud_cover) }}</v-icon> -->
+      <table class="forecast-table">
+        <tr>
+          <td>Cloud cover:</td>
+          <td>{{ forecastForHour.cloud_cover }}%</td>
+        </tr>
+        <tr>
+          <td>Temperature:</td>
+          <td>{{ cfPref === 'C' ? forecastForHour.temperature_2m : celsiusToFahrenheit(forecastForHour.temperature_2m) }}°{{ cfPref }}<v-btn-toggle 
+      class="ml-2 align-center"
+      v-model="cfPref"  
+      color="#eac402" 
+      density="compact"
+      divided 
+      mandatory 
+      hide-details
+      variant="outlined"
+      >
+      <v-btn value="C" size="small" height="2em" >°C</v-btn>
+      <v-btn value="F" size="small" height="2em" >°F</v-btn>
+    </v-btn-toggle></td>
+        </tr>
+        <tr>
+          <td>Precipitation Probability:</td>
+          <td>{{ forecastForHour.precipitation_probability }}%</td>
+        </tr>
+      </table>
+    </div>  
+  </div>
+</template>
+
+<script lang="ts">
+/* eslint-disable @typescript-eslint/naming-convention */
+import { defineComponent, PropType} from 'vue';
+import { formatInTimeZone } from "date-fns-tz";
+
+const RATE_LIMIT = 1; // calls per second
+  
+
+type LocationDeg = {
+  latitudeDeg: number;
+  longitudeDeg: number;
+};
+
+interface Forecast {
+  elevation: number;
+    generationtime_ms: number;
+  hourly: {
+    time: string[];
+    cloud_cover: number[];
+    temperature_2m: number[];
+    precipitation_probability: number[];
+  };
+    hourly_units: {
+    time: string;
+    cloud_cover: string;
+    temperature_2m: string;
+    precipitation_probability: string;
+  };
+  latitude: number;
+  longitude: number;
+  timzone: string;
+    timezone_abbreviation: string;
+  
+  utc_offset_seconds: number;
+}
+
+// hour forecast is a subset of the forecast
+interface HourForecast {
+  time: string;
+  cloud_cover: number;
+  temperature_2m: number;
+  precipitation_probability: number;
+}
+
+export default defineComponent({
+  name: 'OpenMeteoForecast',
+  props: {
+
+    location: {
+      type: Object as PropType<LocationDeg>,
+      default: () => {return {latitudeDeg: 42, longitudeDeg: -73};},
+      required: true
+    },
+    
+    time: {
+      type: Date || null || undefined,
+      default: new Date(),
+      required: false
+    },
+    
+    timezone: {
+      type: String,
+      default: 'america/new_york',
+      required: false,
+    },
+  },
+  
+  data() {
+    return {
+      openMeteoAPI: 'https://api.open-meteo.com/v1/forecast',
+      forecast: null as Forecast | null,
+      madeCall: false,
+      cfPref: 'C' as 'C' | 'F',
+    };
+  },
+  
+  mounted() {
+    this.fetchHourlyWeather();
+  },
+  
+  computed: {
+    utcHour() {
+      if (this.time === null || this.time === undefined) {
+        return null;
+      }
+      console.log(this.time);
+      return this.time.getUTCHours();
+    },
+
+    
+    localTimeString() {
+      // convert to 12 hour and add am/pm
+      return formatInTimeZone(this.time, this.timezone, 'h a (z)');
+    },
+    
+    parameters() {
+      return {
+        latitude: this.location.latitudeDeg.toString(),
+        longitude: this.location.longitudeDeg.toString(),
+        hourly: ["cloud_cover", "temperature_2m", "precipitation_probability"].join(","),
+        start_date: "2024-04-08",
+        end_date: "2024-04-08",
+        timezone: "GMT",
+      };
+    },
+    
+    forecastForHour(): null | HourForecast {
+      if (this.forecast === null || this.utcHour === null) {
+        return null;
+      }
+      // this.forecast.hourly.time format is 2024-04-04T16:00 and just want the hour
+      const hour = this.forecast.hourly.time.map(time => +time.split('T')[1].split(':')[0]);
+      const hourIndex = hour.indexOf(+this.utcHour);
+      if (hourIndex === -1) {
+        return null;
+      }
+      return {
+        time: this.forecast.hourly.time[hourIndex],
+        cloud_cover: this.forecast.hourly.cloud_cover[hourIndex],
+        temperature_2m: this.forecast.hourly.temperature_2m[hourIndex],
+        precipitation_probability: this.forecast.hourly.precipitation_probability[hourIndex]
+      };
+    },
+    
+  },
+    
+  
+  methods: {
+    
+    celsiusToFahrenheit(celsius: number) {
+      return (celsius * 9 / 5 + 32).toFixed(0);
+    },
+    
+    cloudIcon(val: number | null) {
+    
+      if (val == null) {
+        return 'mdi-cloud-cancel';
+      } 
+      else if (val < .25) {
+        return 'mdi-weather-sunny';
+      }
+      else if (val < .5) {
+        return 'mdi-weather-partly-cloudy';
+      } 
+      else if (val < 0.9) {
+        return 'mdi-weather-cloudy';
+      } 
+      else {
+        return 'mdi-clouds';
+      } 
+    },
+    
+    resetMadeCall() {
+      console.log('resetting madeCall');
+      this.madeCall = true;
+      setTimeout(() => {
+        this.madeCall = false;
+      }, 1000 / RATE_LIMIT);
+    },
+    
+    async fetchHourlyWeather() {
+      if (this.madeCall) {
+        this.resetMadeCall();
+        return;
+      }
+      this.madeCall = true;
+      const queryParams = new URLSearchParams(this.parameters);
+      console.log(queryParams);
+      const fullURL = `${this.openMeteoAPI}?${queryParams.toString()}`;
+      return fetch(fullURL)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          this.forecast = data as Forecast;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+  },
+  
+  watch: {
+    utcHour() {
+      this.fetchHourlyWeather();
+    },
+    
+    location(val: LocationDeg, oldVal: LocationDeg) {
+      if (val.latitudeDeg !== oldVal.latitudeDeg || val.longitudeDeg !== oldVal.longitudeDeg) {
+        this.fetchHourlyWeather();
+      }
+    },
+    
+    madeCall(val: boolean) {
+      if (val) {
+        this.resetMadeCall();
+      }
+    },
+  }
+   
+  
+});
+</script>
+
+
+<style scoped lang="less">
+
+span.omf-hl {
+  font-weight: bold;
+  color: #eac402cc;
+}
+
+.forecast-table {
+  margin-inline: auto;
+  border-collapse: collapse;
+  // remove border between cells
+  border-spacing: 0;
+  margin-top: 20px;
+  
+  font-size: 1.2em;
+}
+
+.forecast-table td {
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+}
+
+.forecast-table td:first-child {
+  font-weight: bold;
+}
+
+// I want the 1st column to be lef
+
+</style>
