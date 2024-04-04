@@ -4340,6 +4340,16 @@ export default defineComponent({
       }
     },
 
+    showForecastSheet(show: boolean) {
+      if (show) {
+        this.pauseForOverlay();
+      } 
+      
+      if (!show) {
+        this.playForOverlay();
+      }
+    },
+
     weatherInfoOpen(open: boolean) {
       if (open) {
         this.weatherInfoStartTimestamp = Date.now();
