@@ -2,7 +2,7 @@
   <div class="info-overlay-container" id="weather-forecast-container">   
     <h1>Forecast</h1>
     <p v-if="time !== null" class="time-location"> for April 8 at <span class="omf-hl"> {{ localTimeString }}</span>, the hour of max eclipse at <span class="omf-hl">{{ locationStr }}</span></p>
-    <p v-else class="time-location"> Weather not provided for locations where the eclipse is not visible</p>
+    <p v-else class="time-location"> Not provided for locations where the eclipse is not visible</p>
     
     <div v-if="time !== null" class="forecast-table-div">
       <div v-if="forecastForHour === null">
