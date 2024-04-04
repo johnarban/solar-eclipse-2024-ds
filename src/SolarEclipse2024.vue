@@ -1092,7 +1092,12 @@
               @click.prevent="showNewMobileUI = !showNewMobileUI">Switch</a> to {{ showNewMobileUI ? "detailed" : "new streamlined" }} interface
           </p>
         </div>
-        
+        <div v-else>
+          <p class="splash-small-text">
+            <v-icon icon="mdi-creation" size="small" class="bullet-icon"></v-icon> New! April 8 weather forecast
+          </p>
+        </div>
+
         <div id="splash-screen-acknowledgements">
           <div>
             <img
@@ -1159,7 +1164,7 @@
         <div class="inst-quad bottom-right">
           <div class="inst-arrow"><v-icon  class="the-arrow" :color="accentColor" :size="Math.min($vuetify.display.width*0.16,$vuetify.display.height*0.16)">mdi-arrow-up-bold</v-icon></div>
           <div class="inst-text">
-            Tell me what will happen and when
+            Tell me what will happen and when, + new! April 8 weather
           </div>
         </div>
         <!-- <div id="instructions-close-button">
@@ -1390,20 +1395,7 @@
           </v-card-text>
         </v-card>
       </v-dialog>
-      
-      <icon-button
-        v-model="showForecastSheet"
-        md-icon="mdi-calendar-star-outline"
-        :md-size="showNewMobileUI ? '16' : '24'"
-        :color="accentColor"
-        :focus-color="accentColor"
-        :tooltip-text="showForecastSheet ? null : 'April 8 Weather Forecast'"
-        :tooltip-location="'left'"
-        :show-tooltip="!mobile"
-        :box-shadow="false"
-      ></icon-button>
-      
-      
+            
       <icon-button
         v-if="showNewMobileUI"
         v-model="showInfoSheet"
@@ -1434,6 +1426,18 @@
         }"
         >
       </icon-button>
+
+      <icon-button
+        v-model="showForecastSheet"
+        md-icon="mdi-calendar-star-outline"
+        :md-size="showNewMobileUI ? '16' : '24'"
+        :color="accentColor"
+        :focus-color="accentColor"
+        :tooltip-text="showForecastSheet ? null : 'April 8 Weather Forecast'"
+        :tooltip-location="'left'"
+        :show-tooltip="!mobile"
+        :box-shadow="false"
+      ></icon-button>
             
       <div
         id="controls"
