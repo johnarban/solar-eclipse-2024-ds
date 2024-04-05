@@ -2131,12 +2131,14 @@ export default defineComponent({
       weatherTimeMs: 0,
       weatherInfoTimeMs: 0,
       eclipseTimerTimeMs: 0,
+      forecastInfoTimeMs: 0,
       appStartTimestamp: Date.now(),
       infoStartTimestamp: null as number | null,
       userGuideStartTimestamp: null as number | null,
       weatherStartTimestamp: null as number | null,
       weatherInfoStartTimestamp: null as number | null,
       eclipseTimerStartTimestamp: null as number | null,
+      forecastInfoStartTimestamp: null as number | null,
       weatherInfoOpen: false,
       responseOptOut: responseOptOut as boolean | null,
 
@@ -3416,7 +3418,7 @@ export default defineComponent({
           // eslint-disable-next-line @typescript-eslint/naming-convention
           text_search_selected_locations: toRaw(this.textSearchSelectedLocations),
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          info_time_ms: 0, app_time_ms: 0, user_guide_time_ms: 0,
+          info_time_ms: 0, app_time_ms: 0, user_guide_time_ms: 0, forecast_info_time_ms: 0,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           advanced_weather_selected_locations_count: this.advancedWeatherSelectedCount,
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -3434,6 +3436,7 @@ export default defineComponent({
       this.weatherTimeMs = 0;
       this.weatherInfoTimeMs = 0;
       this.eclipseTimerTimeMs = 0;
+      this.forecastInfoTimeMs = 0;
       this.advancedWeatherSelectedCount = 0;
       this.cloudCoverSelectedCount = 0;
       const now = Date.now();
@@ -3455,6 +3458,7 @@ export default defineComponent({
       const weatherTime = (this.showAdvancedWeather && this.weatherStartTimestamp !== null) ? now - this.weatherStartTimestamp : this.weatherTimeMs;
       const weatherInfoTime = (this.weatherInfoOpen && this.weatherInfoStartTimestamp !== null) ? now - this.weatherInfoStartTimestamp : this.weatherInfoTimeMs;
       const eclipseTimerTime = (this.showEclipsePredictionSheet && this.eclipseTimerStartTimestamp !== null) ? now - this.eclipseTimerStartTimestamp : this.eclipseTimerTimeMs;
+      const forecastInfoTime = (this.showForecastSheet && this.forecastInfoStartTimestamp !== null) ? now - this.forecastInfoStartTimestamp : this.forecastInfoTimeMs;
       fetch(`${API_BASE_URL}/solar-eclipse-2024/data/${this.uuid}`, {
         method: "PATCH",
         headers: {
@@ -3475,6 +3479,8 @@ export default defineComponent({
           delta_advanced_weather_time_ms: weatherTime, delta_weather_info_time_ms: weatherInfoTime,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           delta_user_guide_time_ms: userGuideTime, delta_eclipse_timer_time_ms: eclipseTimerTime,
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          delta_forecast_info_time_ms: forecastInfoTime,
           // eslint-disable-next-line @typescript-eslint/naming-convention
           delta_advanced_weather_selected_locations_count: this.advancedWeatherSelectedCount,
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -4343,11 +4349,16 @@ export default defineComponent({
     showForecastSheet(show: boolean) {
       if (show) {
         this.pauseForOverlay();
-      } 
-      
+        this.forecastInfoStartTimestamp = Date.now();
+      } else if (this.forecastInfoStartTimestamp !== null) {
+        this.forecastInfoTimeMs += (Date.now() - this.forecastInfoStartTimestamp);
+        this.forecastInfoStartTimestamp = null;
+      }
+
       if (!show) {
         this.playForOverlay();
       }
+
     },
 
     weatherInfoOpen(open: boolean) {
