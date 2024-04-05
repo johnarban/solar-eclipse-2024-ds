@@ -162,7 +162,6 @@ export default defineComponent({
     this.timeText = this.getTimeText();
     
     setInterval(() => {
-      console.log('doing this');
       this.updateTimeConditions();
       this.updateTime();
       this.timeText = this.getTimeText();
