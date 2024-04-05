@@ -7,7 +7,7 @@
         {{ timeText }} {{ location !== '' ? 'at ' + location : '' }}
       </div>
     </div>
-    
+<!--     
     print out the time conditions as a table
     <table>
       <tr>
@@ -30,7 +30,7 @@
         <td>In Totality:</td>
         <td>{{ inTotality() }}</td>
       </tr>
-    </table>
+    </table> -->
 
     <div v-if="noEclipse">
       <p>No eclipse is predicted for this location.</p>
