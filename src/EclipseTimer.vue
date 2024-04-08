@@ -157,18 +157,12 @@ export default defineComponent({
   },
   
   mounted() {
-    this.updateTimeConditions();
-    this.updateTime();
-    this.timeText = this.getTimeText();
+    this.updateTimeData();
     
     setInterval(() => {
-      this.updateTimeConditions();
-      this.updateTime();
-      this.timeText = this.getTimeText();
+      this.updateTimeData();
     }, 1000);
   },
-  
-  
   
   data() {
     return {
@@ -212,7 +206,7 @@ export default defineComponent({
     isTotal(): boolean {
       return this.prediction.type === 'T';
     },
-    
+
     timeString(): (date: Date | null) => string {
       return (date: Date | null) => {
         if (date === null) return '';
@@ -260,8 +254,6 @@ export default defineComponent({
       return spaceHMS(this.prediction.duration);
     },
     
-    
-    
     timeToShow(): string {
       
       // before totality or before max
@@ -278,8 +270,6 @@ export default defineComponent({
       }
      
     },
-    
-    
     
   },
   
@@ -432,6 +422,12 @@ export default defineComponent({
       this.getTimeToEndTotality();
       this.getTimeToEndPartial();
     },
+
+    updateTimeData() {
+      this.updateTimeConditions();
+      this.updateTime();
+      this.timeText = this.getTimeText();
+    }
   },
   
   
