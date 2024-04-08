@@ -2,12 +2,35 @@
   <div id="eclipse-timer-container" class="info-overlay-container">
     <h1> Eclipse Timer</h1>
     <div v-if="showTimer" class="eclipse-countdown">
-      <div class="ec-timer">{{ timeToEclipse }}</div>
+      <div class="ec-timer">{{ timeToShow }}</div>
       <div v-if="!noEclipse">
-        until max eclipse {{ location !== '' ? 'at ' + location : '' }}
+        {{ timeText }} {{ location !== '' ? 'at ' + location : '' }}
       </div>
     </div>
     
+    <!-- print out the time conditions as a table
+    <table>
+      <tr>
+        <td>Before Max:</td>
+        <td>{{ beforeMax() }}</td>
+      </tr>
+      <tr>
+        <td>After Max:</td>
+        <td>{{ afterMax() }}</td>
+      </tr>
+      <tr>
+        <td>Before End Partial:</td>
+        <td>{{ beforeEndPartial() }}</td>
+      </tr>
+      <tr>
+        <td>Before Totality:</td>
+        <td>{{ beforeTotality() }}</td>
+      </tr>
+      <tr>
+        <td>In Totality:</td>
+        <td>{{ inTotality() }}</td>
+      </tr>
+    </table> -->
 
     <div v-if="noEclipse">
       <p>No eclipse is predicted for this location.</p>
@@ -134,8 +157,16 @@ export default defineComponent({
   },
   
   mounted() {
-    this.getTimeToEclipse();
-    setInterval(this.getTimeToEclipse, 1000);
+    this.updateTimeConditions();
+    this.updateTime();
+    this.timeText = this.getTimeText();
+    
+    setInterval(() => {
+      console.log('doing this');
+      this.updateTimeConditions();
+      this.updateTime();
+      this.timeText = this.getTimeText();
+    }, 1000);
   },
   
   
@@ -153,6 +184,10 @@ export default defineComponent({
       // coverage: this.prediction.coverage[0],
       // duration: this.prediction.duration,
       timeToEclipse: '',
+      timeToEndPartial: '',
+      timeToEndTotality: '',
+      timeToStartTotality: '',
+      timeText: '',
     };
   },
   
@@ -224,11 +259,77 @@ export default defineComponent({
     
     totalityDuration(): string {
       return spaceHMS(this.prediction.duration);
-    }
+    },
+    
+    
+    
+    timeToShow(): string {
+      
+      // before totality or before max
+      if (this.type === 'Total' && this.beforeTotality()) {
+        return this.timeToStartTotality;
+      } else if (this.beforeMax()) {
+        return this.timeToEclipse;
+      } else if (this.inTotality()) {
+        return this.timeToEndTotality;
+      } else if (this.afterMax() && this.beforeEndPartial()) {
+        return this.timeToEndPartial;
+      } else {
+        return 'The Eclipse has passed';
+      }
+     
+    },
+    
+    
     
   },
   
   methods: {
+    
+    beforeMax(): boolean {
+      const now = new Date();
+      if (this.type === '') return false;
+      if (this.maxTime[0] === null) return false;
+      return now.getTime() <= this.maxTime[0].getTime();
+    },  
+    
+    afterMax(): boolean {
+      const now = new Date();
+      if (this.type === '') return false;
+      if (this.maxTime[0] === null) return false;
+      return now.getTime() > this.maxTime[0].getTime();
+    },
+    
+    beforeEndPartial(): boolean {
+      const now = new Date();
+      if (this.type === '') return false;
+      if (this.partialEnd[0] === null) return false;
+      return now.getTime() < this.partialEnd[0].getTime();
+    },
+    
+    beforeTotality(): boolean {
+      const now = new Date();
+      if (this.type !== 'Total') return false;
+      if (this.centralStart[0] === null) return false;
+      return now.getTime() < this.centralStart[0].getTime();
+    },
+    
+    inTotality(): boolean {
+      const now = new Date();
+      if (this.type !== 'Total') return false;
+      if (this.centralStart[0] === null || this.centralEnd[0] === null) return false;
+      return now.getTime() >= this.centralStart[0].getTime() && 
+        now.getTime() <= this.centralEnd[0].getTime();
+    },
+    
+    updateTimeConditions() {
+      this.beforeMax();
+      this.afterMax();
+      this.beforeEndPartial();
+      this.beforeTotality();
+      this.inTotality();
+    },
+    
     toUtcString(date: Date | null): string {
       if (date === null) return '';
       try {
@@ -258,6 +359,14 @@ export default defineComponent({
       if (c === 'b') return [t, 'Below Horizon'];
       return [t, ''];
     },
+    
+    msToTime(ms: number) {
+      const days = Math.floor(ms / dayInMs);
+      const hours = Math.floor((ms % dayInMs) / hourInMs);
+      const minutes = Math.floor((ms % hourInMs) / minuteInMs);
+      const seconds = Math.floor((ms % minuteInMs) / secondInMs);
+      return `${days} days ${hours}h ${minutes}m ${seconds}s`;
+    },
       
     getTimeToEclipse() {
       const now = new Date();
@@ -265,14 +374,67 @@ export default defineComponent({
       if (this.maxTime[0] === null) return '';
       const timeToEclipse = this.maxTime[0].getTime() - now.getTime();
       
-      const days = Math.floor(timeToEclipse / dayInMs);
-      const hours = Math.floor((timeToEclipse % dayInMs) / hourInMs);
-      const minutes = Math.floor((timeToEclipse % hourInMs) / minuteInMs);
-      const seconds = Math.floor((timeToEclipse % minuteInMs) / secondInMs);
+      this.timeToEclipse = this.msToTime(timeToEclipse);
+    },
+    
+    getTimeToStartTotality() {
+      const now = new Date();
+      if (this.type !== 'Total') return '';
+      if (this.centralStart[0] === null) return '';
+      const timeToStart = this.centralStart[0].getTime() - now.getTime();
+      this.timeToStartTotality = this.msToTime(timeToStart);
+    },
+    
+    
+    getTimeToEndTotality() {
+      const now = new Date();
+      if (this.type === '') return '';
+      if (this.centralEnd[0] === null) return '';
+      const timeToEnd = this.centralEnd[0].getTime() - now.getTime();
       
-      this.timeToEclipse = `${days} days ${hours}h ${minutes}m ${seconds}s`;
-    }
-  }
+      const minutes = Math.floor((timeToEnd % hourInMs) / minuteInMs);
+      const seconds = Math.floor((timeToEnd % minuteInMs) / secondInMs);
+      this.timeToEndTotality = `${minutes}m ${seconds}s`;
+    },
+    
+    // get time left until end of eclipse (end of parital)
+    getTimeToEndPartial() {
+      const now = new Date();
+      if (this.type === '') return '';
+      if (this.partialEnd[0] === null) return '';
+      const timeToEnd = this.partialEnd[0].getTime() - now.getTime();
+      
+      const hours = Math.floor((timeToEnd % dayInMs) / hourInMs);
+      const minutes = Math.floor((timeToEnd % hourInMs) / minuteInMs);
+      const seconds = Math.floor((timeToEnd % minuteInMs) / secondInMs);
+      this.timeToEndPartial = `${hours}h ${minutes}m ${seconds}s`;
+    
+    },
+    
+    getTimeText(): string {
+      if (this.type === '') return '';
+      if (this.type === 'Total' && this.beforeTotality()) {
+        return 'until totality';
+      } else if (this.beforeMax()) {
+        return 'until max eclipse';
+      } else if (this.inTotality()) {
+        return 'until end of totality';
+      } else if (this.afterMax() && this.beforeEndPartial()) {
+        return 'until end of partial eclipse';
+      } else {
+        return '';
+      }
+    },
+    
+    updateTime() {
+      this.getTimeToEclipse();
+      this.getTimeToStartTotality();
+      this.getTimeToEndTotality();
+      this.getTimeToEndPartial();
+    },
+  },
+  
+  
   
   
 });
