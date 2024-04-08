@@ -271,7 +271,7 @@ export default defineComponent({
         return this.timeToEndTotality;
       } else if (!this.isTotal && this.beforeMax()) {
         return this.timeToEclipse;
-      } else if ((this.afterMax() && this.beforeEndPartial()) || (!this.beforeTotality() && !this.inTotality())) {
+      } else if ((this.afterMax() && this.beforeEndPartial()) || (this.afterTotality() && !this.afterEndPartial())) {
         return this.timeToEndPartial;
       } else {
         return 'The Eclipse has passed';
@@ -286,39 +286,47 @@ export default defineComponent({
   methods: {
     
     beforeMax(): boolean {
-      const now = new Date();
       if (this.type === '') return false;
       if (this.maxTime[0] === null) return false;
-      return now.getTime() <= this.maxTime[0].getTime();
+      return Date.now() <= this.maxTime[0].getTime();
     },  
     
     afterMax(): boolean {
-      const now = new Date();
       if (this.type === '') return false;
       if (this.maxTime[0] === null) return false;
-      return now.getTime() > this.maxTime[0].getTime();
+      return Date.now() > this.maxTime[0].getTime();
     },
     
     beforeEndPartial(): boolean {
-      const now = new Date();
       if (this.type === '') return false;
       if (this.partialEnd[0] === null) return false;
-      return now.getTime() < this.partialEnd[0].getTime();
+      return Date.now() <= this.partialEnd[0].getTime();
+    },
+
+    afterEndPartial(): boolean {
+      if (this.type === '') return false;
+      if (this.partialEnd[0] === null) return false;
+      return Date.now() > this.partialEnd[0].getTime();
     },
     
     beforeTotality(): boolean {
-      const now = new Date();
       if (this.type !== 'Total') return false;
       if (this.centralStart[0] === null) return false;
-      return now.getTime() < this.centralStart[0].getTime();
+      return Date.now() < this.centralStart[0].getTime();
     },
     
     inTotality(): boolean {
-      const now = new Date();
       if (this.type !== 'Total') return false;
       if (this.centralStart[0] === null || this.centralEnd[0] === null) return false;
-      return now.getTime() >= this.centralStart[0].getTime() && 
-        now.getTime() <= this.centralEnd[0].getTime();
+      const now = Date.now();
+      return now >= this.centralStart[0].getTime() &&
+             now <= this.centralEnd[0].getTime();
+    },
+
+    afterTotality(): boolean {
+      if (this.type !== 'Total') return false;
+      if (this.centralEnd[0] === null) return false;
+      return Date.now() > this.centralEnd[0].getTime();
     },
     
     updateTimeConditions() {
@@ -368,28 +376,23 @@ export default defineComponent({
     },
       
     getTimeToEclipse() {
-      const now = new Date();
       if (this.type === '') return '';
       if (this.maxTime[0] === null) return '';
-      const timeToEclipse = this.maxTime[0].getTime() - now.getTime();
-      
+      const timeToEclipse = this.maxTime[0].getTime() - Date.now();
       this.timeToEclipse = this.msToTime(timeToEclipse);
     },
     
     getTimeToStartTotality() {
-      const now = new Date();
       if (this.type !== 'Total') return '';
       if (this.centralStart[0] === null) return '';
-      const timeToStart = this.centralStart[0].getTime() - now.getTime();
+      const timeToStart = this.centralStart[0].getTime() - Date.now();
       this.timeToStartTotality = this.msToTime(timeToStart);
     },
     
-    
     getTimeToEndTotality() {
-      const now = new Date();
       if (this.type === '') return '';
       if (this.centralEnd[0] === null) return '';
-      const timeToEnd = this.centralEnd[0].getTime() - now.getTime();
+      const timeToEnd = this.centralEnd[0].getTime() - Date.now();
       
       const minutes = Math.floor((timeToEnd % hourInMs) / minuteInMs);
       const seconds = Math.floor((timeToEnd % minuteInMs) / secondInMs);
@@ -398,16 +401,14 @@ export default defineComponent({
     
     // get time left until end of eclipse (end of parital)
     getTimeToEndPartial() {
-      const now = new Date();
       if (this.type === '') return '';
       if (this.partialEnd[0] === null) return '';
-      const timeToEnd = this.partialEnd[0].getTime() - now.getTime();
+      const timeToEnd = this.partialEnd[0].getTime() - Date.now();
       
       const hours = Math.floor((timeToEnd % dayInMs) / hourInMs);
       const minutes = Math.floor((timeToEnd % hourInMs) / minuteInMs);
       const seconds = Math.floor((timeToEnd % minuteInMs) / secondInMs);
       this.timeToEndPartial = `${hours}h ${minutes}m ${seconds}s`;
-    
     },
     
     getTimeText(): string {
@@ -418,7 +419,7 @@ export default defineComponent({
         return 'until end of totality';
       } else if (!this.isTotal && this.beforeMax()) {
         return 'until max eclipse';
-      } else if ((this.afterMax() && this.beforeEndPartial()) || (!this.beforeTotality() && !this.inTotality())) {
+      } else if ((this.afterMax() && this.beforeEndPartial()) || (this.afterTotality() && !this.afterEndPartial())) {
         return 'until end of partial eclipse';
       } else {
         return '';
