@@ -160,7 +160,11 @@ export default defineComponent({
     this.updateTimeData();
     
     setInterval(() => {
-      this.updateTimeData();
+      try {
+        this.updateTimeData();
+      } catch (e) {
+        console.error(e);
+      }
     }, 1000);
   },
   
@@ -255,6 +259,8 @@ export default defineComponent({
     },
     
     timeToShow(): string {
+
+      console.log('timeToShow');
       
       // before totality or before max
       if (this.type === 'Total' && this.beforeTotality()) {
@@ -402,6 +408,7 @@ export default defineComponent({
     },
     
     getTimeText(): string {
+      console.log('getTimeText');
       if (this.type === '') return '';
       if (this.type === 'Total' && this.beforeTotality()) {
         return 'until totality';
@@ -424,9 +431,11 @@ export default defineComponent({
     },
 
     updateTimeData() {
-      this.updateTimeConditions();
-      this.updateTime();
-      this.timeText = this.getTimeText();
+      if (this.showTimer) {
+        this.updateTimeConditions();
+        this.updateTime();
+        this.timeText = this.getTimeText();
+      }
     }
   },
   
