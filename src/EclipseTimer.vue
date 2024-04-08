@@ -1,6 +1,6 @@
 <template>
   <div id="eclipse-timer-container" class="info-overlay-container">
-    <h1> Eclipse Timer</h1>
+    <h1>Eclipse Timer</h1>
     <div v-if="showTimer" class="eclipse-countdown">
       <div v-if="!noEclipse" class="ec-timer">{{ timeToShow }}</div>
       <div v-if="!noEclipse">
@@ -160,11 +160,7 @@ export default defineComponent({
     this.updateTimeData();
     
     setInterval(() => {
-      try {
-        this.updateTimeData();
-      } catch (e) {
-        console.error(e);
-      }
+      this.updateTimeData();
     }, 1000);
   },
   
@@ -185,6 +181,7 @@ export default defineComponent({
       timeToEndTotality: '',
       timeToStartTotality: '',
       timeText: '',
+      timeToShow: '',
     };
   },
   
@@ -258,24 +255,7 @@ export default defineComponent({
       return spaceHMS(this.prediction.duration);
     },
     
-    timeToShow(): string {
 
-      console.log('timeToShow');
-      
-      // before totality or before max
-      if (this.type === 'Total' && this.beforeTotality()) {
-        return this.timeToStartTotality;
-      }  else if (this.inTotality()) {
-        return this.timeToEndTotality;
-      } else if (!this.isTotal && this.beforeMax()) {
-        return this.timeToEclipse;
-      } else if ((this.afterMax() && this.beforeEndPartial()) || (this.afterTotality() && !this.afterEndPartial())) {
-        return this.timeToEndPartial;
-      } else {
-        return 'The Eclipse has passed';
-      }
-     
-    },
     
   },
   
@@ -408,7 +388,6 @@ export default defineComponent({
     },
     
     getTimeText(): string {
-      console.log('getTimeText');
       if (this.type === '') return '';
       if (this.type === 'Total' && this.beforeTotality()) {
         return 'until totality';
@@ -420,6 +399,21 @@ export default defineComponent({
         return 'until end of partial eclipse';
       } else {
         return '';
+      }
+    },
+
+    getTimeToShow(): string {
+      // before totality or before max
+      if (this.type === 'Total' && this.beforeTotality()) {
+        return this.timeToStartTotality;
+      }  else if (this.inTotality()) {
+        return this.timeToEndTotality;
+      } else if (!this.isTotal && this.beforeMax()) {
+        return this.timeToEclipse;
+      } else if ((this.afterMax() && this.beforeEndPartial()) || (this.afterTotality() && !this.afterEndPartial())) {
+        return this.timeToEndPartial;
+      } else {
+        return 'The Eclipse has passed';
       }
     },
     
@@ -435,6 +429,7 @@ export default defineComponent({
         this.updateTimeConditions();
         this.updateTime();
         this.timeText = this.getTimeText();
+        this.timeToShow = this.getTimeToShow();
       }
     }
   },
