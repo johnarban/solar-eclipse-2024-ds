@@ -2,7 +2,7 @@
   <div id="eclipse-timer-container" class="info-overlay-container">
     <h1> Eclipse Timer</h1>
     <div v-if="showTimer" class="eclipse-countdown">
-      <div class="ec-timer">{{ timeToShow }}</div>
+      <div v-if="!noEclipse" class="ec-timer">{{ timeToShow }}</div>
       <div v-if="!noEclipse">
         {{ timeText }} {{ location !== '' ? 'at ' + location : '' }}
       </div>
