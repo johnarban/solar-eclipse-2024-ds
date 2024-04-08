@@ -8,7 +8,7 @@
       </div>
     </div>
     
-    <!-- print out the time conditions as a table
+    print out the time conditions as a table
     <table>
       <tr>
         <td>Before Max:</td>
@@ -30,7 +30,7 @@
         <td>In Totality:</td>
         <td>{{ inTotality() }}</td>
       </tr>
-    </table> -->
+    </table>
 
     <div v-if="noEclipse">
       <p>No eclipse is predicted for this location.</p>
@@ -267,11 +267,11 @@ export default defineComponent({
       // before totality or before max
       if (this.type === 'Total' && this.beforeTotality()) {
         return this.timeToStartTotality;
-      } else if (this.beforeMax()) {
-        return this.timeToEclipse;
-      } else if (this.inTotality()) {
+      }  else if (this.inTotality()) {
         return this.timeToEndTotality;
-      } else if (this.afterMax() && this.beforeEndPartial()) {
+      } else if (!this.isTotal && this.beforeMax()) {
+        return this.timeToEclipse;
+      } else if ((this.afterMax() && this.beforeEndPartial()) || (!this.beforeTotality() && !this.inTotality())) {
         return this.timeToEndPartial;
       } else {
         return 'The Eclipse has passed';
@@ -414,11 +414,11 @@ export default defineComponent({
       if (this.type === '') return '';
       if (this.type === 'Total' && this.beforeTotality()) {
         return 'until totality';
-      } else if (this.beforeMax()) {
-        return 'until max eclipse';
       } else if (this.inTotality()) {
         return 'until end of totality';
-      } else if (this.afterMax() && this.beforeEndPartial()) {
+      } else if (!this.isTotal && this.beforeMax()) {
+        return 'until max eclipse';
+      } else if ((this.afterMax() && this.beforeEndPartial()) || (!this.beforeTotality() && !this.inTotality())) {
         return 'until end of partial eclipse';
       } else {
         return '';
